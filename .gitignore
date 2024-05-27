@@ -32,7 +32,7 @@ coverage/
 /cypress/support/**/*.js.map
 /cypress/videos/
 /declarations/
-/dist/
+#/dist/
 /esnext/
 /examples/examples.css
 /examples/index.html
