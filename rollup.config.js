@@ -29,11 +29,11 @@ const plugins = {
 		extensions: ['.ts', '.js'],
 		runtimeHelpers: true
 	}),
-	minify: terser({
-		output: {
-			comments: (_node, { value }) => /@license/.test(value)
-		}
-	}),
+	// minify: terser({
+	// 	output: {
+	// 		comments: (_node, { value }) => /@license/.test(value)
+	// 	}
+	// }),
 	cssRaw: postcss({
 		extract: 'dist/vis-network.css',
 		inject: false,
