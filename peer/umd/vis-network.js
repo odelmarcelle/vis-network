@@ -5,7 +5,7 @@
  * A dynamic, browser-based visualization library.
  *
  * @version 0.0.0-no-version
- * @date    2024-05-27T15:37:44.754Z
+ * @date    2024-05-27T17:18:51.373Z
  *
  * @copyright (c) 2011-2017 Almende B.V, http://almende.com
  * @copyright (c) 2017-2019 visjs contributors, https://github.com/visjs
@@ -19797,6 +19797,7 @@
 	        opacity: this.options.color.opacity,
 	        hidden: this.options.hidden,
 	        length: this.options.length,
+	        springConstant: this.options.springConstant,
 	        shadow: this.options.shadow.enabled,
 	        shadowColor: this.options.shadow.color,
 	        shadowSize: this.options.shadow.size,
@@ -20382,7 +20383,7 @@
 	      var allowDeletion = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : false;
 	      var globalOptions = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : {};
 	      var copyFromGlobals = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : false;
-	      var fields = ['endPointOffset', 'arrowStrikethrough', 'id', 'from', 'hidden', 'hoverWidth', 'labelHighlightBold', 'length', 'line', 'opacity', 'physics', 'scaling', 'selectionWidth', 'selfReferenceSize', 'selfReference', 'to', 'title', 'value', 'width', 'font', 'chosen', 'widthConstraint']; // only deep extend the items in the field array. These do not have shorthand.
+	      var fields = ['endPointOffset', 'arrowStrikethrough', 'id', 'from', 'hidden', 'hoverWidth', 'labelHighlightBold', 'length', 'springConstant', 'line', 'opacity', 'physics', 'scaling', 'selectionWidth', 'selfReferenceSize', 'selfReference', 'to', 'title', 'value', 'width', 'font', 'chosen', 'widthConstraint']; // only deep extend the items in the field array. These do not have shorthand.
 
 	      selectiveDeepExtend(fields, parentOptions, newOptions, allowDeletion); // Only use endPointOffset values (from and to) if it's valid values
 
