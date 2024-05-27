@@ -25,7 +25,7 @@
   ],
   "browser": "peer/umd/vis-network.min.js",
   "jsnext": "esnext/esm/vis-network.js",
-  "main": "peer/umd/vis-network.js",
+  "main": "dist/vis-network.js",
   "module": "peer/esm/vis-network.js",
   "types": "declarations/index.d.ts",
   "files": [
