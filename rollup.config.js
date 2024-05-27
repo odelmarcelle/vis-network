@@ -27,11 +27,11 @@ const plugins = {
     babelHelpers: "runtime",
     exclude: BABEL_IGNORE_RE,
   }),
-  minify: terser({
-    output: {
-      comments: (_node, { value }) => /@license/.test(value),
-    },
-  }),
+  // minify: terser({
+  //   output: {
+  //     comments: (_node, { value }) => /@license/.test(value),
+  //   },
+  // }),
   cssRaw: postcss({
     extract: "dist/vis-network.css",
     inject: false,
