@@ -5,7 +5,7 @@
  * A dynamic, browser-based visualization library.
  *
  * @version 0.0.0-no-version
- * @date    2024-05-27T17:18:51.373Z
+ * @date    2025-02-17T20:02:11.557Z
  *
  * @copyright (c) 2011-2017 Almende B.V, http://almende.com
  * @copyright (c) 2017-2019 visjs contributors, https://github.com/visjs
@@ -24,13 +24,35 @@
  * vis.js may be distributed under either license.
  */
 
-import Emitter from 'component-emitter';
-import { addClassName, removeClassName, topMost, forEach, deepExtend, overrideOpacity, copyAndExtendArray, copyArray, bridgeObject, selectiveNotDeepExtend, parseColor, mergeOptions, fillIfDefined, selectiveDeepExtend, isString, Alea, HSVToHex, addEventListener, removeEventListener, easingFunctions, getAbsoluteLeft, getAbsoluteTop, recursiveDOMDelete, isValidRGB, isValidRGBA, isValidHex, hexToRGB, RGBToHSV, HSVToRGB } from 'vis-util/esnext/esm/vis-util.js';
-import keycharm from 'keycharm';
-import hammerjs from '@egjs/hammerjs';
-import { DataSet, DataView } from 'vis-data/esnext/esm/vis-data.js';
-import { v4 } from 'uuid';
-import TimSort, { sort } from 'timsort';
+import Emitter from "component-emitter";
+import {
+  topMost,
+  forEach,
+  deepExtend,
+  overrideOpacity,
+  bridgeObject,
+  selectiveNotDeepExtend,
+  parseColor,
+  mergeOptions,
+  fillIfDefined,
+  VALIDATOR_PRINT_STYLE,
+  selectiveDeepExtend,
+  isString,
+  Alea,
+  HSVToHex,
+  Hammer,
+  easingFunctions,
+  getAbsoluteLeft,
+  getAbsoluteTop,
+  Popup,
+  recursiveDOMDelete,
+  Validator,
+  Configurator,
+  Activator,
+} from "vis-util/esnext/esm/vis-util.js";
+import { isDataViewLike, DataSet } from "vis-data/esnext/esm/vis-data.js";
+import { v4 } from "uuid";
+import keycharm from "keycharm";
 
 /**
  * Draw a circle.
@@ -41,9 +63,9 @@ import TimSort, { sort } from 'timsort';
  * @param r - The radius of the circle.
  */
 function drawCircle(ctx, x, y, r) {
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, 2 * Math.PI, false);
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+  ctx.closePath();
 }
 /**
  * Draw a square.
@@ -54,9 +76,9 @@ function drawCircle(ctx, x, y, r) {
  * @param r - Half of the width and height of the square.
  */
 function drawSquare(ctx, x, y, r) {
-    ctx.beginPath();
-    ctx.rect(x - r, y - r, r * 2, r * 2);
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.rect(x - r, y - r, r * 2, r * 2);
+  ctx.closePath();
 }
 /**
  * Draw an equilateral triangle standing on a side.
@@ -65,24 +87,23 @@ function drawSquare(ctx, x, y, r) {
  * @param x - The position of the center on the x axis.
  * @param y - The position of the center on the y axis.
  * @param r - Half of the length of the sides.
- *
  * @remarks
  * http://en.wikipedia.org/wiki/Equilateral_triangle
  */
 function drawTriangle(ctx, x, y, r) {
-    ctx.beginPath();
-    // the change in radius and the offset is here to center the shape
-    r *= 1.15;
-    y += 0.275 * r;
-    const s = r * 2;
-    const s2 = s / 2;
-    const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
-    const h = Math.sqrt(s * s - s2 * s2); // height
-    ctx.moveTo(x, y - (h - ir));
-    ctx.lineTo(x + s2, y + ir);
-    ctx.lineTo(x - s2, y + ir);
-    ctx.lineTo(x, y - (h - ir));
-    ctx.closePath();
+  ctx.beginPath();
+  // the change in radius and the offset is here to center the shape
+  r *= 1.15;
+  y += 0.275 * r;
+  const s = r * 2;
+  const s2 = s / 2;
+  const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
+  const h = Math.sqrt(s * s - s2 * s2); // height
+  ctx.moveTo(x, y - (h - ir));
+  ctx.lineTo(x + s2, y + ir);
+  ctx.lineTo(x - s2, y + ir);
+  ctx.lineTo(x, y - (h - ir));
+  ctx.closePath();
 }
 /**
  * Draw an equilateral triangle standing on a vertex.
@@ -91,24 +112,23 @@ function drawTriangle(ctx, x, y, r) {
  * @param x - The position of the center on the x axis.
  * @param y - The position of the center on the y axis.
  * @param r - Half of the length of the sides.
- *
  * @remarks
  * http://en.wikipedia.org/wiki/Equilateral_triangle
  */
 function drawTriangleDown(ctx, x, y, r) {
-    ctx.beginPath();
-    // the change in radius and the offset is here to center the shape
-    r *= 1.15;
-    y -= 0.275 * r;
-    const s = r * 2;
-    const s2 = s / 2;
-    const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
-    const h = Math.sqrt(s * s - s2 * s2); // height
-    ctx.moveTo(x, y + (h - ir));
-    ctx.lineTo(x + s2, y - ir);
-    ctx.lineTo(x - s2, y - ir);
-    ctx.lineTo(x, y + (h - ir));
-    ctx.closePath();
+  ctx.beginPath();
+  // the change in radius and the offset is here to center the shape
+  r *= 1.15;
+  y -= 0.275 * r;
+  const s = r * 2;
+  const s2 = s / 2;
+  const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
+  const h = Math.sqrt(s * s - s2 * s2); // height
+  ctx.moveTo(x, y + (h - ir));
+  ctx.lineTo(x + s2, y - ir);
+  ctx.lineTo(x - s2, y - ir);
+  ctx.lineTo(x, y + (h - ir));
+  ctx.closePath();
 }
 /**
  * Draw a star.
@@ -119,16 +139,19 @@ function drawTriangleDown(ctx, x, y, r) {
  * @param r - The outer radius of the star.
  */
 function drawStar(ctx, x, y, r) {
-    // http://www.html5canvastutorials.com/labs/html5-canvas-star-spinner/
-    ctx.beginPath();
-    // the change in radius and the offset is here to center the shape
-    r *= 0.82;
-    y += 0.1 * r;
-    for (let n = 0; n < 10; n++) {
-        const radius = n % 2 === 0 ? r * 1.3 : r * 0.5;
-        ctx.lineTo(x + radius * Math.sin((n * 2 * Math.PI) / 10), y - radius * Math.cos((n * 2 * Math.PI) / 10));
-    }
-    ctx.closePath();
+  // http://www.html5canvastutorials.com/labs/html5-canvas-star-spinner/
+  ctx.beginPath();
+  // the change in radius and the offset is here to center the shape
+  r *= 0.82;
+  y += 0.1 * r;
+  for (let n = 0; n < 10; n++) {
+    const radius = n % 2 === 0 ? r * 1.3 : r * 0.5;
+    ctx.lineTo(
+      x + radius * Math.sin((n * 2 * Math.PI) / 10),
+      y - radius * Math.cos((n * 2 * Math.PI) / 10)
+    );
+  }
+  ctx.closePath();
 }
 /**
  * Draw a diamond.
@@ -137,17 +160,16 @@ function drawStar(ctx, x, y, r) {
  * @param x - The position of the center on the x axis.
  * @param y - The position of the center on the y axis.
  * @param r - Half of the width and height of the diamond.
- *
  * @remarks
  * http://www.html5canvastutorials.com/labs/html5-canvas-star-spinner/
  */
 function drawDiamond(ctx, x, y, r) {
-    ctx.beginPath();
-    ctx.lineTo(x, y + r);
-    ctx.lineTo(x + r, y);
-    ctx.lineTo(x, y - r);
-    ctx.lineTo(x - r, y);
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.lineTo(x, y + r);
+  ctx.lineTo(x + r, y);
+  ctx.lineTo(x, y - r);
+  ctx.lineTo(x - r, y);
+  ctx.closePath();
 }
 /**
  * Draw a rectangle with rounded corners.
@@ -158,29 +180,28 @@ function drawDiamond(ctx, x, y, r) {
  * @param w - The width of the rectangle.
  * @param h - The height of the rectangle.
  * @param r - The radius of the corners.
- *
  * @remarks
  * http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
  */
 function drawRoundRect(ctx, x, y, w, h, r) {
-    const r2d = Math.PI / 180;
-    if (w - 2 * r < 0) {
-        r = w / 2;
-    } //ensure that the radius isn't too large for x
-    if (h - 2 * r < 0) {
-        r = h / 2;
-    } //ensure that the radius isn't too large for y
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.arc(x + w - r, y + r, r, r2d * 270, r2d * 360, false);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.arc(x + w - r, y + h - r, r, 0, r2d * 90, false);
-    ctx.lineTo(x + r, y + h);
-    ctx.arc(x + r, y + h - r, r, r2d * 90, r2d * 180, false);
-    ctx.lineTo(x, y + r);
-    ctx.arc(x + r, y + r, r, r2d * 180, r2d * 270, false);
-    ctx.closePath();
+  const r2d = Math.PI / 180;
+  if (w - 2 * r < 0) {
+    r = w / 2;
+  } //ensure that the radius isn't too large for x
+  if (h - 2 * r < 0) {
+    r = h / 2;
+  } //ensure that the radius isn't too large for y
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.arc(x + w - r, y + r, r, r2d * 270, r2d * 360, false);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.arc(x + w - r, y + h - r, r, 0, r2d * 90, false);
+  ctx.lineTo(x + r, y + h);
+  ctx.arc(x + r, y + h - r, r, r2d * 90, r2d * 180, false);
+  ctx.lineTo(x, y + r);
+  ctx.arc(x + r, y + r, r, r2d * 180, r2d * 270, false);
+  ctx.closePath();
 }
 /**
  * Draw an ellipse.
@@ -190,26 +211,26 @@ function drawRoundRect(ctx, x, y, w, h, r) {
  * @param y - The position of the center on the y axis.
  * @param w - The width of the ellipse.
  * @param h - The height of the ellipse.
- *
  * @remarks
  * http://stackoverflow.com/questions/2172798/how-to-draw-an-oval-in-html5-canvas
  *
  * Postfix '_vis' added to discern it from standard method ellipse().
  */
 function drawEllipse(ctx, x, y, w, h) {
-    const kappa = 0.5522848, ox = (w / 2) * kappa, // control point offset horizontal
+  const kappa = 0.5522848,
+    ox = (w / 2) * kappa, // control point offset horizontal
     oy = (h / 2) * kappa, // control point offset vertical
     xe = x + w, // x-end
     ye = y + h, // y-end
     xm = x + w / 2, // x-middle
     ym = y + h / 2; // y-middle
-    ctx.beginPath();
-    ctx.moveTo(x, ym);
-    ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-    ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-    ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-    ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-    ctx.closePath();
+  ctx.beginPath();
+  ctx.moveTo(x, ym);
+  ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+  ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+  ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+  ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+  ctx.closePath();
 }
 /**
  * Draw an isometric cylinder.
@@ -219,15 +240,15 @@ function drawEllipse(ctx, x, y, w, h) {
  * @param y - The position of the center on the y axis.
  * @param w - The width of the database.
  * @param h - The height of the database.
- *
  * @remarks
  * http://stackoverflow.com/questions/2172798/how-to-draw-an-oval-in-html5-canvas
  */
 function drawDatabase(ctx, x, y, w, h) {
-    const f = 1 / 3;
-    const wEllipse = w;
-    const hEllipse = h * f;
-    const kappa = 0.5522848, ox = (wEllipse / 2) * kappa, // control point offset horizontal
+  const f = 1 / 3;
+  const wEllipse = w;
+  const hEllipse = h * f;
+  const kappa = 0.5522848,
+    ox = (wEllipse / 2) * kappa, // control point offset horizontal
     oy = (hEllipse / 2) * kappa, // control point offset vertical
     xe = x + wEllipse, // x-end
     ye = y + hEllipse, // y-end
@@ -235,16 +256,16 @@ function drawDatabase(ctx, x, y, w, h) {
     ym = y + hEllipse / 2, // y-middle
     ymb = y + (h - hEllipse / 2), // y-midlle, bottom ellipse
     yeb = y + h; // y-end, bottom ellipse
-    ctx.beginPath();
-    ctx.moveTo(xe, ym);
-    ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-    ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-    ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-    ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-    ctx.lineTo(xe, ymb);
-    ctx.bezierCurveTo(xe, ymb + oy, xm + ox, yeb, xm, yeb);
-    ctx.bezierCurveTo(xm - ox, yeb, x, ymb + oy, x, ymb);
-    ctx.lineTo(x, ym);
+  ctx.beginPath();
+  ctx.moveTo(xe, ym);
+  ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+  ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+  ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+  ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+  ctx.lineTo(xe, ymb);
+  ctx.bezierCurveTo(xe, ymb + oy, xm + ox, yeb, xm, yeb);
+  ctx.bezierCurveTo(xm - ox, yeb, x, ymb + oy, x, ymb);
+  ctx.lineTo(x, ym);
 }
 /**
  * Draw a dashed line.
@@ -255,42 +276,40 @@ function drawDatabase(ctx, x, y, w, h) {
  * @param x2 - The end position on the x axis.
  * @param y2 - The end position on the y axis.
  * @param pattern - List of lengths starting with line and then alternating between space and line.
- *
  * @author David Jordan
- * @date 2012-08-08
  * @remarks
+ * date 2012-08-08
  * http://stackoverflow.com/questions/4576724/dotted-stroke-in-canvas
  */
 function drawDashedLine(ctx, x, y, x2, y2, pattern) {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    const patternLength = pattern.length;
-    const dx = x2 - x;
-    const dy = y2 - y;
-    const slope = dy / dx;
-    let distRemaining = Math.sqrt(dx * dx + dy * dy);
-    let patternIndex = 0;
-    let draw = true;
-    let xStep = 0;
-    let dashLength = +pattern[0];
-    while (distRemaining >= 0.1) {
-        dashLength = +pattern[patternIndex++ % patternLength];
-        if (dashLength > distRemaining) {
-            dashLength = distRemaining;
-        }
-        xStep = Math.sqrt((dashLength * dashLength) / (1 + slope * slope));
-        xStep = dx < 0 ? -xStep : xStep;
-        x += xStep;
-        y += slope * xStep;
-        if (draw === true) {
-            ctx.lineTo(x, y);
-        }
-        else {
-            ctx.moveTo(x, y);
-        }
-        distRemaining -= dashLength;
-        draw = !draw;
+  ctx.beginPath();
+  ctx.moveTo(x, y);
+  const patternLength = pattern.length;
+  const dx = x2 - x;
+  const dy = y2 - y;
+  const slope = dy / dx;
+  let distRemaining = Math.sqrt(dx * dx + dy * dy);
+  let patternIndex = 0;
+  let draw = true;
+  let xStep = 0;
+  let dashLength = +pattern[0];
+  while (distRemaining >= 0.1) {
+    dashLength = +pattern[patternIndex++ % patternLength];
+    if (dashLength > distRemaining) {
+      dashLength = distRemaining;
     }
+    xStep = Math.sqrt((dashLength * dashLength) / (1 + slope * slope));
+    xStep = dx < 0 ? -xStep : xStep;
+    x += xStep;
+    y += slope * xStep;
+    if (draw === true) {
+      ctx.lineTo(x, y);
+    } else {
+      ctx.moveTo(x, y);
+    }
+    distRemaining -= dashLength;
+    draw = !draw;
+  }
 }
 /**
  * Draw a hexagon.
@@ -301,28 +320,28 @@ function drawDashedLine(ctx, x, y, x2, y2, pattern) {
  * @param r - The radius of the hexagon.
  */
 function drawHexagon(ctx, x, y, r) {
-    ctx.beginPath();
-    const sides = 6;
-    const a = (Math.PI * 2) / sides;
-    ctx.moveTo(x + r, y);
-    for (let i = 1; i < sides; i++) {
-        ctx.lineTo(x + r * Math.cos(a * i), y + r * Math.sin(a * i));
-    }
-    ctx.closePath();
+  ctx.beginPath();
+  const sides = 6;
+  const a = (Math.PI * 2) / sides;
+  ctx.moveTo(x + r, y);
+  for (let i = 1; i < sides; i++) {
+    ctx.lineTo(x + r * Math.cos(a * i), y + r * Math.sin(a * i));
+  }
+  ctx.closePath();
 }
 const shapeMap = {
-    circle: drawCircle,
-    dashedLine: drawDashedLine,
-    database: drawDatabase,
-    diamond: drawDiamond,
-    ellipse: drawEllipse,
-    ellipse_vis: drawEllipse,
-    hexagon: drawHexagon,
-    roundRect: drawRoundRect,
-    square: drawSquare,
-    star: drawStar,
-    triangle: drawTriangle,
-    triangleDown: drawTriangleDown
+  circle: drawCircle,
+  dashedLine: drawDashedLine,
+  database: drawDatabase,
+  diamond: drawDiamond,
+  ellipse: drawEllipse,
+  ellipse_vis: drawEllipse,
+  hexagon: drawHexagon,
+  roundRect: drawRoundRect,
+  square: drawSquare,
+  star: drawStar,
+  triangle: drawTriangle,
+  triangleDown: drawTriangleDown,
 };
 /**
  * Returns either custom or native drawing function base on supplied name.
@@ -330,23 +349,20 @@ const shapeMap = {
  * @param name - The name of the function. Either the name of a
  * CanvasRenderingContext2D property or an export from shapes.ts without the
  * draw prefix.
- *
  * @returns The function that can be used for rendering. In case of native
  * CanvasRenderingContext2D function the API is normalized to
  * `(ctx: CanvasRenderingContext2D, ...originalArgs) => void`.
  */
 function getShape(name) {
-    if (Object.prototype.hasOwnProperty.call(shapeMap, name)) {
-        return shapeMap[name];
-    }
-    else {
-        return function (ctx, ...args) {
-            CanvasRenderingContext2D.prototype[name].call(ctx, args);
-        };
-    }
+  if (Object.prototype.hasOwnProperty.call(shapeMap, name)) {
+    return shapeMap[name];
+  } else {
+    return function (ctx, ...args) {
+      CanvasRenderingContext2D.prototype[name].call(ctx, args);
+    };
+  }
 }
 
-/* eslint-disable max-statements */
 /* eslint-disable no-prototype-builtins */
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-var */
@@ -360,7 +376,7 @@ function getShape(name) {
  * DOT language attributes: http://graphviz.org/content/attrs
  *
  * @param {string} data     Text containing a graph in DOT-notation
- * @return {Object} graph   An object containing two parameters:
+ * @returns {object} graph   An object containing two parameters:
  *                          {Object[]} nodes
  *                          {Object[]} edges
  *
@@ -369,8 +385,8 @@ function getShape(name) {
  * ====
  *
  * For label handling, this is an incomplete implementation. From docs (quote #3015):
- * 
- * > the escape sequences "\n", "\l" and "\r" divide the label into lines, centered, 
+ *
+ * > the escape sequences "\n", "\l" and "\r" divide the label into lines, centered,
  * > left-justified, and right-justified, respectively.
  *
  * Source: http://www.graphviz.org/content/attrs#kescString
@@ -387,52 +403,52 @@ function getShape(name) {
  * - Note that text explicitly says 'labels'; the dot parser currently handles escape
  *   sequences in **all** strings.
  */
-function parseDOT (data) {
+function parseDOT(data) {
   dot = data;
   return parseGraph();
 }
 
 // mapping of attributes from DOT (the keys) to vis.js (the values)
 var NODE_ATTR_MAPPING = {
-  'fontsize': 'font.size',
-  'fontcolor': 'font.color',
-  'labelfontcolor': 'font.color',
-  'fontname': 'font.face',
-  'color': ['color.border', 'color.background'],
-  'fillcolor': 'color.background',
-  'tooltip': 'title',
-  'labeltooltip': 'title'
+  fontsize: "font.size",
+  fontcolor: "font.color",
+  labelfontcolor: "font.color",
+  fontname: "font.face",
+  color: ["color.border", "color.background"],
+  fillcolor: "color.background",
+  tooltip: "title",
+  labeltooltip: "title",
 };
 var EDGE_ATTR_MAPPING = Object.create(NODE_ATTR_MAPPING);
-EDGE_ATTR_MAPPING.color = 'color.color';
-EDGE_ATTR_MAPPING.style = 'dashes';
+EDGE_ATTR_MAPPING.color = "color.color";
+EDGE_ATTR_MAPPING.style = "dashes";
 
 // token types enumeration
 var TOKENTYPE = {
-  NULL : 0,
-  DELIMITER : 1,
+  NULL: 0,
+  DELIMITER: 1,
   IDENTIFIER: 2,
-  UNKNOWN : 3
+  UNKNOWN: 3,
 };
 
 // map with all delimiters
 var DELIMITERS = {
-  '{': true,
-  '}': true,
-  '[': true,
-  ']': true,
-  ';': true,
-  '=': true,
-  ',': true,
+  "{": true,
+  "}": true,
+  "[": true,
+  "]": true,
+  ";": true,
+  "=": true,
+  ",": true,
 
-  '->': true,
-  '--': true
+  "->": true,
+  "--": true,
 };
 
-var dot = '';                   // current dot file
-var index = 0;                  // current index in dot file
-var c = '';                     // current token character in expr
-var token = '';                 // current token
+var dot = ""; // current dot file
+var index = 0; // current index in dot file
+var c = ""; // current token character in expr
+var token = ""; // current token
 var tokenType = TOKENTYPE.NULL; // type of the token
 
 /**
@@ -457,29 +473,54 @@ function next() {
 
 /**
  * Preview the next character from the dot file.
- * @return {string} cNext
+ *
+ * @returns {string} cNext
  */
 function nextPreview() {
   return dot.charAt(index + 1);
 }
 
-var regexAlphaNumeric = /[a-zA-Z_0-9.:#]/;
 /**
- * Test whether given character is alphabetic or numeric
+ * Test whether given character is alphabetic or numeric ( a-zA-Z_0-9.:# )
+ *
  * @param {string} c
- * @return {Boolean} isAlphaNumeric
+ * @returns {boolean} isAlphaNumeric
  */
 function isAlphaNumeric(c) {
-  return regexAlphaNumeric.test(c);
+  var charCode = c.charCodeAt(0);
+
+  if (charCode < 47) {
+    // #.
+    return charCode === 35 || charCode === 46;
+  }
+  if (charCode < 59) {
+    // 0-9 and :
+    return charCode > 47;
+  }
+  if (charCode < 91) {
+    // A-Z
+    return charCode > 64;
+  }
+  if (charCode < 96) {
+    // _
+    return charCode === 95;
+  }
+  if (charCode < 123) {
+    // a-z
+    return charCode > 96;
+  }
+
+  return false;
 }
 
 /**
  * Merge all options of object b into object b
- * @param {Object} a
- * @param {Object} b
- * @return {Object} a
+ *
+ * @param {object} a
+ * @param {object} b
+ * @returns {object} a
  */
-function merge (a, b) {
+function merge(a, b) {
   if (!a) {
     a = {};
   }
@@ -501,13 +542,13 @@ function merge (a, b) {
  *     var obj = {a: 2};
  *     setValue(obj, 'b.c', 3);     // obj = {a: 2, b: {c: 3}}
  *
- * @param {Object} obj
+ * @param {object} obj
  * @param {string} path  A parameter name or dot-separated parameter path,
  *                      like "color.highlight.border".
  * @param {*} value
  */
 function setValue(obj, path, value) {
-  var keys = path.split('.');
+  var keys = path.split(".");
   var o = obj;
   while (keys.length) {
     var key = keys.shift();
@@ -517,8 +558,7 @@ function setValue(obj, path, value) {
         o[key] = {};
       }
       o = o[key];
-    }
-    else {
+    } else {
       // this is the end point
       o[key] = value;
     }
@@ -528,8 +568,9 @@ function setValue(obj, path, value) {
 /**
  * Add a node to a graph object. If there is already a node with
  * the same id, their attributes will be merged.
- * @param {Object} graph
- * @param {Object} node
+ *
+ * @param {object} graph
+ * @param {object} node
  */
 function addNode(graph, node) {
   var i, len;
@@ -556,7 +597,7 @@ function addNode(graph, node) {
   if (!current) {
     // this is a new node
     current = {
-      id: node.id
+      id: node.id,
     };
     if (graph.node) {
       // clone default attributes
@@ -584,8 +625,9 @@ function addNode(graph, node) {
 
 /**
  * Add an edge to a graph object
- * @param {Object} graph
- * @param {Object} edge
+ *
+ * @param {object} graph
+ * @param {object} edge
  */
 function addEdge(graph, edge) {
   if (!graph.edges) {
@@ -593,38 +635,39 @@ function addEdge(graph, edge) {
   }
   graph.edges.push(edge);
   if (graph.edge) {
-    var attr = merge({}, graph.edge);     // clone default attributes
+    var attr = merge({}, graph.edge); // clone default attributes
     edge.attr = merge(attr, edge.attr); // merge attributes
   }
 }
 
 /**
  * Create an edge to a graph object
- * @param {Object} graph
- * @param {string | number | Object} from
- * @param {string | number | Object} to
+ *
+ * @param {object} graph
+ * @param {string | number | object} from
+ * @param {string | number | object} to
  * @param {string} type
- * @param {Object | null} attr
- * @return {Object} edge
+ * @param {object | null} attr
+ * @returns {object} edge
  */
 function createEdge(graph, from, to, type, attr) {
   var edge = {
     from: from,
     to: to,
-    type: type
+    type: type,
   };
 
   if (graph.edge) {
-    edge.attr = merge({}, graph.edge);  // clone default attributes
+    edge.attr = merge({}, graph.edge); // clone default attributes
   }
   edge.attr = merge(edge.attr || {}, attr); // merge attributes
 
   // Move arrows attribute from attr to edge temporally created in
   // parseAttributeList().
   if (attr != null) {
-    if (attr.hasOwnProperty('arrows') && attr['arrows'] != null) {
-      edge['arrows'] = {to: {enabled: true, type: attr.arrows.type}};
-      attr['arrows'] = null;
+    if (attr.hasOwnProperty("arrows") && attr["arrows"] != null) {
+      edge["arrows"] = { to: { enabled: true, type: attr.arrows.type } };
+      attr["arrows"] = null;
     }
   }
   return edge;
@@ -636,10 +679,11 @@ function createEdge(graph, from, to, type, attr) {
  */
 function getToken() {
   tokenType = TOKENTYPE.NULL;
-  token = '';
+  token = "";
 
   // skip over whitespaces
-  while (c === ' ' || c === '\t' || c === '\n' || c === '\r') {  // space, tab, enter
+  while (c === " " || c === "\t" || c === "\n" || c === "\r") {
+    // space, tab, enter
     next();
   }
 
@@ -647,37 +691,36 @@ function getToken() {
     var isComment = false;
 
     // skip comment
-    if (c === '#') {
+    if (c === "#") {
       // find the previous non-space character
       var i = index - 1;
-      while (dot.charAt(i) === ' ' || dot.charAt(i) === '\t') {
+      while (dot.charAt(i) === " " || dot.charAt(i) === "\t") {
         i--;
       }
-      if (dot.charAt(i) === '\n' || dot.charAt(i) === '') {
+      if (dot.charAt(i) === "\n" || dot.charAt(i) === "") {
         // the # is at the start of a line, this is indeed a line comment
-        while (c != '' && c != '\n') {
+        while (c != "" && c != "\n") {
           next();
         }
         isComment = true;
       }
     }
-    if (c === '/' && nextPreview() === '/') {
+    if (c === "/" && nextPreview() === "/") {
       // skip line comment
-      while (c != '' && c != '\n') {
+      while (c != "" && c != "\n") {
         next();
       }
       isComment = true;
     }
-    if (c === '/' && nextPreview() === '*') {
+    if (c === "/" && nextPreview() === "*") {
       // skip block comment
-      while (c != '') {
-        if (c === '*' && nextPreview() === '/') {
+      while (c != "") {
+        if (c === "*" && nextPreview() === "/") {
           // end of block comment found. skip these last two characters
           next();
           next();
           break;
-        }
-        else {
+        } else {
           next();
         }
       }
@@ -685,14 +728,14 @@ function getToken() {
     }
 
     // skip over whitespaces
-    while (c === ' ' || c === '\t' || c === '\n' || c === '\r') {  // space, tab, enter
+    while (c === " " || c === "\t" || c === "\n" || c === "\r") {
+      // space, tab, enter
       next();
     }
-  }
-  while (isComment);
+  } while (isComment);
 
   // check for end of dot file
-  if (c === '') {
+  if (c === "") {
     // token is still empty
     tokenType = TOKENTYPE.DELIMITER;
     return;
@@ -718,7 +761,7 @@ function getToken() {
 
   // check for an identifier (number or string)
   // TODO: more precise parsing of numbers/strings (and the port separator ':')
-  if (isAlphaNumeric(c) || c === '-') {
+  if (isAlphaNumeric(c) || c === "-") {
     token += c;
     next();
 
@@ -726,13 +769,11 @@ function getToken() {
       token += c;
       next();
     }
-    if (token === 'false') {
-      token = false;   // convert to boolean
-    }
-    else if (token === 'true') {
-      token = true;   // convert to boolean
-    }
-    else if (!isNaN(Number(token))) {
+    if (token === "false") {
+      token = false; // convert to boolean
+    } else if (token === "true") {
+      token = true; // convert to boolean
+    } else if (!isNaN(Number(token))) {
       token = Number(token); // convert to number
     }
     tokenType = TOKENTYPE.IDENTIFIER;
@@ -742,12 +783,14 @@ function getToken() {
   // check for a string enclosed by double quotes
   if (c === '"') {
     next();
-    while (c != '' && (c != '"' || (c === '"' && nextPreview() === '"'))) {
-      if (c === '"') {                                  // skip the escape character
+    while (c != "" && (c != '"' || (c === '"' && nextPreview() === '"'))) {
+      if (c === '"') {
+        // skip the escape character
         token += c;
         next();
-      } else if (c === '\\' && nextPreview() === 'n') { // Honor a newline escape sequence
-        token += '\n';
+      } else if (c === "\\" && nextPreview() === "n") {
+        // Honor a newline escape sequence
+        token += "\n";
         next();
       } else {
         token += c;
@@ -764,7 +807,7 @@ function getToken() {
 
   // something unknown is found, wrong characters, a syntax error
   tokenType = TOKENTYPE.UNKNOWN;
-  while (c != '') {
+  while (c != "") {
     token += c;
     next();
   }
@@ -773,7 +816,8 @@ function getToken() {
 
 /**
  * Parse a graph.
- * @returns {Object} graph
+ *
+ * @returns {object} graph
  */
 function parseGraph() {
   var graph = {};
@@ -782,13 +826,13 @@ function parseGraph() {
   getToken();
 
   // optional strict keyword
-  if (token === 'strict') {
+  if (token === "strict") {
     graph.strict = true;
     getToken();
   }
 
   // graph or digraph keyword
-  if (token === 'graph' || token === 'digraph') {
+  if (token === "graph" || token === "digraph") {
     graph.type = token;
     getToken();
   }
@@ -800,8 +844,8 @@ function parseGraph() {
   }
 
   // open angle bracket
-  if (token != '{') {
-    throw newSyntaxError('Angle bracket { expected');
+  if (token != "{") {
+    throw newSyntaxError("Angle bracket { expected");
   }
   getToken();
 
@@ -809,14 +853,14 @@ function parseGraph() {
   parseStatements(graph);
 
   // close angle bracket
-  if (token != '}') {
-    throw newSyntaxError('Angle bracket } expected');
+  if (token != "}") {
+    throw newSyntaxError("Angle bracket } expected");
   }
   getToken();
 
   // end of file
-  if (token !== '') {
-    throw newSyntaxError('End of file expected');
+  if (token !== "") {
+    throw newSyntaxError("End of file expected");
   }
   getToken();
 
@@ -830,12 +874,13 @@ function parseGraph() {
 
 /**
  * Parse a list with statements.
- * @param {Object} graph
+ *
+ * @param {object} graph
  */
-function parseStatements (graph) {
-  while (token !== '' && token != '}') {
+function parseStatements(graph) {
+  while (token !== "" && token != "}") {
     parseStatement(graph);
-    if (token === ';') {
+    if (token === ";") {
       getToken();
     }
   }
@@ -845,7 +890,8 @@ function parseStatements (graph) {
  * Parse a single statement. Can be a an attribute statement, node
  * statement, a series of node statements and edge statements, or a
  * parameter.
- * @param {Object} graph
+ *
+ * @param {object} graph
  */
 function parseStatement(graph) {
   // parse subgraph
@@ -865,38 +911,38 @@ function parseStatement(graph) {
 
   // parse node
   if (tokenType != TOKENTYPE.IDENTIFIER) {
-    throw newSyntaxError('Identifier expected');
+    throw newSyntaxError("Identifier expected");
   }
   var id = token; // id can be a string or a number
   getToken();
 
-  if (token === '=') {
+  if (token === "=") {
     // id statement
     getToken();
     if (tokenType != TOKENTYPE.IDENTIFIER) {
-      throw newSyntaxError('Identifier expected');
+      throw newSyntaxError("Identifier expected");
     }
     graph[id] = token;
     getToken();
     // TODO: implement comma separated list with "a_list: ID=ID [','] [a_list] "
-  }
-  else {
+  } else {
     parseNodeStatement(graph, id);
   }
 }
 
 /**
  * Parse a subgraph
- * @param {Object} graph    parent graph object
- * @return {Object | null} subgraph
+ *
+ * @param {object} graph    parent graph object
+ * @returns {object | null} subgraph
  */
-function parseSubgraph (graph) {
+function parseSubgraph(graph) {
   var subgraph = null;
 
   // optional subgraph keyword
-  if (token === 'subgraph') {
+  if (token === "subgraph") {
     subgraph = {};
-    subgraph.type = 'subgraph';
+    subgraph.type = "subgraph";
     getToken();
 
     // optional graph id
@@ -907,7 +953,7 @@ function parseSubgraph (graph) {
   }
 
   // open angle bracket
-  if (token === '{') {
+  if (token === "{") {
     getToken();
 
     if (!subgraph) {
@@ -922,8 +968,8 @@ function parseSubgraph (graph) {
     parseStatements(subgraph);
 
     // close angle bracket
-    if (token != '}') {
-      throw newSyntaxError('Angle bracket } expected');
+    if (token != "}") {
+      throw newSyntaxError("Angle bracket } expected");
     }
     getToken();
 
@@ -947,33 +993,32 @@ function parseSubgraph (graph) {
  * parse an attribute statement like "node [shape=circle fontSize=16]".
  * Available keywords are 'node', 'edge', 'graph'.
  * The previous list with default attributes will be replaced
- * @param {Object} graph
- * @returns {String | null} keyword Returns the name of the parsed attribute
+ *
+ * @param {object} graph
+ * @returns {string | null} keyword Returns the name of the parsed attribute
  *                                  (node, edge, graph), or null if nothing
  *                                  is parsed.
  */
-function parseAttributeStatement (graph) {
+function parseAttributeStatement(graph) {
   // attribute statements
-  if (token === 'node') {
+  if (token === "node") {
     getToken();
 
     // node attributes
     graph.node = parseAttributeList();
-    return 'node';
-  }
-  else if (token === 'edge') {
+    return "node";
+  } else if (token === "edge") {
     getToken();
 
     // edge attributes
     graph.edge = parseAttributeList();
-    return 'edge';
-  }
-  else if (token === 'graph') {
+    return "edge";
+  } else if (token === "graph") {
     getToken();
 
     // graph attributes
     graph.graph = parseAttributeList();
-    return 'graph';
+    return "graph";
   }
 
   return null;
@@ -981,13 +1026,14 @@ function parseAttributeStatement (graph) {
 
 /**
  * parse a node statement
- * @param {Object} graph
+ *
+ * @param {object} graph
  * @param {string | number} id
  */
 function parseNodeStatement(graph, id) {
   // node statement
   var node = {
-    id: id
+    id: id,
   };
   var attr = parseAttributeList();
   if (attr) {
@@ -1001,11 +1047,12 @@ function parseNodeStatement(graph, id) {
 
 /**
  * Parse an edge or a series of edges
- * @param {Object} graph
+ *
+ * @param {object} graph
  * @param {string | number} from        Id of the from node
  */
 function parseEdge(graph, from) {
-  while (token === '->' || token === '--') {
+  while (token === "->" || token === "--") {
     var to;
     var type = token;
     getToken();
@@ -1013,14 +1060,13 @@ function parseEdge(graph, from) {
     var subgraph = parseSubgraph(graph);
     if (subgraph) {
       to = subgraph;
-    }
-    else {
+    } else {
       if (tokenType != TOKENTYPE.IDENTIFIER) {
-        throw newSyntaxError('Identifier or subgraph expected');
+        throw newSyntaxError("Identifier or subgraph expected");
       }
       to = token;
       addNode(graph, {
-        id: to
+        id: to,
       });
       getToken();
     }
@@ -1039,7 +1085,8 @@ function parseEdge(graph, from) {
 /**
  * Parse a set with attributes,
  * for example [label="1.000", shape=solid]
- * @return {Object | null} attr
+ *
+ * @returns {object | null} attr
  */
 function parseAttributeList() {
   var i;
@@ -1047,9 +1094,9 @@ function parseAttributeList() {
 
   // edge styles of dot and vis
   var edgeStyles = {
-    'dashed': true,
-    'solid': false,
-    'dotted': [1, 5]
+    dashed: true,
+    solid: false,
+    dotted: [1, 5],
   };
 
   /**
@@ -1059,16 +1106,16 @@ function parseAttributeList() {
    * http://www.graphviz.org/content/arrow-shapes
    */
   var arrowTypes = {
-    dot: 'circle',
-    box: 'box',
-    crow: 'crow',
-    curve: 'curve',
-    icurve: 'inv_curve',
-    normal: 'triangle',
-    inv: 'inv_triangle',
-    diamond: 'diamond',
-    tee: 'bar',
-    vee: 'vee'
+    dot: "circle",
+    box: "box",
+    crow: "crow",
+    curve: "curve",
+    icurve: "inv_curve",
+    normal: "triangle",
+    inv: "inv_triangle",
+    diamond: "diamond",
+    tee: "bar",
+    vee: "vee",
   };
 
   /**
@@ -1077,60 +1124,58 @@ function parseAttributeList() {
    * in DOT) make changes to 'arrows' attribute in vis.
    */
   var attr_list = new Array();
-  var attr_names = new Array();  // used for checking the case.
+  var attr_names = new Array(); // used for checking the case.
 
   // parse attributes
-  while (token === '[') {
+  while (token === "[") {
     getToken();
     attr = {};
-    while (token !== '' && token != ']') {
+    while (token !== "" && token != "]") {
       if (tokenType != TOKENTYPE.IDENTIFIER) {
-        throw newSyntaxError('Attribute name expected');
+        throw newSyntaxError("Attribute name expected");
       }
       var name = token;
 
       getToken();
-      if (token != '=') {
-        throw newSyntaxError('Equal sign = expected');
+      if (token != "=") {
+        throw newSyntaxError("Equal sign = expected");
       }
       getToken();
 
       if (tokenType != TOKENTYPE.IDENTIFIER) {
-        throw newSyntaxError('Attribute value expected');
+        throw newSyntaxError("Attribute value expected");
       }
       var value = token;
 
       // convert from dot style to vis
-      if (name === 'style') {
+      if (name === "style") {
         value = edgeStyles[value];
       }
 
       var arrowType;
-      if (name === 'arrowhead') {
+      if (name === "arrowhead") {
         arrowType = arrowTypes[value];
-        name = 'arrows';
-        value = {'to': {'enabled': true, 'type': arrowType}};
+        name = "arrows";
+        value = { to: { enabled: true, type: arrowType } };
       }
 
-      if (name === 'arrowtail') {
+      if (name === "arrowtail") {
         arrowType = arrowTypes[value];
-        name = 'arrows';
-        value = {'from': {'enabled': true, 'type': arrowType}};
+        name = "arrows";
+        value = { from: { enabled: true, type: arrowType } };
       }
 
-      attr_list.push(
-        {'attr': attr, 'name': name, 'value': value}
-      );
+      attr_list.push({ attr: attr, name: name, value: value });
       attr_names.push(name);
 
       getToken();
-      if (token == ',') {
+      if (token == ",") {
         getToken();
       }
     }
 
-    if (token != ']') {
-      throw newSyntaxError('Bracket ] expected');
+    if (token != "]") {
+      throw newSyntaxError("Bracket ] expected");
     }
     getToken();
   }
@@ -1144,57 +1189,59 @@ function parseAttributeList() {
    *   3. back + arrowtail (arrowhead is not affected)
    * [1] https://www.graphviz.org/doc/info/attrs.html#h:undir_note
    */
-  if (attr_names.includes('dir')) {
-    var idx = {};  // get index of 'arrows' and 'dir'
+  if (attr_names.includes("dir")) {
+    var idx = {}; // get index of 'arrows' and 'dir'
     idx.arrows = {};
     for (i = 0; i < attr_list.length; i++) {
-      if (attr_list[i].name === 'arrows') {
+      if (attr_list[i].name === "arrows") {
         if (attr_list[i].value.to != null) {
           idx.arrows.to = i;
         } else if (attr_list[i].value.from != null) {
           idx.arrows.from = i;
         } else {
-          throw newSyntaxError('Invalid value of arrows');
+          throw newSyntaxError("Invalid value of arrows");
         }
-      } else if (attr_list[i].name === 'dir') {
+      } else if (attr_list[i].name === "dir") {
         idx.dir = i;
       }
     }
 
     // first, add default arrow shape if it is not assigned to avoid error
     var dir_type = attr_list[idx.dir].value;
-    if (!attr_names.includes('arrows')) {
-      if (dir_type === 'both') {
-        attr_list.push(
-          {'attr': attr_list[idx.dir].attr, 'name': 'arrows',
-            'value': {to: {enabled:true}}
-          }
-        );
+    if (!attr_names.includes("arrows")) {
+      if (dir_type === "both") {
+        attr_list.push({
+          attr: attr_list[idx.dir].attr,
+          name: "arrows",
+          value: { to: { enabled: true } },
+        });
         idx.arrows.to = attr_list.length - 1;
-        attr_list.push(
-          {'attr': attr_list[idx.dir].attr, 'name': 'arrows',
-            'value': {from: {enabled:true}}
-          }
-        );
+        attr_list.push({
+          attr: attr_list[idx.dir].attr,
+          name: "arrows",
+          value: { from: { enabled: true } },
+        });
         idx.arrows.from = attr_list.length - 1;
-      } else if (dir_type === 'forward') {
-        attr_list.push(
-          {'attr': attr_list[idx.dir].attr, 'name': 'arrows',
-            'value': {to: {enabled:true}}
-          }
-        );
+      } else if (dir_type === "forward") {
+        attr_list.push({
+          attr: attr_list[idx.dir].attr,
+          name: "arrows",
+          value: { to: { enabled: true } },
+        });
         idx.arrows.to = attr_list.length - 1;
-      } else if (dir_type === 'back') {
-        attr_list.push(
-          {'attr': attr_list[idx.dir].attr, 'name': 'arrows',
-            'value': {from: {enabled:true}}
-          }
-        );
+      } else if (dir_type === "back") {
+        attr_list.push({
+          attr: attr_list[idx.dir].attr,
+          name: "arrows",
+          value: { from: { enabled: true } },
+        });
         idx.arrows.from = attr_list.length - 1;
-      } else if (dir_type === 'none') {
-        attr_list.push(
-          {'attr': attr_list[idx.dir].attr, 'name': 'arrows', 'value': ''}
-        );
+      } else if (dir_type === "none") {
+        attr_list.push({
+          attr: attr_list[idx.dir].attr,
+          name: "arrows",
+          value: "",
+        });
         idx.arrows.to = attr_list.length - 1;
       } else {
         throw newSyntaxError('Invalid dir type "' + dir_type + '"');
@@ -1204,97 +1251,100 @@ function parseAttributeList() {
     var from_type;
     var to_type;
     // update 'arrows' attribute from 'dir'.
-    if (dir_type === 'both') {
+    if (dir_type === "both") {
       // both of shapes of 'from' and 'to' are given
       if (idx.arrows.to && idx.arrows.from) {
         to_type = attr_list[idx.arrows.to].value.to.type;
         from_type = attr_list[idx.arrows.from].value.from.type;
         attr_list[idx.arrows.to] = {
-          'attr': attr_list[idx.arrows.to].attr,
-          'name': attr_list[idx.arrows.to].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.to].attr,
+          name: attr_list[idx.arrows.to].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
         attr_list.splice(idx.arrows.from, 1);
 
-      // shape of 'to' is assigned and use default to 'from'
+        // shape of 'to' is assigned and use default to 'from'
       } else if (idx.arrows.to) {
         to_type = attr_list[idx.arrows.to].value.to.type;
-        from_type = 'arrow';
+        from_type = "arrow";
         attr_list[idx.arrows.to] = {
-          'attr': attr_list[idx.arrows.to].attr,
-          'name': attr_list[idx.arrows.to].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.to].attr,
+          name: attr_list[idx.arrows.to].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
 
-      // only shape of 'from' is assigned and use default for 'to'
+        // only shape of 'from' is assigned and use default for 'to'
       } else if (idx.arrows.from) {
-        to_type = 'arrow';
+        to_type = "arrow";
         from_type = attr_list[idx.arrows.from].value.from.type;
         attr_list[idx.arrows.from] = {
-          'attr': attr_list[idx.arrows.from].attr,
-          'name': attr_list[idx.arrows.from].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.from].attr,
+          name: attr_list[idx.arrows.from].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
       }
-
-    } else if (dir_type === 'back') {
+    } else if (dir_type === "back") {
       // given both of shapes, but use only 'from'
       if (idx.arrows.to && idx.arrows.from) {
-        to_type = '';
+        to_type = "";
         from_type = attr_list[idx.arrows.from].value.from.type;
         attr_list[idx.arrows.from] = {
-          'attr': attr_list[idx.arrows.from].attr,
-          'name': attr_list[idx.arrows.from].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.from].attr,
+          name: attr_list[idx.arrows.from].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
 
-      // given shape of 'to', but does not use it
+        // given shape of 'to', but does not use it
       } else if (idx.arrows.to) {
-        to_type = '';
-        from_type = 'arrow';
+        to_type = "";
+        from_type = "arrow";
         idx.arrows.from = idx.arrows.to;
         attr_list[idx.arrows.from] = {
-          'attr': attr_list[idx.arrows.from].attr,
-          'name': attr_list[idx.arrows.from].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.from].attr,
+          name: attr_list[idx.arrows.from].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
 
-      // assign given 'from' shape
+        // assign given 'from' shape
       } else if (idx.arrows.from) {
-        to_type = '';
+        to_type = "";
         from_type = attr_list[idx.arrows.from].value.from.type;
         attr_list[idx.arrows.to] = {
-          'attr': attr_list[idx.arrows.from].attr,
-          'name': attr_list[idx.arrows.from].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.from].attr,
+          name: attr_list[idx.arrows.from].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
       }
 
       attr_list[idx.arrows.from] = {
-        'attr': attr_list[idx.arrows.from].attr,
-        'name': attr_list[idx.arrows.from].name,
-        'value': {from: {enabled:true, type: attr_list[idx.arrows.from].value.from.type}}
+        attr: attr_list[idx.arrows.from].attr,
+        name: attr_list[idx.arrows.from].name,
+        value: {
+          from: {
+            enabled: true,
+            type: attr_list[idx.arrows.from].value.from.type,
+          },
+        },
       };
-
-    } else if (dir_type === 'none') {
+    } else if (dir_type === "none") {
       var idx_arrow;
       if (idx.arrows.to) {
         idx_arrow = idx.arrows.to;
@@ -1303,59 +1353,58 @@ function parseAttributeList() {
       }
 
       attr_list[idx_arrow] = {
-        'attr': attr_list[idx_arrow].attr,
-        'name': attr_list[idx_arrow].name,
-        'value': ''
+        attr: attr_list[idx_arrow].attr,
+        name: attr_list[idx_arrow].name,
+        value: "",
       };
-
-    } else if (dir_type === 'forward'){
+    } else if (dir_type === "forward") {
       // given both of shapes, but use only 'to'
       if (idx.arrows.to && idx.arrows.from) {
         to_type = attr_list[idx.arrows.to].value.to.type;
-        from_type = '';
+        from_type = "";
         attr_list[idx.arrows.to] = {
-          'attr': attr_list[idx.arrows.to].attr,
-          'name': attr_list[idx.arrows.to].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.to].attr,
+          name: attr_list[idx.arrows.to].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
 
-      // assign given 'to' shape
+        // assign given 'to' shape
       } else if (idx.arrows.to) {
         to_type = attr_list[idx.arrows.to].value.to.type;
-        from_type = '';
+        from_type = "";
         attr_list[idx.arrows.to] = {
-          'attr': attr_list[idx.arrows.to].attr,
-          'name': attr_list[idx.arrows.to].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.to].attr,
+          name: attr_list[idx.arrows.to].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
 
-      // given shape of 'from', but does not use it
+        // given shape of 'from', but does not use it
       } else if (idx.arrows.from) {
-        to_type = 'arrow';
-        from_type = '';
+        to_type = "arrow";
+        from_type = "";
         idx.arrows.to = idx.arrows.from;
         attr_list[idx.arrows.to] = {
-          'attr': attr_list[idx.arrows.to].attr,
-          'name': attr_list[idx.arrows.to].name,
-          'value': {
-            to:{enabled:true, type: to_type},
-            from:{enabled:true, type: from_type}
-          }
+          attr: attr_list[idx.arrows.to].attr,
+          name: attr_list[idx.arrows.to].name,
+          value: {
+            to: { enabled: true, type: to_type },
+            from: { enabled: true, type: from_type },
+          },
         };
       }
 
       attr_list[idx.arrows.to] = {
-        'attr': attr_list[idx.arrows.to].attr,
-        'name': attr_list[idx.arrows.to].name,
-        'value': {
-          to: {enabled:true, type: attr_list[idx.arrows.to].value.to.type}
-        }
+        attr: attr_list[idx.arrows.to].attr,
+        name: attr_list[idx.arrows.to].name,
+        value: {
+          to: { enabled: true, type: attr_list[idx.arrows.to].value.to.type },
+        },
       };
     } else {
       throw newSyntaxError('Invalid dir type "' + dir_type + '"');
@@ -1367,15 +1416,15 @@ function parseAttributeList() {
 
   // parse 'penwidth'
   var nof_attr_list;
-  if (attr_names.includes('penwidth')) {
+  if (attr_names.includes("penwidth")) {
     var tmp_attr_list = [];
 
     nof_attr_list = attr_list.length;
     for (i = 0; i < nof_attr_list; i++) {
       // exclude 'width' from attr_list if 'penwidth' exists
-      if (attr_list[i].name !== 'width') {
-        if (attr_list[i].name === 'penwidth') {
-          attr_list[i].name = 'width';
+      if (attr_list[i].name !== "width") {
+        if (attr_list[i].name === "penwidth") {
+          attr_list[i].name = "width";
         }
         tmp_attr_list.push(attr_list[i]);
       }
@@ -1393,49 +1442,51 @@ function parseAttributeList() {
 
 /**
  * Create a syntax error with extra information on current token and index.
+ *
  * @param {string} message
  * @returns {SyntaxError} err
  */
 function newSyntaxError(message) {
-  return new SyntaxError(message + ', got "' + chop(token, 30) + '" (char ' + index + ')');
+  return new SyntaxError(
+    message + ', got "' + chop(token, 30) + '" (char ' + index + ")"
+  );
 }
 
 /**
  * Chop off text after a maximum length
+ *
  * @param {string} text
  * @param {number} maxLength
- * @returns {String}
+ * @returns {string}
  */
-function chop (text, maxLength) {
-  return (text.length <= maxLength) ? text : (text.substr(0, 27) + '...');
+function chop(text, maxLength) {
+  return text.length <= maxLength ? text : text.substr(0, 27) + "...";
 }
 
 /**
  * Execute a function fn for each pair of elements in two arrays
+ *
  * @param {Array | *} array1
  * @param {Array | *} array2
- * @param {function} fn
+ * @param {Function} fn
  */
 function forEach2(array1, array2, fn) {
   if (Array.isArray(array1)) {
     array1.forEach(function (elem1) {
       if (Array.isArray(array2)) {
-        array2.forEach(function (elem2)  {
+        array2.forEach(function (elem2) {
           fn(elem1, elem2);
         });
-      }
-      else {
+      } else {
         fn(elem1, array2);
       }
     });
-  }
-  else {
+  } else {
     if (Array.isArray(array2)) {
-      array2.forEach(function (elem2)  {
+      array2.forEach(function (elem2) {
         fn(array1, elem2);
       });
-    }
-    else {
+    } else {
       fn(array1, array2);
     }
   }
@@ -1445,13 +1496,14 @@ function forEach2(array1, array2, fn) {
  * Set a nested property on an object
  * When nested objects are missing, they will be created.
  * For example setProp({}, 'font.color', 'red') will return {font: {color: 'red'}}
- * @param {Object} object
+ *
+ * @param {object} object
  * @param {string} path   A dot separated string like 'font.color'
  * @param {*} value       Value for the property
- * @return {Object} Returns the original object, allows for chaining.
+ * @returns {object} Returns the original object, allows for chaining.
  */
 function setProp(object, path, value) {
-  var names = path.split('.');
+  var names = path.split(".");
   var prop = names.pop();
 
   // traverse over the nested objects
@@ -1472,11 +1524,12 @@ function setProp(object, path, value) {
 
 /**
  * Convert an object with DOT attributes to their vis.js equivalents.
- * @param {Object} attr     Object with DOT attributes
- * @param {Object} mapping
- * @return {Object}         Returns an object with vis.js attributes
+ *
+ * @param {object} attr     Object with DOT attributes
+ * @param {object} mapping
+ * @returns {object}         Returns an object with vis.js attributes
  */
-function convertAttr (attr, mapping) {
+function convertAttr(attr, mapping) {
   var converted = {};
 
   for (var prop in attr) {
@@ -1486,11 +1539,9 @@ function convertAttr (attr, mapping) {
         visProp.forEach(function (visPropI) {
           setProp(converted, visPropI, attr[prop]);
         });
-      }
-      else if (typeof visProp === 'string') {
+      } else if (typeof visProp === "string") {
         setProp(converted, visProp, attr[prop]);
-      }
-      else {
+      } else {
         setProp(converted, prop, attr[prop]);
       }
     }
@@ -1502,16 +1553,17 @@ function convertAttr (attr, mapping) {
 /**
  * Convert a string containing a graph in DOT language into a map containing
  * with nodes and edges in the format of graph.
+ *
  * @param {string} data         Text containing a graph in DOT-notation
- * @return {Object} graphData
+ * @returns {object} graphData
  */
-function DOTToGraph (data) {
+function DOTToGraph(data) {
   // parse the DOT file
   var dotData = parseDOT(data);
   var graphData = {
     nodes: [],
     edges: [],
-    options: {}
+    options: {},
   };
 
   // copy the nodes
@@ -1519,11 +1571,11 @@ function DOTToGraph (data) {
     dotData.nodes.forEach(function (dotNode) {
       var graphNode = {
         id: dotNode.id,
-        label: String(dotNode.label || dotNode.id)
+        label: String(dotNode.label || dotNode.id),
       };
       merge(graphNode, convertAttr(dotNode.attr, NODE_ATTR_MAPPING));
       if (graphNode.image) {
-        graphNode.shape = 'image';
+        graphNode.shape = "image";
       }
       graphData.nodes.push(graphNode);
     });
@@ -1533,21 +1585,22 @@ function DOTToGraph (data) {
   if (dotData.edges) {
     /**
      * Convert an edge in DOT format to an edge with VisGraph format
-     * @param {Object} dotEdge
-     * @returns {Object} graphEdge
+     *
+     * @param {object} dotEdge
+     * @returns {object} graphEdge
      */
     var convertEdge = function (dotEdge) {
       var graphEdge = {
         from: dotEdge.from,
-        to: dotEdge.to
+        to: dotEdge.to,
       };
       merge(graphEdge, convertAttr(dotEdge.attr, EDGE_ATTR_MAPPING));
 
       // Add arrows attribute to default styled arrow.
       // The reason why default style is not added in parseAttributeList() is
       // because only default is cleared before here.
-      if (graphEdge.arrows == null && dotEdge.type === '->') {
-        graphEdge.arrows = 'to';
+      if (graphEdge.arrows == null && dotEdge.type === "->") {
+        graphEdge.arrows = "to";
       }
 
       return graphEdge;
@@ -1557,19 +1610,17 @@ function DOTToGraph (data) {
       var from, to;
       if (dotEdge.from instanceof Object) {
         from = dotEdge.from.nodes;
-      }
-      else {
+      } else {
         from = {
-          id: dotEdge.from
+          id: dotEdge.from,
         };
       }
 
       if (dotEdge.to instanceof Object) {
         to = dotEdge.to.nodes;
-      }
-      else {
+      } else {
         to = {
-          id: dotEdge.to
+          id: dotEdge.to,
         };
       }
 
@@ -1581,7 +1632,13 @@ function DOTToGraph (data) {
       }
 
       forEach2(from, to, function (from, to) {
-        var subEdge = createEdge(graphData, from.id, to.id, dotEdge.type, dotEdge.attr);
+        var subEdge = createEdge(
+          graphData,
+          from.id,
+          to.id,
+          dotEdge.type,
+          dotEdge.attr
+        );
         var graphEdge = convertEdge(subEdge);
         graphData.edges.push(graphEdge);
       });
@@ -1603,10 +1660,14 @@ function DOTToGraph (data) {
   return graphData;
 }
 
-var dotparser = /*#__PURE__*/Object.freeze({
+/* eslint-enable no-var */
+/* eslint-enable no-unused-vars */
+/* eslint-enable no-prototype-builtins */
+
+var dotparser = /*#__PURE__*/ Object.freeze({
   __proto__: null,
+  DOTToGraph: DOTToGraph,
   parseDOT: parseDOT,
-  DOTToGraph: DOTToGraph
 });
 
 /**
@@ -1614,506 +1675,333 @@ var dotparser = /*#__PURE__*/Object.freeze({
  *
  * @param gephiJSON - The parsed JSON data in Gephi format.
  * @param optionsObj - Additional options.
- *
  * @returns The converted data ready to be used in Vis.
  */
 function parseGephi(gephiJSON, optionsObj) {
-    const options = {
-        edges: {
-            inheritColor: false
-        },
-        nodes: {
-            fixed: false,
-            parseColor: false
-        }
+  const options = {
+    edges: {
+      inheritColor: false,
+    },
+    nodes: {
+      fixed: false,
+      parseColor: false,
+    },
+  };
+  if (optionsObj != null) {
+    if (optionsObj.fixed != null) {
+      options.nodes.fixed = optionsObj.fixed;
+    }
+    if (optionsObj.parseColor != null) {
+      options.nodes.parseColor = optionsObj.parseColor;
+    }
+    if (optionsObj.inheritColor != null) {
+      options.edges.inheritColor = optionsObj.inheritColor;
+    }
+  }
+  const gEdges = gephiJSON.edges;
+  const vEdges = gEdges.map((gEdge) => {
+    const vEdge = {
+      from: gEdge.source,
+      id: gEdge.id,
+      to: gEdge.target,
     };
-    if (optionsObj != null) {
-        if (optionsObj.fixed != null) {
-            options.nodes.fixed = optionsObj.fixed;
-        }
-        if (optionsObj.parseColor != null) {
-            options.nodes.parseColor = optionsObj.parseColor;
-        }
-        if (optionsObj.inheritColor != null) {
-            options.edges.inheritColor = optionsObj.inheritColor;
-        }
+    if (gEdge.attributes != null) {
+      vEdge.attributes = gEdge.attributes;
     }
-    const gEdges = gephiJSON.edges;
-    const vEdges = gEdges.map((gEdge) => {
-        const vEdge = {
-            from: gEdge.source,
-            id: gEdge.id,
-            to: gEdge.target
-        };
-        if (gEdge.attributes != null) {
-            vEdge.attributes = gEdge.attributes;
-        }
-        if (gEdge.label != null) {
-            vEdge.label = gEdge.label;
-        }
-        if (gEdge.attributes != null && gEdge.attributes.title != null) {
-            vEdge.title = gEdge.attributes.title;
-        }
-        if (gEdge.type === "Directed") {
-            vEdge.arrows = "to";
-        }
-        // edge['value'] = gEdge.attributes != null ? gEdge.attributes.Weight : undefined;
-        // edge['width'] = edge['value'] != null ? undefined : edgegEdge.size;
-        if (gEdge.color && options.edges.inheritColor === false) {
-            vEdge.color = gEdge.color;
-        }
-        return vEdge;
-    });
-    const vNodes = gephiJSON.nodes.map((gNode) => {
-        const vNode = {
-            id: gNode.id,
-            fixed: options.nodes.fixed && gNode.x != null && gNode.y != null
-        };
-        if (gNode.attributes != null) {
-            vNode.attributes = gNode.attributes;
-        }
-        if (gNode.label != null) {
-            vNode.label = gNode.label;
-        }
-        if (gNode.size != null) {
-            vNode.size = gNode.size;
-        }
-        if (gNode.attributes != null && gNode.attributes.title != null) {
-            vNode.title = gNode.attributes.title;
-        }
-        if (gNode.title != null) {
-            vNode.title = gNode.title;
-        }
-        if (gNode.x != null) {
-            vNode.x = gNode.x;
-        }
-        if (gNode.y != null) {
-            vNode.y = gNode.y;
-        }
-        if (gNode.color != null) {
-            if (options.nodes.parseColor === true) {
-                vNode.color = gNode.color;
-            }
-            else {
-                vNode.color = {
-                    background: gNode.color,
-                    border: gNode.color,
-                    highlight: {
-                        background: gNode.color,
-                        border: gNode.color
-                    },
-                    hover: {
-                        background: gNode.color,
-                        border: gNode.color
-                    }
-                };
-            }
-        }
-        return vNode;
-    });
-    return { nodes: vNodes, edges: vEdges };
-}
-
-var gephiParser = /*#__PURE__*/Object.freeze({
-  __proto__: null,
-  parseGephi: parseGephi
-});
-
-function createCommonjsModule(fn, basedir, module) {
-	return module = {
-	  path: basedir,
-	  exports: {},
-	  require: function (path, base) {
-      return commonjsRequire(path, (base === undefined || base === null) ? module.path : base);
+    if (gEdge.label != null) {
+      vEdge.label = gEdge.label;
     }
-	}, fn(module, module.exports), module.exports;
-}
-
-function commonjsRequire () {
-	throw new Error('Dynamic requires are not currently supported by @rollup/plugin-commonjs');
-}
-
-var hammer = createCommonjsModule(function (module) {
-/**
- * Setup a mock hammer.js object, for unit testing.
- *
- * Inspiration: https://github.com/uber/deck.gl/pull/658
- *
- * @returns {{on: noop, off: noop, destroy: noop, emit: noop, get: get}}
- */
-function hammerMock() {
-  const noop = () => {};
-
-  return {
-    on: noop,
-    off: noop,
-    destroy: noop,
-    emit: noop,
-
-    get: function(m) {	//eslint-disable-line no-unused-vars
-      return {
-        set: noop
-      };
+    if (gEdge.attributes != null && gEdge.attributes.title != null) {
+      vEdge.title = gEdge.attributes.title;
     }
-  };
-}
-
-
-if (typeof window !== 'undefined') {
-  const Hammer = window['Hammer'] || hammerjs;
-  module.exports = Hammer;
-}
-else {
-  module.exports = function () {
-    // hammer.js is only available in a browser, not in node.js. Replacing it with a mock object.
-    return hammerMock();
-  };
-}
-});
-
-/**
- * Turn an element into an clickToUse element.
- * When not active, the element has a transparent overlay. When the overlay is
- * clicked, the mode is changed to active.
- * When active, the element is displayed with a blue border around it, and
- * the interactive contents of the element can be used. When clicked outside
- * the element, the elements mode is changed to inactive.
- * @param {Element} container
- * @constructor Activator
- */
-function Activator(container) {
-  this.active = false;
-
-  this.dom = {
-    container: container
-  };
-
-  this.dom.overlay = document.createElement('div');
-  this.dom.overlay.className = 'vis-overlay';
-
-  this.dom.container.appendChild(this.dom.overlay);
-
-  this.hammer = hammer(this.dom.overlay);
-  this.hammer.on('tap', this._onTapOverlay.bind(this));
-
-  // block all touch events (except tap)
-  const events = [
-    'tap', 'doubletap', 'press',
-    'pinch',
-    'pan', 'panstart', 'panmove', 'panend'
-  ];
-  events.forEach((event) => {
-    this.hammer.on(event, (event) => {
-      event.srcEvent.stopPropagation();
-    });
+    if (gEdge.type === "Directed") {
+      vEdge.arrows = "to";
+    }
+    // edge['value'] = gEdge.attributes != null ? gEdge.attributes.Weight : undefined;
+    // edge['width'] = edge['value'] != null ? undefined : edgegEdge.size;
+    if (gEdge.color && options.edges.inheritColor === false) {
+      vEdge.color = gEdge.color;
+    }
+    return vEdge;
   });
-
-  // attach a click event to the window, in order to deactivate when clicking outside the timeline
-  if (document && document.body) {
-    this.onClick = (event) => {
-      if (!_hasParent(event.target, container)) {
-        this.deactivate();
-      }
+  const vNodes = gephiJSON.nodes.map((gNode) => {
+    const vNode = {
+      id: gNode.id,
+      fixed: options.nodes.fixed && gNode.x != null && gNode.y != null,
     };
-    document.body.addEventListener('click', this.onClick);
-  }
-
-  if (this.keycharm !== undefined) {
-    this.keycharm.destroy();
-  }
-  this.keycharm = keycharm();
-
-  // keycharm listener only bounded when active)
-  this.escListener = this.deactivate.bind(this);
-}
-
-// turn into an event emitter
-Emitter(Activator.prototype);
-
-// The currently active activator
-Activator.current = null;
-
-/**
- * Destroy the activator. Cleans up all created DOM and event listeners
- */
-Activator.prototype.destroy = function () {
-  this.deactivate();
-
-  // remove dom
-  this.dom.overlay.parentNode.removeChild(this.dom.overlay);
-
-  // remove global event listener
-  if (this.onClick) {
-    document.body.removeEventListener('click', this.onClick);
-  }
-  // remove keycharm
-  if (this.keycharm !== undefined) {
-    this.keycharm.destroy();
-  }
-  this.keycharm = null;
-  // cleanup hammer instances
-  this.hammer.destroy();
-  this.hammer = null;
-  // FIXME: cleaning up hammer instances doesn't work (Timeline not removed from memory)
-};
-
-/**
- * Activate the element
- * Overlay is hidden, element is decorated with a blue shadow border
- */
-Activator.prototype.activate = function () {
-  // we allow only one active activator at a time
-  if (Activator.current) {
-    Activator.current.deactivate();
-  }
-  Activator.current = this;
-
-  this.active = true;
-  this.dom.overlay.style.display = 'none';
-  addClassName(this.dom.container, 'vis-active');
-
-  this.emit('change');
-  this.emit('activate');
-
-  // ugly hack: bind ESC after emitting the events, as the Network rebinds all
-  // keyboard events on a 'change' event
-  this.keycharm.bind('esc', this.escListener);
-};
-
-/**
- * Deactivate the element
- * Overlay is displayed on top of the element
- */
-Activator.prototype.deactivate = function () {
-  this.active = false;
-  this.dom.overlay.style.display = 'block';
-  removeClassName(this.dom.container, 'vis-active');
-  this.keycharm.unbind('esc', this.escListener);
-
-  this.emit('change');
-  this.emit('deactivate');
-};
-
-/**
- * Handle a tap event: activate the container
- * @param {Event}  event   The event
- * @private
- */
-Activator.prototype._onTapOverlay = function (event) {
-  // activate the container
-  this.activate();
-  event.srcEvent.stopPropagation();
-};
-
-/**
- * Test whether the element has the requested parent element somewhere in
- * its chain of parent nodes.
- * @param {HTMLElement} element
- * @param {HTMLElement} parent
- * @returns {boolean} Returns true when the parent is found somewhere in the
- *                    chain of parent nodes.
- * @private
- */
-function _hasParent(element, parent) {
-  while (element) {
-    if (element === parent) {
-      return true
+    if (gNode.attributes != null) {
+      vNode.attributes = gNode.attributes;
     }
-    element = element.parentNode;
-  }
-  return false;
+    if (gNode.label != null) {
+      vNode.label = gNode.label;
+    }
+    if (gNode.size != null) {
+      vNode.size = gNode.size;
+    }
+    if (gNode.attributes != null && gNode.attributes.title != null) {
+      vNode.title = gNode.attributes.title;
+    }
+    if (gNode.title != null) {
+      vNode.title = gNode.title;
+    }
+    if (gNode.x != null) {
+      vNode.x = gNode.x;
+    }
+    if (gNode.y != null) {
+      vNode.y = gNode.y;
+    }
+    if (gNode.color != null) {
+      if (options.nodes.parseColor === true) {
+        vNode.color = gNode.color;
+      } else {
+        vNode.color = {
+          background: gNode.color,
+          border: gNode.color,
+          highlight: {
+            background: gNode.color,
+            border: gNode.color,
+          },
+          hover: {
+            background: gNode.color,
+            border: gNode.color,
+          },
+        };
+      }
+    }
+    return vNode;
+  });
+  return { nodes: vNodes, edges: vEdges };
 }
+
+var gephiParser = /*#__PURE__*/ Object.freeze({
+  __proto__: null,
+  parseGephi: parseGephi,
+});
 
 // English
 const en = {
-    addDescription: "Click in an empty space to place a new node.",
-    addEdge: "Add Edge",
-    addNode: "Add Node",
-    back: "Back",
-    createEdgeError: "Cannot link edges to a cluster.",
-    del: "Delete selected",
-    deleteClusterError: "Clusters cannot be deleted.",
-    edgeDescription: "Click on a node and drag the edge to another node to connect them.",
-    edit: "Edit",
-    editClusterError: "Clusters cannot be edited.",
-    editEdge: "Edit Edge",
-    editEdgeDescription: "Click on the control points and drag them to a node to connect to it.",
-    editNode: "Edit Node"
+  addDescription: "Click in an empty space to place a new node.",
+  addEdge: "Add Edge",
+  addNode: "Add Node",
+  back: "Back",
+  close: "Close",
+  createEdgeError: "Cannot link edges to a cluster.",
+  del: "Delete selected",
+  deleteClusterError: "Clusters cannot be deleted.",
+  edgeDescription:
+    "Click on a node and drag the edge to another node to connect them.",
+  edit: "Edit",
+  editClusterError: "Clusters cannot be edited.",
+  editEdge: "Edit Edge",
+  editEdgeDescription:
+    "Click on the control points and drag them to a node to connect to it.",
+  editNode: "Edit Node",
 };
 // German
 const de = {
-    addDescription: "Klicke auf eine freie Stelle, um einen neuen Knoten zu plazieren.",
-    addEdge: "Kante hinzuf\u00fcgen",
-    addNode: "Knoten hinzuf\u00fcgen",
-    back: "Zur\u00fcck",
-    createEdgeError: "Es ist nicht m\u00f6glich, Kanten mit Clustern zu verbinden.",
-    del: "L\u00f6sche Auswahl",
-    deleteClusterError: "Cluster k\u00f6nnen nicht gel\u00f6scht werden.",
-    edgeDescription: "Klicke auf einen Knoten und ziehe die Kante zu einem anderen Knoten, um diese zu verbinden.",
-    edit: "Editieren",
-    editClusterError: "Cluster k\u00f6nnen nicht editiert werden.",
-    editEdge: "Kante editieren",
-    editEdgeDescription: "Klicke auf die Verbindungspunkte und ziehe diese auf einen Knoten, um sie zu verbinden.",
-    editNode: "Knoten editieren"
+  addDescription:
+    "Klicke auf eine freie Stelle, um einen neuen Knoten zu plazieren.",
+  addEdge: "Kante hinzuf\u00fcgen",
+  addNode: "Knoten hinzuf\u00fcgen",
+  back: "Zur\u00fcck",
+  close: "Schließen",
+  createEdgeError:
+    "Es ist nicht m\u00f6glich, Kanten mit Clustern zu verbinden.",
+  del: "L\u00f6sche Auswahl",
+  deleteClusterError: "Cluster k\u00f6nnen nicht gel\u00f6scht werden.",
+  edgeDescription:
+    "Klicke auf einen Knoten und ziehe die Kante zu einem anderen Knoten, um diese zu verbinden.",
+  edit: "Editieren",
+  editClusterError: "Cluster k\u00f6nnen nicht editiert werden.",
+  editEdge: "Kante editieren",
+  editEdgeDescription:
+    "Klicke auf die Verbindungspunkte und ziehe diese auf einen Knoten, um sie zu verbinden.",
+  editNode: "Knoten editieren",
 };
 // Spanish
 const es = {
-    addDescription: "Haga clic en un lugar vac\u00edo para colocar un nuevo nodo.",
-    addEdge: "A\u00f1adir arista",
-    addNode: "A\u00f1adir nodo",
-    back: "Atr\u00e1s",
-    createEdgeError: "No se puede conectar una arista a un grupo.",
-    del: "Eliminar selecci\u00f3n",
-    deleteClusterError: "No es posible eliminar grupos.",
-    edgeDescription: "Haga clic en un nodo y arrastre la arista hacia otro nodo para conectarlos.",
-    edit: "Editar",
-    editClusterError: "No es posible editar grupos.",
-    editEdge: "Editar arista",
-    editEdgeDescription: "Haga clic en un punto de control y arrastrelo a un nodo para conectarlo.",
-    editNode: "Editar nodo"
+  addDescription:
+    "Haga clic en un lugar vac\u00edo para colocar un nuevo nodo.",
+  addEdge: "A\u00f1adir arista",
+  addNode: "A\u00f1adir nodo",
+  back: "Atr\u00e1s",
+  close: "Cerrar",
+  createEdgeError: "No se puede conectar una arista a un grupo.",
+  del: "Eliminar selecci\u00f3n",
+  deleteClusterError: "No es posible eliminar grupos.",
+  edgeDescription:
+    "Haga clic en un nodo y arrastre la arista hacia otro nodo para conectarlos.",
+  edit: "Editar",
+  editClusterError: "No es posible editar grupos.",
+  editEdge: "Editar arista",
+  editEdgeDescription:
+    "Haga clic en un punto de control y arrastrelo a un nodo para conectarlo.",
+  editNode: "Editar nodo",
 };
 //Italiano
 const it = {
-    addDescription: "Clicca per aggiungere un nuovo nodo",
-    addEdge: "Aggiungi un vertice",
-    addNode: "Aggiungi un nodo",
-    back: "Indietro",
-    createEdgeError: "Non si possono collegare vertici ad un cluster",
-    del: "Cancella la selezione",
-    deleteClusterError: "I cluster non possono essere cancellati",
-    edgeDescription: "Clicca su un nodo e trascinalo ad un altro nodo per connetterli.",
-    edit: "Modifica",
-    editClusterError: "I clusters non possono essere modificati.",
-    editEdge: "Modifica il vertice",
-    editEdgeDescription: "Clicca sui Punti di controllo e trascinali ad un nodo per connetterli.",
-    editNode: "Modifica il nodo"
+  addDescription: "Clicca per aggiungere un nuovo nodo",
+  addEdge: "Aggiungi un vertice",
+  addNode: "Aggiungi un nodo",
+  back: "Indietro",
+  close: "Chiudere",
+  createEdgeError: "Non si possono collegare vertici ad un cluster",
+  del: "Cancella la selezione",
+  deleteClusterError: "I cluster non possono essere cancellati",
+  edgeDescription:
+    "Clicca su un nodo e trascinalo ad un altro nodo per connetterli.",
+  edit: "Modifica",
+  editClusterError: "I clusters non possono essere modificati.",
+  editEdge: "Modifica il vertice",
+  editEdgeDescription:
+    "Clicca sui Punti di controllo e trascinali ad un nodo per connetterli.",
+  editNode: "Modifica il nodo",
 };
 // Dutch
 const nl = {
-    addDescription: "Klik op een leeg gebied om een nieuwe node te maken.",
-    addEdge: "Link toevoegen",
-    addNode: "Node toevoegen",
-    back: "Terug",
-    createEdgeError: "Kan geen link maken naar een cluster.",
-    del: "Selectie verwijderen",
-    deleteClusterError: "Clusters kunnen niet worden verwijderd.",
-    edgeDescription: "Klik op een node en sleep de link naar een andere node om ze te verbinden.",
-    edit: "Wijzigen",
-    editClusterError: "Clusters kunnen niet worden aangepast.",
-    editEdge: "Link wijzigen",
-    editEdgeDescription: "Klik op de verbindingspunten en sleep ze naar een node om daarmee te verbinden.",
-    editNode: "Node wijzigen"
+  addDescription: "Klik op een leeg gebied om een nieuwe node te maken.",
+  addEdge: "Link toevoegen",
+  addNode: "Node toevoegen",
+  back: "Terug",
+  close: "Sluiten",
+  createEdgeError: "Kan geen link maken naar een cluster.",
+  del: "Selectie verwijderen",
+  deleteClusterError: "Clusters kunnen niet worden verwijderd.",
+  edgeDescription:
+    "Klik op een node en sleep de link naar een andere node om ze te verbinden.",
+  edit: "Wijzigen",
+  editClusterError: "Clusters kunnen niet worden aangepast.",
+  editEdge: "Link wijzigen",
+  editEdgeDescription:
+    "Klik op de verbindingspunten en sleep ze naar een node om daarmee te verbinden.",
+  editNode: "Node wijzigen",
 };
 // Portuguese Brazil
 const pt = {
-    addDescription: "Clique em um espaço em branco para adicionar um novo nó",
-    addEdge: "Adicionar aresta",
-    addNode: "Adicionar nó",
-    back: "Voltar",
-    createEdgeError: "Não foi possível linkar arestas a um cluster.",
-    del: "Remover selecionado",
-    deleteClusterError: "Clusters não puderam ser removidos.",
-    edgeDescription: "Clique em um nó e arraste a aresta até outro nó para conectá-los",
-    edit: "Editar",
-    editClusterError: "Clusters não puderam ser editados.",
-    editEdge: "Editar aresta",
-    editEdgeDescription: "Clique nos pontos de controle e os arraste para um nó para conectá-los",
-    editNode: "Editar nó"
+  addDescription: "Clique em um espaço em branco para adicionar um novo nó",
+  addEdge: "Adicionar aresta",
+  addNode: "Adicionar nó",
+  back: "Voltar",
+  close: "Fechar",
+  createEdgeError: "Não foi possível linkar arestas a um cluster.",
+  del: "Remover selecionado",
+  deleteClusterError: "Clusters não puderam ser removidos.",
+  edgeDescription:
+    "Clique em um nó e arraste a aresta até outro nó para conectá-los",
+  edit: "Editar",
+  editClusterError: "Clusters não puderam ser editados.",
+  editEdge: "Editar aresta",
+  editEdgeDescription:
+    "Clique nos pontos de controle e os arraste para um nó para conectá-los",
+  editNode: "Editar nó",
 };
 // Russian
 const ru = {
-    addDescription: "Кликните в свободное место, чтобы добавить новый узел.",
-    addEdge: "Добавить ребро",
-    addNode: "Добавить узел",
-    back: "Назад",
-    createEdgeError: "Невозможно соединить ребра в кластер.",
-    del: "Удалить выбранное",
-    deleteClusterError: "Кластеры не могут быть удалены",
-    edgeDescription: "Кликните на узел и протяните ребро к другому узлу, чтобы соединить их.",
-    edit: "Редактировать",
-    editClusterError: "Кластеры недоступны для редактирования.",
-    editEdge: "Редактировать ребро",
-    editEdgeDescription: "Кликните на контрольные точки и перетащите их в узел, чтобы подключиться к нему.",
-    editNode: "Редактировать узел"
+  addDescription: "Кликните в свободное место, чтобы добавить новый узел.",
+  addEdge: "Добавить ребро",
+  addNode: "Добавить узел",
+  back: "Назад",
+  close: "Закрывать",
+  createEdgeError: "Невозможно соединить ребра в кластер.",
+  del: "Удалить выбранное",
+  deleteClusterError: "Кластеры не могут быть удалены",
+  edgeDescription:
+    "Кликните на узел и протяните ребро к другому узлу, чтобы соединить их.",
+  edit: "Редактировать",
+  editClusterError: "Кластеры недоступны для редактирования.",
+  editEdge: "Редактировать ребро",
+  editEdgeDescription:
+    "Кликните на контрольные точки и перетащите их в узел, чтобы подключиться к нему.",
+  editNode: "Редактировать узел",
 };
 // Chinese
 const cn = {
-    addDescription: "单击空白处放置新节点。",
-    addEdge: "添加连接线",
-    addNode: "添加节点",
-    back: "返回",
-    createEdgeError: "无法将连接线连接到群集。",
-    del: "删除选定",
-    deleteClusterError: "无法删除群集。",
-    edgeDescription: "单击某个节点并将该连接线拖动到另一个节点以连接它们。",
-    edit: "编辑",
-    editClusterError: "无法编辑群集。",
-    editEdge: "编辑连接线",
-    editEdgeDescription: "单击控制节点并将它们拖到节点上连接。",
-    editNode: "编辑节点"
+  addDescription: "单击空白处放置新节点。",
+  addEdge: "添加连接线",
+  addNode: "添加节点",
+  back: "返回",
+  close: "關閉",
+  createEdgeError: "无法将连接线连接到群集。",
+  del: "删除选定",
+  deleteClusterError: "无法删除群集。",
+  edgeDescription: "单击某个节点并将该连接线拖动到另一个节点以连接它们。",
+  edit: "编辑",
+  editClusterError: "无法编辑群集。",
+  editEdge: "编辑连接线",
+  editEdgeDescription: "单击控制节点并将它们拖到节点上连接。",
+  editNode: "编辑节点",
 };
 // Ukrainian
 const uk = {
-    addDescription: "Kлікніть на вільне місце, щоб додати новий вузол.",
-    addEdge: "Додати край",
-    addNode: "Додати вузол",
-    back: "Назад",
-    createEdgeError: "Не можливо об'єднати краї в групу.",
-    del: "Видалити обране",
-    deleteClusterError: "Групи не можуть бути видалені.",
-    edgeDescription: "Клікніть на вузол і перетягніть край до іншого вузла, щоб їх з'єднати.",
-    edit: "Редагувати",
-    editClusterError: "Групи недоступні для редагування.",
-    editEdge: "Редагувати край",
-    editEdgeDescription: "Клікніть на контрольні точки і перетягніть їх у вузол, щоб підключитися до нього.",
-    editNode: "Редагувати вузол"
+  addDescription: "Kлікніть на вільне місце, щоб додати новий вузол.",
+  addEdge: "Додати край",
+  addNode: "Додати вузол",
+  back: "Назад",
+  close: "Закрити",
+  createEdgeError: "Не можливо об'єднати краї в групу.",
+  del: "Видалити обране",
+  deleteClusterError: "Групи не можуть бути видалені.",
+  edgeDescription:
+    "Клікніть на вузол і перетягніть край до іншого вузла, щоб їх з'єднати.",
+  edit: "Редагувати",
+  editClusterError: "Групи недоступні для редагування.",
+  editEdge: "Редагувати край",
+  editEdgeDescription:
+    "Клікніть на контрольні точки і перетягніть їх у вузол, щоб підключитися до нього.",
+  editNode: "Редагувати вузол",
 };
 // French
 const fr = {
-    addDescription: "Cliquez dans un endroit vide pour placer un nœud.",
-    addEdge: "Ajouter un lien",
-    addNode: "Ajouter un nœud",
-    back: "Retour",
-    createEdgeError: "Impossible de créer un lien vers un cluster.",
-    del: "Effacer la sélection",
-    deleteClusterError: "Les clusters ne peuvent pas être effacés.",
-    edgeDescription: "Cliquez sur un nœud et glissez le lien vers un autre nœud pour les connecter.",
-    edit: "Éditer",
-    editClusterError: "Les clusters ne peuvent pas être édités.",
-    editEdge: "Éditer le lien",
-    editEdgeDescription: "Cliquez sur les points de contrôle et glissez-les pour connecter un nœud.",
-    editNode: "Éditer le nœud"
+  addDescription: "Cliquez dans un endroit vide pour placer un nœud.",
+  addEdge: "Ajouter un lien",
+  addNode: "Ajouter un nœud",
+  back: "Retour",
+  close: "Fermer",
+  createEdgeError: "Impossible de créer un lien vers un cluster.",
+  del: "Effacer la sélection",
+  deleteClusterError: "Les clusters ne peuvent pas être effacés.",
+  edgeDescription:
+    "Cliquez sur un nœud et glissez le lien vers un autre nœud pour les connecter.",
+  edit: "Éditer",
+  editClusterError: "Les clusters ne peuvent pas être édités.",
+  editEdge: "Éditer le lien",
+  editEdgeDescription:
+    "Cliquez sur les points de contrôle et glissez-les pour connecter un nœud.",
+  editNode: "Éditer le nœud",
 };
 // Czech
 const cs = {
-    addDescription: "Kluknutím do prázdného prostoru můžete přidat nový vrchol.",
-    addEdge: "Přidat hranu",
-    addNode: "Přidat vrchol",
-    back: "Zpět",
-    createEdgeError: "Nelze připojit hranu ke shluku.",
-    del: "Smazat výběr",
-    deleteClusterError: "Nelze mazat shluky.",
-    edgeDescription: "Přetažením z jednoho vrcholu do druhého můžete spojit tyto vrcholy novou hranou.",
-    edit: "Upravit",
-    editClusterError: "Nelze upravovat shluky.",
-    editEdge: "Upravit hranu",
-    editEdgeDescription: "Přetažením kontrolního vrcholu hrany ji můžete připojit k jinému vrcholu.",
-    editNode: "Upravit vrchol"
+  addDescription: "Kluknutím do prázdného prostoru můžete přidat nový vrchol.",
+  addEdge: "Přidat hranu",
+  addNode: "Přidat vrchol",
+  back: "Zpět",
+  close: "Zavřít",
+  createEdgeError: "Nelze připojit hranu ke shluku.",
+  del: "Smazat výběr",
+  deleteClusterError: "Nelze mazat shluky.",
+  edgeDescription:
+    "Přetažením z jednoho vrcholu do druhého můžete spojit tyto vrcholy novou hranou.",
+  edit: "Upravit",
+  editClusterError: "Nelze upravovat shluky.",
+  editEdge: "Upravit hranu",
+  editEdgeDescription:
+    "Přetažením kontrolního vrcholu hrany ji můžete připojit k jinému vrcholu.",
+  editNode: "Upravit vrchol",
 };
 
-var locales = /*#__PURE__*/Object.freeze({
+var locales = /*#__PURE__*/ Object.freeze({
   __proto__: null,
-  en: en,
+  cn: cn,
+  cs: cs,
   de: de,
+  en: en,
   es: es,
+  fr: fr,
   it: it,
   nl: nl,
   pt: pt,
   ru: ru,
-  cn: cn,
   uk: uk,
-  fr: fr,
-  cs: cs
 });
 
 /**
@@ -2121,41 +2009,39 @@ var locales = /*#__PURE__*/Object.freeze({
  *
  * @param locales - All the available locales.
  * @param rawCode - The original code as supplied by the user.
- *
  * @returns Language code in the format language-COUNTRY or language, eventually
  * fallbacks to en.
  */
 function normalizeLanguageCode(locales, rawCode) {
-    try {
-        const [rawLanguage, rawCountry] = rawCode.split(/[-_ \/]/, 2);
-        const language = rawLanguage != null ? rawLanguage.toLowerCase() : null;
-        const country = rawCountry != null ? rawCountry.toUpperCase() : null;
-        if (language && country) {
-            const code = language + "-" + country;
-            if (Object.prototype.hasOwnProperty.call(locales, code)) {
-                return code;
-            }
-            else {
-                console.warn(`Unknown variant ${country} of language ${language}.`);
-            }
-        }
-        if (language) {
-            const code = language;
-            if (Object.prototype.hasOwnProperty.call(locales, code)) {
-                return code;
-            }
-            else {
-                console.warn(`Unknown language ${language}`);
-            }
-        }
-        console.warn(`Unknown locale ${rawCode}, falling back to English.`);
-        return "en";
+  try {
+    const [rawLanguage, rawCountry] = rawCode.split(/[-_ /]/, 2);
+    const language = rawLanguage != null ? rawLanguage.toLowerCase() : null;
+    const country = rawCountry != null ? rawCountry.toUpperCase() : null;
+    if (language && country) {
+      const code = language + "-" + country;
+      if (Object.prototype.hasOwnProperty.call(locales, code)) {
+        return code;
+      } else {
+        console.warn(`Unknown variant ${country} of language ${language}.`);
+      }
     }
-    catch (error) {
-        console.error(error);
-        console.warn(`Unexpected error while normalizing locale ${rawCode}, falling back to English.`);
-        return "en";
+    if (language) {
+      const code = language;
+      if (Object.prototype.hasOwnProperty.call(locales, code)) {
+        return code;
+      } else {
+        console.warn(`Unknown language ${language}`);
+      }
     }
+    console.warn(`Unknown locale ${rawCode}, falling back to English.`);
+    return "en";
+  } catch (error) {
+    console.error(error);
+    console.warn(
+      `Unexpected error while normalizing locale ${rawCode}, falling back to English.`
+    );
+    return "en";
+  }
 }
 
 /**
@@ -2172,14 +2058,13 @@ function normalizeLanguageCode(locales, rawCode) {
 class CachedImage {
   /**
    * @ignore
-   */  
-  constructor() {  // eslint-disable-line no-unused-vars
-    this.NUM_ITERATIONS = 4;  // Number of items in the coordinates array
+   */
+  constructor() {
+    this.NUM_ITERATIONS = 4; // Number of items in the coordinates array
 
-    this.image  = new Image();
-    this.canvas = document.createElement('canvas');
+    this.image = new Image();
+    this.canvas = document.createElement("canvas");
   }
-
 
   /**
    * Called when the image has been successfully loaded.
@@ -2187,49 +2072,47 @@ class CachedImage {
   init() {
     if (this.initialized()) return;
 
-    this.src = this.image.src;  // For same interface with Image
+    this.src = this.image.src; // For same interface with Image
     const w = this.image.width;
     const h = this.image.height;
 
     // Ease external access
-    this.width  = w;
+    this.width = w;
     this.height = h;
 
-    const h2 = Math.floor(h/2);
-    const h4 = Math.floor(h/4);
-    const h8 = Math.floor(h/8);
-    const h16 = Math.floor(h/16);
+    const h2 = Math.floor(h / 2);
+    const h4 = Math.floor(h / 4);
+    const h8 = Math.floor(h / 8);
+    const h16 = Math.floor(h / 16);
 
-    const w2 = Math.floor(w/2);
-    const w4 = Math.floor(w/4);
-    const w8 = Math.floor(w/8);
-    const w16 = Math.floor(w/16);
+    const w2 = Math.floor(w / 2);
+    const w4 = Math.floor(w / 4);
+    const w8 = Math.floor(w / 8);
+    const w16 = Math.floor(w / 16);
 
     // Make canvas as small as possible
-    this.canvas.width  = 3*w4;
+    this.canvas.width = 3 * w4;
     this.canvas.height = h2;
 
     // Coordinates and sizes of images contained in the canvas
     // Values per row:  [top x, left y, width, height]
 
     this.coordinates = [
-      [ 0    , 0  , w2 , h2],
-      [ w2  , 0  , w4 , h4],
-      [ w2  , h4, w8 , h8],
-      [ 5*w8, h4, w16, h16]
+      [0, 0, w2, h2],
+      [w2, 0, w4, h4],
+      [w2, h4, w8, h8],
+      [5 * w8, h4, w16, h16],
     ];
 
     this._fillMipMap();
   }
 
-
   /**
-   * @return {Boolean} true if init() has been called, false otherwise.
+   * @returns {boolean} true if init() has been called, false otherwise.
    */
   initialized() {
-    return (this.coordinates !== undefined);
+    return this.coordinates !== undefined;
   }
-
 
   /**
    * Redraw main image in various sizes to the context.
@@ -2249,24 +2132,30 @@ class CachedImage {
    * @private
    */
   _fillMipMap() {
-    const ctx = this.canvas.getContext('2d');
+    const ctx = this.canvas.getContext("2d");
 
     // First zoom-level comes from the image
-    const to  = this.coordinates[0];
+    const to = this.coordinates[0];
     ctx.drawImage(this.image, to[0], to[1], to[2], to[3]);
 
     // The rest are copy actions internal to the canvas/context
     for (let iterations = 1; iterations < this.NUM_ITERATIONS; iterations++) {
       const from = this.coordinates[iterations - 1];
-      const to   = this.coordinates[iterations];
+      const to = this.coordinates[iterations];
 
-      ctx.drawImage(this.canvas,
-        from[0], from[1], from[2], from[3],
-          to[0],   to[1],   to[2],   to[3]
+      ctx.drawImage(
+        this.canvas,
+        from[0],
+        from[1],
+        from[2],
+        from[3],
+        to[0],
+        to[1],
+        to[2],
+        to[3]
       );
     }
   }
-
 
   /**
    * Draw the image, using the mipmap if necessary.
@@ -2284,9 +2173,7 @@ class CachedImage {
    * @param {number} height
    */
   drawImageAtPosition(ctx, factor, left, top, width, height) {
-
-    if(!this.initialized())
-      return; //can't draw image yet not intialized
+    if (!this.initialized()) return; //can't draw image yet not intialized
 
     if (factor > 2) {
       // Determine which zoomed image to use
@@ -2303,20 +2190,27 @@ class CachedImage {
       //console.log("iterations: " + iterations);
 
       const from = this.coordinates[iterations];
-      ctx.drawImage(this.canvas,
-        from[0], from[1], from[2], from[3],
-           left,     top,   width,  height
+      ctx.drawImage(
+        this.canvas,
+        from[0],
+        from[1],
+        from[2],
+        from[3],
+        left,
+        top,
+        width,
+        height
       );
     } else {
       // Draw image directly
       ctx.drawImage(this.image, left, top, width, height);
     }
   }
-
 }
 
 /**
  * This callback is a callback that accepts an Image.
+ *
  * @callback ImageCallback
  * @param {Image} image
  */
@@ -2330,101 +2224,101 @@ class Images {
   /**
    * @param {ImageCallback} callback
    */
-  constructor(callback){
-        this.images = {};
-        this.imageBroken = {};
-        this.callback = callback;
+  constructor(callback) {
+    this.images = {};
+    this.imageBroken = {};
+    this.callback = callback;
+  }
+
+  /**
+   * @param {string} url                      The original Url that failed to load, if the broken image is successfully loaded it will be added to the cache using this Url as the key so that subsequent requests for this Url will return the broken image
+   * @param {string} brokenUrl                Url the broken image to try and load
+   * @param {Image} imageToLoadBrokenUrlOn   The image object
+   */
+  _tryloadBrokenUrl(url, brokenUrl, imageToLoadBrokenUrlOn) {
+    //If these parameters aren't specified then exit the function because nothing constructive can be done
+    if (url === undefined || imageToLoadBrokenUrlOn === undefined) return;
+    if (brokenUrl === undefined) {
+      console.warn("No broken url image defined");
+      return;
     }
-    
-    /**
-     * @param {string} url                      The original Url that failed to load, if the broken image is successfully loaded it will be added to the cache using this Url as the key so that subsequent requests for this Url will return the broken image
-     * @param {string} brokenUrl                Url the broken image to try and load
-     * @param {Image} imageToLoadBrokenUrlOn   The image object
-     */    
-    _tryloadBrokenUrl (url, brokenUrl, imageToLoadBrokenUrlOn) {
-        //If these parameters aren't specified then exit the function because nothing constructive can be done
-        if (url === undefined || imageToLoadBrokenUrlOn === undefined)  return;
-        if (brokenUrl === undefined) {
-          console.warn("No broken url image defined");
-          return;
-        }
-    
-        //Clear the old subscription to the error event and put a new in place that only handle errors in loading the brokenImageUrl
-        imageToLoadBrokenUrlOn.image.onerror = () => {
-            console.error("Could not load brokenImage:", brokenUrl);
-            // cache item will contain empty image, this should be OK for default
-        };
-        
-        //Set the source of the image to the brokenUrl, this is actually what kicks off the loading of the broken image
-        imageToLoadBrokenUrlOn.image.src = brokenUrl;
-    }
-    
+
+    //Clear the old subscription to the error event and put a new in place that only handle errors in loading the brokenImageUrl
+    imageToLoadBrokenUrlOn.image.onerror = () => {
+      console.error("Could not load brokenImage:", brokenUrl);
+      // cache item will contain empty image, this should be OK for default
+    };
+
+    //Set the source of the image to the brokenUrl, this is actually what kicks off the loading of the broken image
+    imageToLoadBrokenUrlOn.image.src = brokenUrl;
+  }
+
   /**
    *
    * @param {vis.Image} imageToRedrawWith
    * @private
    */
-  _redrawWithImage (imageToRedrawWith) {
-        if (this.callback) {
-            this.callback(imageToRedrawWith);
-        }
+  _redrawWithImage(imageToRedrawWith) {
+    if (this.callback) {
+      this.callback(imageToRedrawWith);
     }
-    
-    /**
-     * @param {string} url          Url of the image
-     * @param {string} brokenUrl    Url of an image to use if the url image is not found
-     * @return {Image} img          The image object
-     */     
-    load (url, brokenUrl) {
-        //Try and get the image from the cache, if successful then return the cached image   
-        const cachedImage = this.images[url]; 
-        if (cachedImage) return cachedImage;
-        
-        //Create a new image
-        const img = new CachedImage();
+  }
 
-        // Need to add to cache here, otherwise final return will spawn different copies of the same image,
-        // Also, there will be multiple loads of the same image.
-        this.images[url] = img; 
-        
-        //Subscribe to the event that is raised if the image loads successfully 
-        img.image.onload = () => {
-            // Properly init the cached item and then request a redraw
-            this._fixImageCoordinates(img.image);
-            img.init();
-            this._redrawWithImage(img);
-        };
-        
-        //Subscribe to the event that is raised if the image fails to load
-        img.image.onerror = () => {
-            console.error("Could not load image:", url);
-            //Try and load the image specified by the brokenUrl using
-            this._tryloadBrokenUrl(url, brokenUrl, img);
-        };
-        
-        //Set the source of the image to the url, this is what actually kicks off the loading of the image
-        img.image.src = url;
-        
-        //Return the new image
-        return img;
-    }
+  /**
+   * @param {string} url          Url of the image
+   * @param {string} brokenUrl    Url of an image to use if the url image is not found
+   * @returns {Image} img          The image object
+   */
+  load(url, brokenUrl) {
+    //Try and get the image from the cache, if successful then return the cached image
+    const cachedImage = this.images[url];
+    if (cachedImage) return cachedImage;
 
+    //Create a new image
+    const img = new CachedImage();
+
+    // Need to add to cache here, otherwise final return will spawn different copies of the same image,
+    // Also, there will be multiple loads of the same image.
+    this.images[url] = img;
+
+    //Subscribe to the event that is raised if the image loads successfully
+    img.image.onload = () => {
+      // Properly init the cached item and then request a redraw
+      this._fixImageCoordinates(img.image);
+      img.init();
+      this._redrawWithImage(img);
+    };
+
+    //Subscribe to the event that is raised if the image fails to load
+    img.image.onerror = () => {
+      console.error("Could not load image:", url);
+      //Try and load the image specified by the brokenUrl using
+      this._tryloadBrokenUrl(url, brokenUrl, img);
+    };
+
+    //Set the source of the image to the url, this is what actually kicks off the loading of the image
+    img.image.src = url;
+
+    //Return the new image
+    return img;
+  }
 
   /**
    * IE11 fix -- thanks dponch!
    *
    * Local helper function
+   *
    * @param {vis.Image} imageToCache
    * @private
    */
-    _fixImageCoordinates(imageToCache) {
-        if (imageToCache.width === 0) {
-            document.body.appendChild(imageToCache);
-            imageToCache.width = imageToCache.offsetWidth;
-            imageToCache.height = imageToCache.offsetHeight;
-            document.body.removeChild(imageToCache);
-        }
+  _fixImageCoordinates(imageToCache) {
+    if (imageToCache.width === 0) {
+      document.body.appendChild(imageToCache);
+      imageToCache.width = imageToCache.offsetWidth;
+      imageToCache.height = imageToCache.offsetHeight;
+      document.body.removeChild(imageToCache);
     }
+  }
 }
 
 /**
@@ -2436,49 +2330,148 @@ class Groups {
    */
   constructor() {
     this.clear();
-    this.defaultIndex = 0;
-    this.groupsArray = [];
-    this.groupIndex = 0;
+    this._defaultIndex = 0;
+    this._groupIndex = 0;
 
-    this.defaultGroups = [
-      {border: "#2B7CE9", background: "#97C2FC", highlight: {border: "#2B7CE9", background: "#D2E5FF"}, hover: {border: "#2B7CE9", background: "#D2E5FF"}}, // 0: blue
-      {border: "#FFA500", background: "#FFFF00", highlight: {border: "#FFA500", background: "#FFFFA3"}, hover: {border: "#FFA500", background: "#FFFFA3"}}, // 1: yellow
-      {border: "#FA0A10", background: "#FB7E81", highlight: {border: "#FA0A10", background: "#FFAFB1"}, hover: {border: "#FA0A10", background: "#FFAFB1"}}, // 2: red
-      {border: "#41A906", background: "#7BE141", highlight: {border: "#41A906", background: "#A1EC76"}, hover: {border: "#41A906", background: "#A1EC76"}}, // 3: green
-      {border: "#E129F0", background: "#EB7DF4", highlight: {border: "#E129F0", background: "#F0B3F5"}, hover: {border: "#E129F0", background: "#F0B3F5"}}, // 4: magenta
-      {border: "#7C29F0", background: "#AD85E4", highlight: {border: "#7C29F0", background: "#D3BDF0"}, hover: {border: "#7C29F0", background: "#D3BDF0"}}, // 5: purple
-      {border: "#C37F00", background: "#FFA807", highlight: {border: "#C37F00", background: "#FFCA66"}, hover: {border: "#C37F00", background: "#FFCA66"}}, // 6: orange
-      {border: "#4220FB", background: "#6E6EFD", highlight: {border: "#4220FB", background: "#9B9BFD"}, hover: {border: "#4220FB", background: "#9B9BFD"}}, // 7: darkblue
-      {border: "#FD5A77", background: "#FFC0CB", highlight: {border: "#FD5A77", background: "#FFD1D9"}, hover: {border: "#FD5A77", background: "#FFD1D9"}}, // 8: pink
-      {border: "#4AD63A", background: "#C2FABC", highlight: {border: "#4AD63A", background: "#E6FFE3"}, hover: {border: "#4AD63A", background: "#E6FFE3"}}, // 9: mint
+    this._defaultGroups = [
+      {
+        border: "#2B7CE9",
+        background: "#97C2FC",
+        highlight: { border: "#2B7CE9", background: "#D2E5FF" },
+        hover: { border: "#2B7CE9", background: "#D2E5FF" },
+      }, // 0: blue
+      {
+        border: "#FFA500",
+        background: "#FFFF00",
+        highlight: { border: "#FFA500", background: "#FFFFA3" },
+        hover: { border: "#FFA500", background: "#FFFFA3" },
+      }, // 1: yellow
+      {
+        border: "#FA0A10",
+        background: "#FB7E81",
+        highlight: { border: "#FA0A10", background: "#FFAFB1" },
+        hover: { border: "#FA0A10", background: "#FFAFB1" },
+      }, // 2: red
+      {
+        border: "#41A906",
+        background: "#7BE141",
+        highlight: { border: "#41A906", background: "#A1EC76" },
+        hover: { border: "#41A906", background: "#A1EC76" },
+      }, // 3: green
+      {
+        border: "#E129F0",
+        background: "#EB7DF4",
+        highlight: { border: "#E129F0", background: "#F0B3F5" },
+        hover: { border: "#E129F0", background: "#F0B3F5" },
+      }, // 4: magenta
+      {
+        border: "#7C29F0",
+        background: "#AD85E4",
+        highlight: { border: "#7C29F0", background: "#D3BDF0" },
+        hover: { border: "#7C29F0", background: "#D3BDF0" },
+      }, // 5: purple
+      {
+        border: "#C37F00",
+        background: "#FFA807",
+        highlight: { border: "#C37F00", background: "#FFCA66" },
+        hover: { border: "#C37F00", background: "#FFCA66" },
+      }, // 6: orange
+      {
+        border: "#4220FB",
+        background: "#6E6EFD",
+        highlight: { border: "#4220FB", background: "#9B9BFD" },
+        hover: { border: "#4220FB", background: "#9B9BFD" },
+      }, // 7: darkblue
+      {
+        border: "#FD5A77",
+        background: "#FFC0CB",
+        highlight: { border: "#FD5A77", background: "#FFD1D9" },
+        hover: { border: "#FD5A77", background: "#FFD1D9" },
+      }, // 8: pink
+      {
+        border: "#4AD63A",
+        background: "#C2FABC",
+        highlight: { border: "#4AD63A", background: "#E6FFE3" },
+        hover: { border: "#4AD63A", background: "#E6FFE3" },
+      }, // 9: mint
 
-      {border: "#990000", background: "#EE0000", highlight: {border: "#BB0000", background: "#FF3333"}, hover: {border: "#BB0000", background: "#FF3333"}}, // 10:bright red
+      {
+        border: "#990000",
+        background: "#EE0000",
+        highlight: { border: "#BB0000", background: "#FF3333" },
+        hover: { border: "#BB0000", background: "#FF3333" },
+      }, // 10:bright red
 
-      {border: "#FF6000", background: "#FF6000", highlight: {border: "#FF6000", background: "#FF6000"}, hover: {border: "#FF6000", background: "#FF6000"}}, // 12: real orange
-      {border: "#97C2FC", background: "#2B7CE9", highlight: {border: "#D2E5FF", background: "#2B7CE9"}, hover: {border: "#D2E5FF", background: "#2B7CE9"}}, // 13: blue
-      {border: "#399605", background: "#255C03", highlight: {border: "#399605", background: "#255C03"}, hover: {border: "#399605", background: "#255C03"}}, // 14: green
-      {border: "#B70054", background: "#FF007E", highlight: {border: "#B70054", background: "#FF007E"}, hover: {border: "#B70054", background: "#FF007E"}}, // 15: magenta
-      {border: "#AD85E4", background: "#7C29F0", highlight: {border: "#D3BDF0", background: "#7C29F0"}, hover: {border: "#D3BDF0", background: "#7C29F0"}}, // 16: purple
-      {border: "#4557FA", background: "#000EA1", highlight: {border: "#6E6EFD", background: "#000EA1"}, hover: {border: "#6E6EFD", background: "#000EA1"}}, // 17: darkblue
-      {border: "#FFC0CB", background: "#FD5A77", highlight: {border: "#FFD1D9", background: "#FD5A77"}, hover: {border: "#FFD1D9", background: "#FD5A77"}}, // 18: pink
-      {border: "#C2FABC", background: "#74D66A", highlight: {border: "#E6FFE3", background: "#74D66A"}, hover: {border: "#E6FFE3", background: "#74D66A"}}, // 19: mint
+      {
+        border: "#FF6000",
+        background: "#FF6000",
+        highlight: { border: "#FF6000", background: "#FF6000" },
+        hover: { border: "#FF6000", background: "#FF6000" },
+      }, // 12: real orange
+      {
+        border: "#97C2FC",
+        background: "#2B7CE9",
+        highlight: { border: "#D2E5FF", background: "#2B7CE9" },
+        hover: { border: "#D2E5FF", background: "#2B7CE9" },
+      }, // 13: blue
+      {
+        border: "#399605",
+        background: "#255C03",
+        highlight: { border: "#399605", background: "#255C03" },
+        hover: { border: "#399605", background: "#255C03" },
+      }, // 14: green
+      {
+        border: "#B70054",
+        background: "#FF007E",
+        highlight: { border: "#B70054", background: "#FF007E" },
+        hover: { border: "#B70054", background: "#FF007E" },
+      }, // 15: magenta
+      {
+        border: "#AD85E4",
+        background: "#7C29F0",
+        highlight: { border: "#D3BDF0", background: "#7C29F0" },
+        hover: { border: "#D3BDF0", background: "#7C29F0" },
+      }, // 16: purple
+      {
+        border: "#4557FA",
+        background: "#000EA1",
+        highlight: { border: "#6E6EFD", background: "#000EA1" },
+        hover: { border: "#6E6EFD", background: "#000EA1" },
+      }, // 17: darkblue
+      {
+        border: "#FFC0CB",
+        background: "#FD5A77",
+        highlight: { border: "#FFD1D9", background: "#FD5A77" },
+        hover: { border: "#FFD1D9", background: "#FD5A77" },
+      }, // 18: pink
+      {
+        border: "#C2FABC",
+        background: "#74D66A",
+        highlight: { border: "#E6FFE3", background: "#74D66A" },
+        hover: { border: "#E6FFE3", background: "#74D66A" },
+      }, // 19: mint
 
-      {border: "#EE0000", background: "#990000", highlight: {border: "#FF3333", background: "#BB0000"}, hover: {border: "#FF3333", background: "#BB0000"}} // 20:bright red
+      {
+        border: "#EE0000",
+        background: "#990000",
+        highlight: { border: "#FF3333", background: "#BB0000" },
+        hover: { border: "#FF3333", background: "#BB0000" },
+      }, // 20:bright red
     ];
 
     this.options = {};
     this.defaultOptions = {
-      useDefaultGroups: true
+      useDefaultGroups: true,
     };
     Object.assign(this.options, this.defaultOptions);
   }
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
-    const optionFields = ['useDefaultGroups'];
+    const optionFields = ["useDefaultGroups"];
 
     if (options !== undefined) {
       for (const groupName in options) {
@@ -2492,58 +2485,67 @@ class Groups {
     }
   }
 
-  
   /**
    * Clear all groups
    */
   clear() {
-    this.groups = {};
-    this.groupsArray = [];
+    this._groups = new Map();
+    this._groupNames = [];
   }
-  
+
   /**
    * Get group options of a groupname.
    * If groupname is not found, a new group may be created.
    *
    * @param {*}       groupname     Can be a number, string, Date, etc.
    * @param {boolean} [shouldCreate=true] If true, create a new group
-   * @return {Object} The found or created group
+   * @returns {object} The found or created group
    */
   get(groupname, shouldCreate = true) {
-    let group = this.groups[groupname];
+    let group = this._groups.get(groupname);
 
     if (group === undefined && shouldCreate) {
-      if (this.options.useDefaultGroups === false && this.groupsArray.length > 0) {
+      if (
+        this.options.useDefaultGroups === false &&
+        this._groupNames.length > 0
+      ) {
         // create new group
-        const index = this.groupIndex % this.groupsArray.length;
-        this.groupIndex++;
+        const index = this._groupIndex % this._groupNames.length;
+        ++this._groupIndex;
         group = {};
-        group.color = this.groups[this.groupsArray[index]];
-        this.groups[groupname] = group;
-      }
-      else {
+        group.color = this._groups.get(this._groupNames[index]);
+        this._groups.set(groupname, group);
+      } else {
         // create new group
-        const index = this.defaultIndex % this.defaultGroups.length;
-        this.defaultIndex++;
+        const index = this._defaultIndex % this._defaultGroups.length;
+        this._defaultIndex++;
         group = {};
-        group.color = this.defaultGroups[index];
-        this.groups[groupname] = group;
+        group.color = this._defaultGroups[index];
+        this._groups.set(groupname, group);
       }
     }
-  
+
     return group;
   }
-  
+
   /**
-   * Add a custom group style
-   * @param {string} groupName
-   * @param {Object} style       An object containing borderColor,
-   *                             backgroundColor, etc.
-   * @return {Object} group      The created group object
+   * Add custom group style.
+   *
+   * @param {string} groupName - The name of the group, a new group will be
+   * created if a group with the same name doesn't exist, otherwise the old
+   * groups style will be overwritten.
+   * @param {object} style - An object containing borderColor, backgroundColor,
+   * etc.
+   * @returns {object} The created group object.
    */
   add(groupName, style) {
-    this.groups[groupName] = style;
-    this.groupsArray.push(groupName);
+    // Only push group name once to prevent duplicates which would consume more
+    // RAM and also skew the distribution towards more often updated groups,
+    // neither of which is desirable.
+    if (!this._groups.has(groupName)) {
+      this._groupNames.push(groupName);
+    }
+    this._groups.set(groupName, style);
     return style;
   }
 }
@@ -2552,171 +2554,171 @@ class Groups {
  * Helper functions for components
  */
 
-  /**
-   * Determine values to use for (sub)options of 'chosen'.
-   *
-   * This option is either a boolean or an object whose values should be examined further.
-   * The relevant structures are:
-   *
-   * - chosen: <boolean value>
-   * - chosen: { subOption: <boolean or function> }
-   *
-   * Where subOption is 'node', 'edge' or 'label'.
-   *
-   * The intention of this method appears to be to set a specific priority to the options;
-   * Since most properties are either bridged or merged into the local options objects, there
-   * is not much point in handling them separately.
-   * TODO: examine if 'most' in previous sentence can be replaced with 'all'. In that case, we
-   *       should be able to get rid of this method.
-   *
-   * @param {string}  subOption  option within object 'chosen' to consider; either 'node', 'edge' or 'label'
-   * @param {Object}  pile       array of options objects to consider
-   * 
-   * @return {boolean|function}  value for passed subOption of 'chosen' to use
-   */
-  function choosify(subOption, pile) {
-    // allowed values for subOption
-    const allowed = [ 'node', 'edge', 'label'];
-    let value = true;
+/**
+ * Determine values to use for (sub)options of 'chosen'.
+ *
+ * This option is either a boolean or an object whose values should be examined further.
+ * The relevant structures are:
+ *
+ * - chosen: <boolean value>
+ * - chosen: { subOption: <boolean or function> }
+ *
+ * Where subOption is 'node', 'edge' or 'label'.
+ *
+ * The intention of this method appears to be to set a specific priority to the options;
+ * Since most properties are either bridged or merged into the local options objects, there
+ * is not much point in handling them separately.
+ * TODO: examine if 'most' in previous sentence can be replaced with 'all'. In that case, we
+ *       should be able to get rid of this method.
+ *
+ * @param {string}  subOption  option within object 'chosen' to consider; either 'node', 'edge' or 'label'
+ * @param {object}  pile       array of options objects to consider
+ * @returns {boolean | Function}  value for passed subOption of 'chosen' to use
+ */
+function choosify(subOption, pile) {
+  // allowed values for subOption
+  const allowed = ["node", "edge", "label"];
+  let value = true;
 
-    const chosen = topMost(pile, 'chosen');
-    if (typeof chosen === 'boolean') {
-      value = chosen;
-    } else if (typeof chosen === 'object') {
-      if (allowed.indexOf(subOption) === -1 ) {
-        throw new Error('choosify: subOption \'' + subOption + '\' should be one of '
-          + "'" + allowed.join("', '") +  "'");
-      }
-
-      const chosenEdge = topMost(pile, ['chosen', subOption]);
-      if ((typeof chosenEdge === 'boolean') || (typeof chosenEdge === 'function')) {
-        value = chosenEdge;
-      }
+  const chosen = topMost(pile, "chosen");
+  if (typeof chosen === "boolean") {
+    value = chosen;
+  } else if (typeof chosen === "object") {
+    if (allowed.indexOf(subOption) === -1) {
+      throw new Error(
+        "choosify: subOption '" +
+          subOption +
+          "' should be one of " +
+          "'" +
+          allowed.join("', '") +
+          "'"
+      );
     }
 
-    return value;
+    const chosenEdge = topMost(pile, ["chosen", subOption]);
+    if (typeof chosenEdge === "boolean" || typeof chosenEdge === "function") {
+      value = chosenEdge;
+    }
   }
 
+  return value;
+}
 
-  /**
-   * Check if the point falls within the given rectangle.
-   *
-   * @param {rect} rect
-   * @param {point} point
-   * @param {rotationPoint} [rotationPoint] if specified, the rotation that applies to the rectangle.
-   * @returns {boolean}  true if point within rectangle, false otherwise
-   */
-  function pointInRect(rect, point, rotationPoint) {
-    if (rect.width <= 0 || rect.height <= 0) {
-      return false;  // early out
-    }
+/**
+ * Check if the point falls within the given rectangle.
+ *
+ * @param {rect} rect
+ * @param {point} point
+ * @param {rotationPoint} [rotationPoint] if specified, the rotation that applies to the rectangle.
+ * @returns {boolean}  true if point within rectangle, false otherwise
+ */
+function pointInRect(rect, point, rotationPoint) {
+  if (rect.width <= 0 || rect.height <= 0) {
+    return false; // early out
+  }
 
-    if (rotationPoint !== undefined) {
-      // Rotate the point the same amount as the rectangle
-      const tmp = {
-        x: point.x - rotationPoint.x,
-        y: point.y - rotationPoint.y
+  if (rotationPoint !== undefined) {
+    // Rotate the point the same amount as the rectangle
+    const tmp = {
+      x: point.x - rotationPoint.x,
+      y: point.y - rotationPoint.y,
+    };
+
+    if (rotationPoint.angle !== 0) {
+      // In order to get the coordinates the same, you need to
+      // rotate in the reverse direction
+      const angle = -rotationPoint.angle;
+
+      const tmp2 = {
+        x: Math.cos(angle) * tmp.x - Math.sin(angle) * tmp.y,
+        y: Math.sin(angle) * tmp.x + Math.cos(angle) * tmp.y,
       };
-
-      if (rotationPoint.angle !== 0) {
-        // In order to get the coordinates the same, you need to 
-        // rotate in the reverse direction
-        const angle = -rotationPoint.angle;
-
-        const tmp2 = {
-          x: Math.cos(angle)*tmp.x - Math.sin(angle)*tmp.y,
-          y: Math.sin(angle)*tmp.x + Math.cos(angle)*tmp.y
-        };
-        point = tmp2;
-      } else {
-        point = tmp;
-      }
-
-      // Note that if a rotation is specified, the rectangle coordinates
-      // are **not* the full canvas coordinates. They are relative to the
-      // rotationPoint. Hence, the point coordinates need not be translated
-      // back in this case.
-    }
-
-    const right  = rect.x + rect.width;
-    const bottom = rect.y + rect.width;
-
-    return (
-      rect.left < point.x &&
-      right     > point.x &&
-      rect.top  < point.y &&
-      bottom    > point.y
-    );
-  }
-
-
-  /**
-   * Check if given value is acceptable as a label text.
-   *
-   * @param {*} text value to check; can be anything at this point
-   * @returns {boolean} true if valid label value, false otherwise
-   */
-  function isValidLabel(text) {
-    // Note that this is quite strict: types that *might* be converted to string are disallowed
-    return  (typeof text === 'string' && text !== '');
-  }
-
-  /**
-   * Returns x, y of self reference circle based on provided angle
-   *
-   * @param {Object} ctx
-   * @param {number} angle 
-   * @param {number} radius 
-   * @param {VisNode} node 
-   *
-   * @returns {Object} x and y coordinates
-   */
-  function getSelfRefCoordinates(ctx, angle, radius, node){
-    let x = node.x;
-    let y = node.y;
-    
-    if(typeof node.distanceToBorder === "function"){
-        //calculating opposite and adjacent
-        //distaneToBorder becomes Hypotenuse. 
-        //Formulas sin(a) = Opposite / Hypotenuse and cos(a) = Adjacent / Hypotenuse
-        const toBorderDist = node.distanceToBorder(ctx, angle);
-        const yFromNodeCenter = Math.sin(angle)*toBorderDist;
-        const xFromNodeCenter = Math.cos(angle)*toBorderDist;
-        //xFromNodeCenter is basically x and if xFromNodeCenter equals to the distance to border then it means
-        //that y does not need calculation because it is equal node.height / 2 or node.y
-        //same thing with yFromNodeCenter and if yFromNodeCenter equals to the distance to border then it means
-        //that x is equal node.width / 2 or node.x
-        if(xFromNodeCenter === toBorderDist){
-          x += toBorderDist;
-          y = node.y;
-        }else if(yFromNodeCenter === toBorderDist){
-          x = node.x;
-          y -= toBorderDist;
-        }else {
-          x += xFromNodeCenter;
-          y -= yFromNodeCenter;
-        }
-      
-
-    } else if (node.shape.width > node.shape.height) {
-      x = node.x + node.shape.width * 0.5;
-      y = node.y - radius;
+      point = tmp2;
     } else {
-      x = node.x + radius;
-      y = node.y - node.shape.height * 0.5;
+      point = tmp;
     }
-    
-    return {x,y};
+
+    // Note that if a rotation is specified, the rectangle coordinates
+    // are **not* the full canvas coordinates. They are relative to the
+    // rotationPoint. Hence, the point coordinates need not be translated
+    // back in this case.
   }
+
+  const right = rect.x + rect.width;
+  const bottom = rect.y + rect.width;
+
+  return (
+    rect.left < point.x &&
+    right > point.x &&
+    rect.top < point.y &&
+    bottom > point.y
+  );
+}
+
+/**
+ * Check if given value is acceptable as a label text.
+ *
+ * @param {*} text value to check; can be anything at this point
+ * @returns {boolean} true if valid label value, false otherwise
+ */
+function isValidLabel(text) {
+  // Note that this is quite strict: types that *might* be converted to string are disallowed
+  return typeof text === "string" && text !== "";
+}
+
+/**
+ * Returns x, y of self reference circle based on provided angle
+ *
+ * @param {object} ctx
+ * @param {number} angle
+ * @param {number} radius
+ * @param {VisNode} node
+ * @returns {object} x and y coordinates
+ */
+function getSelfRefCoordinates(ctx, angle, radius, node) {
+  let x = node.x;
+  let y = node.y;
+
+  if (typeof node.distanceToBorder === "function") {
+    //calculating opposite and adjacent
+    //distaneToBorder becomes Hypotenuse.
+    //Formulas sin(a) = Opposite / Hypotenuse and cos(a) = Adjacent / Hypotenuse
+    const toBorderDist = node.distanceToBorder(ctx, angle);
+    const yFromNodeCenter = Math.sin(angle) * toBorderDist;
+    const xFromNodeCenter = Math.cos(angle) * toBorderDist;
+    //xFromNodeCenter is basically x and if xFromNodeCenter equals to the distance to border then it means
+    //that y does not need calculation because it is equal node.height / 2 or node.y
+    //same thing with yFromNodeCenter and if yFromNodeCenter equals to the distance to border then it means
+    //that x is equal node.width / 2 or node.x
+    if (xFromNodeCenter === toBorderDist) {
+      x += toBorderDist;
+      y = node.y;
+    } else if (yFromNodeCenter === toBorderDist) {
+      x = node.x;
+      y -= toBorderDist;
+    } else {
+      x += xFromNodeCenter;
+      y -= yFromNodeCenter;
+    }
+  } else if (node.shape.width > node.shape.height) {
+    x = node.x + node.shape.width * 0.5;
+    y = node.y - radius;
+  } else {
+    x = node.x + radius;
+    y = node.y - node.shape.height * 0.5;
+  }
+
+  return { x, y };
+}
 
 /**
  * Callback to determine text dimensions, using the parent label settings.
+ *
  * @callback MeasureText
  * @param {text} text
  * @param {text} mod
- * @return {Object} { width, values} width in pixels and font attributes
+ * @returns {object} { width, values} width in pixels and font attributes
  */
-
 
 /**
  * Helper class for Label which collects results of splitting labels into lines and blocks.
@@ -2724,18 +2726,16 @@ class Groups {
  * @private
  */
 class LabelAccumulator {
-
   /**
    * @param {MeasureText} measureText
    */
   constructor(measureText) {
     this.measureText = measureText;
     this.current = 0;
-    this.width   = 0;
-    this.height  = 0;
-    this.lines   = [];
+    this.width = 0;
+    this.height = 0;
+    this.lines = [];
   }
-
 
   /**
    * Append given text to the given line.
@@ -2745,13 +2745,12 @@ class LabelAccumulator {
    * @param {'bold'|'ital'|'boldital'|'mono'|'normal'} [mod='normal']
    * @private
    */
-  _add(l, text, mod = 'normal') { 
-
+  _add(l, text, mod = "normal") {
     if (this.lines[l] === undefined) {
       this.lines[l] = {
-        width : 0,
+        width: 0,
         height: 0,
-        blocks: []
+        blocks: [],
       };
     }
 
@@ -2767,9 +2766,9 @@ class LabelAccumulator {
     // Determine width and get the font properties
     const result = this.measureText(tmpText, mod);
     const block = Object.assign({}, result.values);
-    block.text  = text;
+    block.text = text;
     block.width = result.width;
-    block.mod   = mod;
+    block.mod = mod;
 
     if (text === undefined || text === "") {
       block.width = 0;
@@ -2780,7 +2779,6 @@ class LabelAccumulator {
     // Update the line width. We need this for determining if a string goes over max width
     this.lines[l].width += block.width;
   }
-
 
   /**
    * Returns the width in pixels of the current line.
@@ -2794,17 +2792,15 @@ class LabelAccumulator {
     return line.width;
   }
 
-
-   /**
-    * Add text in block to current line
-    *
-    * @param {string} text
-    * @param {'bold'|'ital'|'boldital'|'mono'|'normal'} [mod='normal']
-    */
-   append(text, mod = 'normal') { 
-     this._add(this.current, text, mod);
-   }
-
+  /**
+   * Add text in block to current line
+   *
+   * @param {string} text
+   * @param {'bold'|'ital'|'boldital'|'mono'|'normal'} [mod='normal']
+   */
+  append(text, mod = "normal") {
+    this._add(this.current, text, mod);
+  }
 
   /**
    * Add text in block to current line and start a new line
@@ -2812,51 +2808,50 @@ class LabelAccumulator {
    * @param {string} text
    * @param {'bold'|'ital'|'boldital'|'mono'|'normal'} [mod='normal']
    */
-  newLine(text, mod = 'normal') {
+  newLine(text, mod = "normal") {
     this._add(this.current, text, mod);
     this.current++;
   }
-
 
   /**
    * Determine and set the heights of all the lines currently contained in this instance
    *
    * Note that width has already been set.
-   * 
+   *
    * @private
    */
   determineLineHeights() {
     for (let k = 0; k < this.lines.length; k++) {
-      const line   = this.lines[k];
+      const line = this.lines[k];
 
       // Looking for max height of blocks in line
       let height = 0;
 
-      if (line.blocks !== undefined) {  // Can happen if text contains e.g. '\n '
+      if (line.blocks !== undefined) {
+        // Can happen if text contains e.g. '\n '
         for (let l = 0; l < line.blocks.length; l++) {
-          const block =  line.blocks[l];
+          const block = line.blocks[l];
 
           if (height < block.height) {
             height = block.height;
           }
         }
       }
-  
+
       line.height = height;
     }
   }
 
-
   /**
    * Determine the full size of the label text, as determined by current lines and blocks
-   * 
+   *
    * @private
    */
   determineLabelSize() {
-    let width  = 0;
+    let width = 0;
     let height = 0;
     for (let k = 0; k < this.lines.length; k++) {
-      const line   = this.lines[k];
+      const line = this.lines[k];
 
       if (line.width > width) {
         width = line.width;
@@ -2864,14 +2859,13 @@ class LabelAccumulator {
       height += line.height;
     }
 
-    this.width  = width;
+    this.width = width;
     this.height = height;
   }
 
-
   /**
    * Remove all empty blocks and empty lines we don't need
-   * 
+   *
    * This must be done after the width/height determination,
    * so that these are set properly for processing here.
    *
@@ -2881,14 +2875,14 @@ class LabelAccumulator {
   removeEmptyBlocks() {
     const tmpLines = [];
     for (let k = 0; k < this.lines.length; k++) {
-      const line   = this.lines[k];
+      const line = this.lines[k];
 
       // Note: an empty line in between text has width zero but is still relevant to layout.
       // So we can't use width for testing empty line here
       if (line.blocks.length === 0) continue;
 
       // Discard final empty line always
-      if(k === this.lines.length - 1) {
+      if (k === this.lines.length - 1) {
         if (line.width === 0) continue;
       }
 
@@ -2922,7 +2916,6 @@ class LabelAccumulator {
     return tmpLines;
   }
 
-
   /**
    * Set the sizes for all lines and the whole thing.
    *
@@ -2935,34 +2928,32 @@ class LabelAccumulator {
     this.determineLabelSize();
     const tmpLines = this.removeEmptyBlocks();
 
-
     // Return a simple hash object for further processing.
     return {
-      width : this.width,
+      width: this.width,
       height: this.height,
-      lines : tmpLines
-    }
+      lines: tmpLines,
+    };
   }
 }
 
 // Hash of prepared regexp's for tags
 const tagPattern = {
   // HTML
-  '<b>': /<b>/,
-  '<i>': /<i>/,
-  '<code>': /<code>/,
-  '</b>': /<\/b>/,
-  '</i>': /<\/i>/,
-  '</code>': /<\/code>/,
+  "<b>": /<b>/,
+  "<i>": /<i>/,
+  "<code>": /<code>/,
+  "</b>": /<\/b>/,
+  "</i>": /<\/i>/,
+  "</code>": /<\/code>/,
   // Markdown
-  '*': /\*/,  // bold
-  '_': /\_/,   // ital
-  '`': /`/,   // mono
-  'afterBold': /[^\*]/,
-  'afterItal': /[^_]/,
-  'afterMono': /[^`]/,
+  "*": /\*/, // bold
+  _: /_/, // ital
+  "`": /`/, // mono
+  afterBold: /[^*]/,
+  afterItal: /[^_]/,
+  afterMono: /[^`]/,
 };
-
 
 /**
  * Internal helper class for parsing the markup tags for HTML and Markdown.
@@ -2971,7 +2962,6 @@ const tagPattern = {
  *       Scan usage of `this.spacing` within method
  */
 class MarkupAccumulator {
-
   /**
    * Create an instance
    *
@@ -2990,40 +2980,35 @@ class MarkupAccumulator {
     this.blocks = [];
   }
 
-
   /**
    * Return the mod label currently on the top of the stack
    *
-   * @returns {string}  label of topmost mod 
+   * @returns {string}  label of topmost mod
    * @private
    */
   mod() {
-    return (this.modStack.length === 0) ? 'normal' : this.modStack[0];
+    return this.modStack.length === 0 ? "normal" : this.modStack[0];
   }
-
 
   /**
    * Return the mod label currently active
-   * 
-   * @returns {string}  label of active mod 
+   *
+   * @returns {string}  label of active mod
    * @private
    */
   modName() {
-    if (this.modStack.length === 0)
-      return 'normal';
-    else if (this.modStack[0] === 'mono')
-      return 'mono';
+    if (this.modStack.length === 0) return "normal";
+    else if (this.modStack[0] === "mono") return "mono";
     else {
       if (this.bold && this.ital) {
-        return 'boldital';
+        return "boldital";
       } else if (this.bold) {
-        return 'bold';
+        return "bold";
       } else if (this.ital) {
-        return 'ital';
+        return "ital";
       }
     }
   }
-
 
   /**
    * @private
@@ -3038,7 +3023,6 @@ class MarkupAccumulator {
       this.buffer = "";
     }
   }
-
 
   /**
    * Output text to buffer
@@ -3059,7 +3043,6 @@ class MarkupAccumulator {
     }
   }
 
-
   /**
    * Handle parsing of whitespace
    *
@@ -3079,7 +3062,6 @@ class MarkupAccumulator {
     return false;
   }
 
-
   /**
    * @param {string} tagName  label for block type to set
    * @private
@@ -3090,7 +3072,6 @@ class MarkupAccumulator {
     this.modStack.unshift(tagName);
   }
 
-
   /**
    * @param {string} tagName  label for block type to unset
    * @private
@@ -3100,7 +3081,6 @@ class MarkupAccumulator {
     this[tagName] = false;
     this.modStack.shift();
   }
-
 
   /**
    * @param {string} tagName label for block type we are currently processing
@@ -3116,7 +3096,6 @@ class MarkupAccumulator {
 
     return false;
   }
-
 
   /**
    * @param {string|RegExp} tag
@@ -3135,26 +3114,29 @@ class MarkupAccumulator {
     return matched;
   }
 
-
   /**
    * @param {string} tagName label for block type we are currently processing
    * @param {string|RegExp} tag string to match in text
-   * @param {RegExp} [nextTag] regular expression to match for characters *following* the current tag 
+   * @param {RegExp} [nextTag] regular expression to match for characters *following* the current tag
    * @returns {boolean} true if the tag was processed, false otherwise
    */
   parseEndTag(tagName, tag, nextTag) {
-    let checkTag = (this.mod() === tagName);
-    if (tagName === 'mono') {  // special handling for 'mono'
-     checkTag = checkTag && this.mono;
+    let checkTag = this.mod() === tagName;
+    if (tagName === "mono") {
+      // special handling for 'mono'
+      checkTag = checkTag && this.mono;
     } else {
-     checkTag = checkTag && !this.mono;
+      checkTag = checkTag && !this.mono;
     }
 
     if (checkTag && this.match(tag)) {
       if (nextTag !== undefined) {
         // Purpose of the following match is to prevent a direct unset/set of a given tag
         // E.g. '*bold **still bold*' => '*bold still bold*'
-        if ((this.position === this.text.length-1) || this.match(nextTag, false)) {
+        if (
+          this.position === this.text.length - 1 ||
+          this.match(nextTag, false)
+        ) {
           this.unsetTag(tagName);
         }
       } else {
@@ -3166,7 +3148,6 @@ class MarkupAccumulator {
 
     return false;
   }
-
 
   /**
    * @param {string|RegExp} tag  string to match in text
@@ -3182,7 +3163,6 @@ class MarkupAccumulator {
 
     return false;
   }
-
 
   /**
    * Create a regular expression for the tag if it isn't already one.
@@ -3200,7 +3180,7 @@ class MarkupAccumulator {
     let regExp;
     if (tag instanceof RegExp) {
       regExp = tag;
-      length = 1;   // ASSUMPTION: regexp only tests one character
+      length = 1; // ASSUMPTION: regexp only tests one character
     } else {
       // use prepared regexp if present
       const prepared = tagPattern[tag];
@@ -3217,18 +3197,16 @@ class MarkupAccumulator {
   }
 }
 
-
 /**
  * Helper class for Label which explodes the label text into lines and blocks within lines
  *
  * @private
  */
 class LabelSplitter {
-
   /**
    * @param {CanvasRenderingContext2D} ctx Canvas rendering context
    * @param {Label} parent reference to the Label instance using current instance
-   * @param {boolean} selected 
+   * @param {boolean} selected
    * @param {boolean} hover
    */
   constructor(ctx, parent, selected, hover) {
@@ -3240,9 +3218,9 @@ class LabelSplitter {
     /**
      * Callback to determine text width; passed to LabelAccumulator instance
      *
-     * @param  {String} text string to determine width of
-     * @param  {String} mod  font type to use for this text
-     * @return {Object} { width, values} width in pixels and font attributes
+     * @param  {string} text string to determine width of
+     * @param  {string} mod  font type to use for this text
+     * @returns {object} { width, values} width in pixels and font attributes
      */
     const textWidth = (text, mod) => {
       if (text === undefined) return 0;
@@ -3252,18 +3230,16 @@ class LabelSplitter {
       const values = this.parent.getFormattingValues(ctx, selected, hover, mod);
 
       let width = 0;
-      if (text !== '') {
+      if (text !== "") {
         const measure = this.ctx.measureText(text);
         width = measure.width;
       }
 
-      return {width, values: values};
+      return { width, values: values };
     };
-
 
     this.lines = new LabelAccumulator(textWidth);
   }
-
 
   /**
    * Split passed text of a label into lines and blocks.
@@ -3277,7 +3253,7 @@ class LabelSplitter {
    *
    * This might not be the best way to do it, but this is as it has been working till now.
    * In order not to break existing functionality, for the time being this behaviour will
-   * be retained in any code changes. 
+   * be retained in any code changes.
    *
    * @param {string} text  text to split
    * @returns {Array<line>}
@@ -3290,13 +3266,13 @@ class LabelSplitter {
     const font = this.parent.fontOptions;
 
     // Normalize the end-of-line's to a single representation - order important
-    text = text.replace(/\r\n/g, '\n');  // Dos EOL's
-    text = text.replace(/\r/g, '\n');        // Mac EOL's
+    text = text.replace(/\r\n/g, "\n"); // Dos EOL's
+    text = text.replace(/\r/g, "\n"); // Mac EOL's
 
     // Note that at this point, there can be no \r's in the text.
     // This is used later on splitStringIntoLines() to split multifont texts.
 
-    const nlLines = String(text).split('\n');
+    const nlLines = String(text).split("\n");
     const lineCount = nlLines.length;
 
     if (font.multi) {
@@ -3316,16 +3292,16 @@ class LabelSplitter {
           // widthConstraint.maximum defined
           //console.log('Running widthConstraint multi, max: ' + this.fontOptions.maxWdt);
           for (let j = 0; j < blocks.length; j++) {
-            const mod  = blocks[j].mod;
+            const mod = blocks[j].mod;
             const text = blocks[j].text;
             this.splitStringIntoLines(text, mod, true);
           }
         } else {
           // widthConstraint.maximum NOT defined
           for (let j = 0; j < blocks.length; j++) {
-            const mod  = blocks[j].mod;
+            const mod = blocks[j].mod;
             const text = blocks[j].text;
-            this.lines.append(text, mod); 
+            this.lines.append(text, mod);
           }
         }
 
@@ -3342,14 +3318,13 @@ class LabelSplitter {
       } else {
         // widthConstraint.maximum NOT defined
         for (let i = 0; i < lineCount; i++) {
-          this.lines.newLine(nlLines[i]); 
+          this.lines.newLine(nlLines[i]);
         }
       }
     }
-   
+
     return this.lines.finalize();
   }
-
 
   /**
    * normalize the markup system
@@ -3358,15 +3333,14 @@ class LabelSplitter {
    * @returns {string}
    */
   decodeMarkupSystem(markupSystem) {
-    let system = 'none';
-    if (markupSystem === 'markdown' || markupSystem === 'md') {
-      system = 'markdown';
-    } else if (markupSystem === true || markupSystem === 'html') {
-      system = 'html';
+    let system = "none";
+    if (markupSystem === "markdown" || markupSystem === "md") {
+      system = "markdown";
+    } else if (markupSystem === true || markupSystem === "html") {
+      system = "html";
     }
     return system;
   }
-
 
   /**
    *
@@ -3378,8 +3352,8 @@ class LabelSplitter {
 
     const parseEntities = (ch) => {
       if (/&/.test(ch)) {
-        const parsed = s.replace(s.text, '&lt;', '<')
-          || s.replace(s.text, '&amp;', '&');
+        const parsed =
+          s.replace(s.text, "&lt;", "<") || s.replace(s.text, "&amp;", "&");
 
         if (!parsed) {
           s.add("&");
@@ -3394,15 +3368,16 @@ class LabelSplitter {
     while (s.position < s.text.length) {
       const ch = s.text.charAt(s.position);
 
-      const parsed = s.parseWS(ch)
-        || (/</.test(ch) && ( 
-             s.parseStartTag('bold', '<b>')
-          || s.parseStartTag('ital', '<i>')
-          || s.parseStartTag('mono', '<code>')
-          || s.parseEndTag('bold', '</b>')
-          || s.parseEndTag('ital', '</i>')
-          || s.parseEndTag('mono', '</code>')))
-        || parseEntities(ch);
+      const parsed =
+        s.parseWS(ch) ||
+        (/</.test(ch) &&
+          (s.parseStartTag("bold", "<b>") ||
+            s.parseStartTag("ital", "<i>") ||
+            s.parseStartTag("mono", "<code>") ||
+            s.parseEndTag("bold", "</b>") ||
+            s.parseEndTag("ital", "</i>") ||
+            s.parseEndTag("mono", "</code>"))) ||
+        parseEntities(ch);
 
       if (!parsed) {
         s.add(ch);
@@ -3413,14 +3388,13 @@ class LabelSplitter {
     return s.blocks;
   }
 
-
   /**
    *
    * @param {string} text
    * @returns {Array}
    */
   splitMarkdownBlocks(text) {
-    const s = new MarkupAccumulator(text); 
+    const s = new MarkupAccumulator(text);
     let beginable = true;
 
     const parseOverride = (ch) => {
@@ -3436,7 +3410,7 @@ class LabelSplitter {
           }
         }
 
-        return true
+        return true;
       }
 
       return false;
@@ -3445,15 +3419,16 @@ class LabelSplitter {
     while (s.position < s.text.length) {
       const ch = s.text.charAt(s.position);
 
-      const parsed = s.parseWS(ch)
-        || parseOverride(ch)
-        || ((beginable || s.spacing) && (
-             s.parseStartTag('bold', '*')
-          || s.parseStartTag('ital', '_')
-          || s.parseStartTag('mono', '`')))
-        || s.parseEndTag('bold', '*', 'afterBold')
-        || s.parseEndTag('ital', '_', 'afterItal')
-        || s.parseEndTag('mono', '`', 'afterMono');
+      const parsed =
+        s.parseWS(ch) ||
+        parseOverride(ch) ||
+        ((beginable || s.spacing) &&
+          (s.parseStartTag("bold", "*") ||
+            s.parseStartTag("ital", "_") ||
+            s.parseStartTag("mono", "`"))) ||
+        s.parseEndTag("bold", "*", "afterBold") ||
+        s.parseEndTag("ital", "_", "afterItal") ||
+        s.parseEndTag("mono", "`", "afterMono");
 
       if (!parsed) {
         s.add(ch);
@@ -3465,7 +3440,6 @@ class LabelSplitter {
     return s.blocks;
   }
 
-
   /**
    * Explodes a piece of text into single-font blocks using a given markup
    *
@@ -3476,18 +3450,19 @@ class LabelSplitter {
    */
   splitBlocks(text, markupSystem) {
     const system = this.decodeMarkupSystem(markupSystem);
-    if (system === 'none') {
-      return [{
-        text: text,
-        mod: 'normal'
-      }]
-    } else if (system === 'markdown') {
+    if (system === "none") {
+      return [
+        {
+          text: text,
+          mod: "normal",
+        },
+      ];
+    } else if (system === "markdown") {
       return this.splitMarkdownBlocks(text);
-    } else if (system === 'html') {
+    } else if (system === "html") {
       return this.splitHtmlBlocks(text);
     }
   }
-
 
   /**
    * @param {string} text
@@ -3496,24 +3471,23 @@ class LabelSplitter {
    */
   overMaxWidth(text) {
     const width = this.ctx.measureText(text).width;
-    return (this.lines.curWidth() + width > this.parent.fontOptions.maxWdt);
+    return this.lines.curWidth() + width > this.parent.fontOptions.maxWdt;
   }
 
-
   /**
-   * Determine the longest part of the sentence which still fits in the 
+   * Determine the longest part of the sentence which still fits in the
    * current max width.
-   * 
+   *
    * @param {Array} words  Array of strings signifying a text lines
-   * @return {number}      index of first item in string making string go over max
+   * @returns {number}      index of first item in string making string go over max
    * @private
    */
   getLongestFit(words) {
-    let text = '';
+    let text = "";
     let w = 0;
 
     while (w < words.length) {
-      const pre = (text === '') ? '' : ' ';
+      const pre = text === "" ? "" : " ";
       const newText = text + pre + words[w];
 
       if (this.overMaxWidth(newText)) break;
@@ -3524,50 +3498,48 @@ class LabelSplitter {
     return w;
   }
 
-
   /**
    * Determine the longest part of the string which still fits in the
    * current max width.
-   * 
+   *
    * @param {Array} words Array of strings signifying a text lines
-   * @return {number} index of first item in string making string go over max
+   * @returns {number} index of first item in string making string go over max
    */
-   getLongestFitWord(words) {
-     let w = 0;
+  getLongestFitWord(words) {
+    let w = 0;
 
-     while (w < words.length) {
-       if (this.overMaxWidth(words.slice(0,w))) break;
-       w++;
-     }
+    while (w < words.length) {
+      if (this.overMaxWidth(words.slice(0, w))) break;
+      w++;
+    }
 
-     return w;
+    return w;
   }
-
 
   /**
    * Split the passed text into lines, according to width constraint (if any).
-   * 
+   *
    * The method assumes that the input string is a single line, i.e. without lines break.
    *
    * This method retains spaces, if still present (case `font.multi: false`).
    * A space which falls on an internal line break, will be replaced by a newline.
    * There is no special handling of tabs; these go along with the flow.
-   * 
+   *
    * @param {string} str
    * @param {string} [mod='normal']
    * @param {boolean} [appendLast=false]
    * @private
    */
-  splitStringIntoLines(str, mod = 'normal', appendLast = false) {
+  splitStringIntoLines(str, mod = "normal", appendLast = false) {
     // Set the canvas context font, based upon the current selected/hover state
     // and the provided mod, so the text measurement performed by getLongestFit
     // will be accurate - and not just use the font of whoever last used the canvas.
     this.parent.getFormattingValues(this.ctx, this.selected, this.hover, mod);
 
     // Still-present spaces are relevant, retain them
-    str = str.replace(/^( +)/g, '$1\r');
-    str = str.replace(/([^\r][^ ]*)( +)/g, '$1\r$2\r');
-    let words = str.split('\r');
+    str = str.replace(/^( +)/g, "$1\r");
+    str = str.replace(/([^\r][^ ]*)( +)/g, "$1\r$2\r");
+    let words = str.split("\r");
 
     while (words.length > 0) {
       let w = this.getLongestFit(words);
@@ -3585,18 +3557,18 @@ class LabelSplitter {
       } else {
         // skip any space that is replaced by a newline
         let newW = w;
-        if (words[w - 1] === ' ') {
+        if (words[w - 1] === " ") {
           w--;
-        } else if (words[newW] === ' ') {
+        } else if (words[newW] === " ") {
           newW++;
         }
 
         const text = words.slice(0, w).join("");
 
         if (w == words.length && appendLast) {
-          this.lines.append(text, mod); 
+          this.lines.append(text, mod);
         } else {
-          this.lines.newLine(text, mod); 
+          this.lines.newLine(text, mod);
         }
 
         // Adjust the word, so that the rest will be done next iteration
@@ -3608,37 +3580,35 @@ class LabelSplitter {
 
 /**
  * List of special styles for multi-fonts
+ *
  * @private
  */
-const multiFontStyle = ['bold', 'ital', 'boldital', 'mono'];
-
+const multiFontStyle = ["bold", "ital", "boldital", "mono"];
 
 /**
  * A Label to be used for Nodes or Edges.
  */
 class Label {
-
   /**
-   * @param {Object} body
-   * @param {Object} options
+   * @param {object} body
+   * @param {object} options
    * @param {boolean} [edgelabel=false]
    */
   constructor(body, options, edgelabel = false) {
     this.body = body;
     this.pointToSelf = false;
     this.baseSize = undefined;
-    this.fontOptions = {};      // instance variable containing the *instance-local* font options
+    this.fontOptions = {}; // instance variable containing the *instance-local* font options
     this.setOptions(options);
-    this.size = {top: 0, left: 0, width: 0, height: 0, yLine: 0};
+    this.size = { top: 0, left: 0, width: 0, height: 0, yLine: 0 };
     this.isEdgeLabel = edgelabel;
   }
 
-
   /**
-   * @param {Object} options the options of the parent Node-instance
+   * @param {object} options the options of the parent Node-instance
    */
   setOptions(options) {
-    this.elementOptions = options;  // Reference to the options of the parent Node-instance 
+    this.elementOptions = options; // Reference to the options of the parent Node-instance
 
     this.initFontOptions(options.font);
 
@@ -3649,13 +3619,13 @@ class Label {
       options.label = undefined;
     }
 
-    if (options.font !== undefined && options.font !== null) { // font options can be deleted at various levels
-      if (typeof options.font === 'string') {
+    if (options.font !== undefined && options.font !== null) {
+      // font options can be deleted at various levels
+      if (typeof options.font === "string") {
         this.baseSize = this.fontOptions.size;
-      }
-      else if (typeof options.font === 'object') {
+      } else if (typeof options.font === "object") {
         const size = options.font.size;
- 
+
         if (size !== undefined) {
           this.baseSize = size;
         }
@@ -3663,14 +3633,13 @@ class Label {
     }
   }
 
-
   /**
    * Init the font Options structure.
    *
    * Member fontOptions serves as an accumulator for the current font options.
    * As such, it needs to be completely separated from the node options.
    *
-   * @param {Object} newFontOptions the new font options to process
+   * @param {object} newFontOptions the new font options to process
    * @private
    */
   initFontOptions(newFontOptions) {
@@ -3688,12 +3657,11 @@ class Label {
 
     // Copy over the non-multifont options, if specified
     forEach(newFontOptions, (prop, n) => {
-      if (prop !== undefined && prop !== null && typeof prop !== 'object') {
+      if (prop !== undefined && prop !== null && typeof prop !== "object") {
         this.fontOptions[n] = prop;
       }
     });
   }
-
 
   /**
    * If in-variable is a string, parse it as a font specifier.
@@ -3701,23 +3669,22 @@ class Label {
    * Note that following is not done here and have to be done after the call:
    * - Not all font options are set (vadjust, mod)
    *
-   * @param {Object} outOptions  out-parameter, object in which to store the parse results (if any)
-   * @param {Object} inOptions  font options to parse
-   * @return {boolean} true if font parsed as string, false otherwise
+   * @param {object} outOptions  out-parameter, object in which to store the parse results (if any)
+   * @param {object} inOptions  font options to parse
+   * @returns {boolean} true if font parsed as string, false otherwise
    * @static
    */
   static parseFontString(outOptions, inOptions) {
-    if (!inOptions || typeof inOptions !== 'string') return false;
+    if (!inOptions || typeof inOptions !== "string") return false;
 
     const newOptionsArray = inOptions.split(" ");
 
-    outOptions.size  = +newOptionsArray[0].replace("px",'');
-    outOptions.face  = newOptionsArray[1];
+    outOptions.size = +newOptionsArray[0].replace("px", "");
+    outOptions.face = newOptionsArray[1];
     outOptions.color = newOptionsArray[2];
 
     return true;
   }
-
 
   /**
    * Set the width and height constraints based on 'nearest' value
@@ -3736,36 +3703,50 @@ class Label {
       minWdt: -1,
       constrainHeight: false,
       minHgt: -1,
-      valign: 'middle',
+      valign: "middle",
     };
 
-    const widthConstraint = topMost(pile, 'widthConstraint');
-    if (typeof widthConstraint === 'number') {
+    const widthConstraint = topMost(pile, "widthConstraint");
+    if (typeof widthConstraint === "number") {
       fontOptions.maxWdt = Number(widthConstraint);
       fontOptions.minWdt = Number(widthConstraint);
-    } else if (typeof widthConstraint === 'object') {
-      const widthConstraintMaximum = topMost(pile, ['widthConstraint', 'maximum']);
-      if (typeof widthConstraintMaximum === 'number') {
+    } else if (typeof widthConstraint === "object") {
+      const widthConstraintMaximum = topMost(pile, [
+        "widthConstraint",
+        "maximum",
+      ]);
+      if (typeof widthConstraintMaximum === "number") {
         fontOptions.maxWdt = Number(widthConstraintMaximum);
       }
-      const widthConstraintMinimum = topMost(pile, ['widthConstraint', 'minimum']);
-      if (typeof widthConstraintMinimum === 'number') {
+      const widthConstraintMinimum = topMost(pile, [
+        "widthConstraint",
+        "minimum",
+      ]);
+      if (typeof widthConstraintMinimum === "number") {
         fontOptions.minWdt = Number(widthConstraintMinimum);
       }
     }
 
-
-    const heightConstraint = topMost(pile, 'heightConstraint');
-    if (typeof heightConstraint === 'number') {
+    const heightConstraint = topMost(pile, "heightConstraint");
+    if (typeof heightConstraint === "number") {
       fontOptions.minHgt = Number(heightConstraint);
-    } else if (typeof heightConstraint === 'object') {
-      const heightConstraintMinimum = topMost(pile, ['heightConstraint', 'minimum']);
-      if (typeof heightConstraintMinimum === 'number') {
+    } else if (typeof heightConstraint === "object") {
+      const heightConstraintMinimum = topMost(pile, [
+        "heightConstraint",
+        "minimum",
+      ]);
+      if (typeof heightConstraintMinimum === "number") {
         fontOptions.minHgt = Number(heightConstraintMinimum);
       }
-      const heightConstraintValign = topMost(pile, ['heightConstraint', 'valign']);
-      if (typeof heightConstraintValign === 'string') {
-        if ((heightConstraintValign === 'top')|| (heightConstraintValign === 'bottom')) {
+      const heightConstraintValign = topMost(pile, [
+        "heightConstraint",
+        "valign",
+      ]);
+      if (typeof heightConstraintValign === "string") {
+        if (
+          heightConstraintValign === "top" ||
+          heightConstraintValign === "bottom"
+        ) {
           fontOptions.valign = heightConstraintValign;
         }
       }
@@ -3774,20 +3755,18 @@ class Label {
     return fontOptions;
   }
 
-
   /**
    * Set options and update internal state
    *
-   * @param {Object} options  options to set
+   * @param {object} options  options to set
    * @param {Array}  pile     array of option objects to consider for option 'chosen'
    */
   update(options, pile) {
     this.setOptions(options, true);
     this.propagateFonts(pile);
     deepExtend(this.fontOptions, this.constrain(pile));
-    this.fontOptions.chooser = choosify('label', pile);
+    this.fontOptions.chooser = choosify("label", pile);
   }
-
 
   /**
    * When margins are set in an element, adjust sizes is called to remove them
@@ -3796,27 +3775,26 @@ class Label {
    * @param {{top: number, right: number, bottom: number, left: number}} margins
    */
   adjustSizes(margins) {
-    const widthBias =  (margins) ? (margins.right + margins.left) : 0;
+    const widthBias = margins ? margins.right + margins.left : 0;
     if (this.fontOptions.constrainWidth) {
       this.fontOptions.maxWdt -= widthBias;
       this.fontOptions.minWdt -= widthBias;
     }
-    const heightBias = (margins) ? (margins.top + margins.bottom)  : 0;
+    const heightBias = margins ? margins.top + margins.bottom : 0;
     if (this.fontOptions.constrainHeight) {
       this.fontOptions.minHgt -= heightBias;
     }
   }
 
-
-/////////////////////////////////////////////////////////
-// Methods for handling options piles
-// Eventually, these will be moved to a separate class
-/////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
+  // Methods for handling options piles
+  // Eventually, these will be moved to a separate class
+  /////////////////////////////////////////////////////////
 
   /**
    * Add the font members of the passed list of option objects to the pile.
    *
-   * @param {Pile} dstPile  pile of option objects add to 
+   * @param {Pile} dstPile  pile of option objects add to
    * @param {Pile} srcPile  pile of option objects to take font options from
    * @private
    */
@@ -3825,7 +3803,6 @@ class Label {
       this.addFontToPile(dstPile, srcPile[i]);
     }
   }
-
 
   /**
    * Add given font option object to the list of objects (the 'pile') to consider for determining
@@ -3842,7 +3819,6 @@ class Label {
     const item = options.font;
     pile.push(item);
   }
-
 
   /**
    * Collect all own-property values from the font pile that aren't multi-font option objectss.
@@ -3865,7 +3841,7 @@ class Label {
       }
 
       forEach(fontOptions, (opt, name) => {
-        if (opt === undefined) return;        // multi-font option need not be present 
+        if (opt === undefined) return; // multi-font option need not be present
         if (Object.prototype.hasOwnProperty.call(ret, name)) return; // Keep first value we encounter
 
         if (multiFontStyle.indexOf(name) !== -1) {
@@ -3879,7 +3855,6 @@ class Label {
 
     return ret;
   }
-
 
   /**
    * Return the value for given option for the given multi-font.
@@ -3939,9 +3914,10 @@ class Label {
     }
 
     // A value **must** be found; you should never get here.
-    throw new Error("Did not find value for multi-font for property: '" + option + "'");
+    throw new Error(
+      "Did not find value for multi-font for property: '" + option + "'"
+    );
   }
-
 
   /**
    * Return all options values for the given multi-font.
@@ -3955,7 +3931,7 @@ class Label {
    */
   getFontOptions(pile, multiName) {
     const result = {};
-    const optionNames = ['color', 'size', 'face', 'mod', 'vadjust'];  // List of allowed options per multi-font
+    const optionNames = ["color", "size", "face", "mod", "vadjust"]; // List of allowed options per multi-font
 
     for (let i = 0; i < optionNames.length; ++i) {
       const mod = optionNames[i];
@@ -3965,10 +3941,9 @@ class Label {
     return result;
   }
 
-/////////////////////////////////////////////////////////
-// End methods for handling options piles
-/////////////////////////////////////////////////////////
-
+  /////////////////////////////////////////////////////////
+  // End methods for handling options piles
+  /////////////////////////////////////////////////////////
 
   /**
    * Collapse the font options for the multi-font to single objects, from
@@ -3978,7 +3953,7 @@ class Label {
    *                     First item in list assumed to be the newly set options.
    */
   propagateFonts(pile) {
-    const fontPile = [];   // sequence of font objects to consider, order important
+    const fontPile = []; // sequence of font objects to consider, order important
 
     // Note that this.elementOptions is not used here.
     this.addFontOptionsToPile(fontPile, pile);
@@ -3987,7 +3962,7 @@ class Label {
     // We set multifont values even if multi === false, for consistency (things break otherwise)
     for (let i = 0; i < multiFontStyle.length; ++i) {
       const mod = multiFontStyle[i];
-      const modOptions  = this.fontOptions[mod];
+      const modOptions = this.fontOptions[mod];
       const tmpMultiFontOptions = this.getFontOptions(fontPile, mod);
 
       // Copy over found values
@@ -3995,14 +3970,14 @@ class Label {
         modOptions[n] = option;
       });
 
-      modOptions.size    = Number(modOptions.size);
+      modOptions.size = Number(modOptions.size);
       modOptions.vadjust = Number(modOptions.vadjust);
     }
   }
 
-
   /**
    * Main function. This is called from anything that wants to draw a label.
+   *
    * @param {CanvasRenderingContext2D} ctx
    * @param {number} x
    * @param {number} y
@@ -4010,20 +3985,24 @@ class Label {
    * @param {boolean} hover
    * @param {string} [baseline='middle']
    */
-  draw(ctx, x, y, selected, hover, baseline = 'middle') {
+  draw(ctx, x, y, selected, hover, baseline = "middle") {
     // if no label, return
-    if (this.elementOptions.label === undefined)
-      return;
+    if (this.elementOptions.label === undefined) return;
 
     // check if we have to render the label
     let viewFontSize = this.fontOptions.size * this.body.view.scale;
-    if (this.elementOptions.label && viewFontSize < this.elementOptions.scaling.label.drawThreshold - 1)
+    if (
+      this.elementOptions.label &&
+      viewFontSize < this.elementOptions.scaling.label.drawThreshold - 1
+    )
       return;
 
     // This ensures that there will not be HUGE letters on screen
     // by setting an upper limit on the visible text size (regardless of zoomLevel)
     if (viewFontSize >= this.elementOptions.scaling.label.maxVisible) {
-      viewFontSize = Number(this.elementOptions.scaling.label.maxVisible) / this.body.view.scale;
+      viewFontSize =
+        Number(this.elementOptions.scaling.label.maxVisible) /
+        this.body.view.scale;
     }
 
     // update the size cache if required
@@ -4032,20 +4011,22 @@ class Label {
     this._drawText(ctx, x, this.size.yLine, baseline, viewFontSize);
   }
 
-
   /**
    * Draws the label background
+   *
    * @param {CanvasRenderingContext2D} ctx
    * @private
    */
   _drawBackground(ctx) {
-    if (this.fontOptions.background !== undefined && this.fontOptions.background !== "none") {
+    if (
+      this.fontOptions.background !== undefined &&
+      this.fontOptions.background !== "none"
+    ) {
       ctx.fillStyle = this.fontOptions.background;
       const size = this.getSize();
       ctx.fillRect(size.left, size.top, size.width, size.height);
     }
   }
-
 
   /**
    *
@@ -4053,19 +4034,19 @@ class Label {
    * @param {number} x
    * @param {number} y
    * @param {string} [baseline='middle']
-   * @param {number} viewFontSize 
+   * @param {number} viewFontSize
    * @private
    */
-  _drawText(ctx, x, y, baseline = 'middle', viewFontSize) {
+  _drawText(ctx, x, y, baseline = "middle", viewFontSize) {
     [x, y] = this._setAlignment(ctx, x, y, baseline);
 
-    ctx.textAlign = 'left';
+    ctx.textAlign = "left";
     x = x - this.size.width / 2; // Shift label 1/2-distance to the left
-    if ((this.fontOptions.valign) && (this.size.height > this.size.labelHeight)) {
-      if (this.fontOptions.valign === 'top') {
+    if (this.fontOptions.valign && this.size.height > this.size.labelHeight) {
+      if (this.fontOptions.valign === "top") {
         y -= (this.size.height - this.size.labelHeight) / 2;
       }
-      if (this.fontOptions.valign === 'bottom') {
+      if (this.fontOptions.valign === "bottom") {
         y += (this.size.height - this.size.labelHeight) / 2;
       }
     }
@@ -4075,19 +4056,23 @@ class Label {
       const line = this.lines[i];
       if (line && line.blocks) {
         let width = 0;
-        if (this.isEdgeLabel || this.fontOptions.align === 'center') {
+        if (this.isEdgeLabel || this.fontOptions.align === "center") {
           width += (this.size.width - line.width) / 2;
-        } else if (this.fontOptions.align === 'right') {
-          width += (this.size.width - line.width);
+        } else if (this.fontOptions.align === "right") {
+          width += this.size.width - line.width;
         }
         for (let j = 0; j < line.blocks.length; j++) {
           const block = line.blocks[j];
           ctx.font = block.font;
-          const [fontColor, strokeColor] = this._getColor(block.color, viewFontSize, block.strokeColor);
+          const [fontColor, strokeColor] = this._getColor(
+            block.color,
+            viewFontSize,
+            block.strokeColor
+          );
           if (block.strokeWidth > 0) {
             ctx.lineWidth = block.strokeWidth;
             ctx.strokeStyle = strokeColor;
-            ctx.lineJoin = 'round';
+            ctx.lineJoin = "round";
           }
           ctx.fillStyle = fontColor;
 
@@ -4114,27 +4099,28 @@ class Label {
   _setAlignment(ctx, x, y, baseline) {
     // check for label alignment (for edges)
     // TODO: make alignment for nodes
-    if (this.isEdgeLabel && this.fontOptions.align !== 'horizontal' && this.pointToSelf === false) {
+    if (
+      this.isEdgeLabel &&
+      this.fontOptions.align !== "horizontal" &&
+      this.pointToSelf === false
+    ) {
       x = 0;
       y = 0;
 
       const lineMargin = 2;
-      if (this.fontOptions.align === 'top') {
-        ctx.textBaseline = 'alphabetic';
+      if (this.fontOptions.align === "top") {
+        ctx.textBaseline = "alphabetic";
         y -= 2 * lineMargin; // distance from edge, required because we use alphabetic. Alphabetic has less difference between browsers
+      } else if (this.fontOptions.align === "bottom") {
+        ctx.textBaseline = "hanging";
+        y += 2 * lineMargin; // distance from edge, required because we use hanging. Hanging has less difference between browsers
+      } else {
+        ctx.textBaseline = "middle";
       }
-      else if (this.fontOptions.align === 'bottom') {
-        ctx.textBaseline = 'hanging';
-        y += 2 * lineMargin;// distance from edge, required because we use hanging. Hanging has less difference between browsers
-      }
-      else {
-        ctx.textBaseline = 'middle';
-      }
-    }
-    else {
+    } else {
       ctx.textBaseline = baseline;
     }
-    return [x,y];
+    return [x, y];
   }
 
   /**
@@ -4148,10 +4134,16 @@ class Label {
    * @private
    */
   _getColor(color, viewFontSize, initialStrokeColor) {
-    let fontColor = color || '#000000';
-    let strokeColor = initialStrokeColor || '#ffffff';
+    let fontColor = color || "#000000";
+    let strokeColor = initialStrokeColor || "#ffffff";
     if (viewFontSize <= this.elementOptions.scaling.label.drawThreshold) {
-      const opacity = Math.max(0, Math.min(1, 1 - (this.elementOptions.scaling.label.drawThreshold - viewFontSize)));
+      const opacity = Math.max(
+        0,
+        Math.min(
+          1,
+          1 - (this.elementOptions.scaling.label.drawThreshold - viewFontSize)
+        )
+      );
       fontColor = overrideOpacity(fontColor, opacity);
       strokeColor = overrideOpacity(strokeColor, opacity);
     }
@@ -4170,34 +4162,33 @@ class Label {
     return {
       width: this.size.width,
       height: this.size.height,
-      lineCount: this.lineCount
+      lineCount: this.lineCount,
     };
   }
-
 
   /**
    * Get the current dimensions of the label
    *
-   * @return {rect}
+   * @returns {rect}
    */
   getSize() {
     const lineMargin = 2;
-    let x = this.size.left;                 // default values which might be overridden below
-    let y = this.size.top - 0.5*lineMargin; // idem
+    let x = this.size.left; // default values which might be overridden below
+    let y = this.size.top - 0.5 * lineMargin; // idem
 
     if (this.isEdgeLabel) {
       const x2 = -this.size.width * 0.5;
 
       switch (this.fontOptions.align) {
-        case 'middle':
+        case "middle":
           x = x2;
           y = -this.size.height * 0.5;
           break;
-        case 'top':
+        case "top":
           x = x2;
           y = -(this.size.height + lineMargin);
           break;
-        case 'bottom':
+        case "bottom":
           x = x2;
           y = lineMargin;
           break;
@@ -4205,15 +4196,14 @@ class Label {
     }
 
     const ret = {
-      left  : x,
-      top   : y,
-      width : this.size.width,
+      left: x,
+      top: y,
+      width: this.size.width,
       height: this.size.height,
     };
 
     return ret;
   }
-
 
   /**
    *
@@ -4224,18 +4214,17 @@ class Label {
    * @param {number} [y=0]
    * @param {'middle'|'hanging'} [baseline='middle']
    */
-  calculateLabelSize(ctx, selected, hover, x = 0, y = 0, baseline = 'middle') {
+  calculateLabelSize(ctx, selected, hover, x = 0, y = 0, baseline = "middle") {
     this._processLabel(ctx, selected, hover);
     this.size.left = x - this.size.width * 0.5;
     this.size.top = y - this.size.height * 0.5;
     this.size.yLine = y + (1 - this.lineCount) * 0.5 * this.fontOptions.size;
     if (baseline === "hanging") {
       this.size.top += 0.5 * this.fontOptions.size;
-      this.size.top += 4;   // distance from node, required because we use hanging. Hanging has less difference between browsers
+      this.size.top += 4; // distance from node, required because we use hanging. Hanging has less difference between browsers
       this.size.yLine += 4; // distance from node
     }
   }
-
 
   /**
    *
@@ -4246,13 +4235,14 @@ class Label {
    * @returns {{color, size, face, mod, vadjust, strokeWidth: *, strokeColor: (*|string|allOptions.edges.font.strokeColor|{string}|allOptions.nodes.font.strokeColor|Array)}}
    */
   getFormattingValues(ctx, selected, hover, mod) {
-    const getValue = function(fontOptions, mod, option) {
+    const getValue = function (fontOptions, mod, option) {
       if (mod === "normal") {
-        if (option === 'mod' ) return "";
+        if (option === "mod") return "";
         return fontOptions[option];
       }
 
-      if (fontOptions[mod][option] !== undefined) {  // Grumbl leaving out test on undefined equals false for "" 
+      if (fontOptions[mod][option] !== undefined) {
+        // Grumbl leaving out test on undefined equals false for ""
         return fontOptions[mod][option];
       } else {
         // Take from parent font option
@@ -4261,26 +4251,36 @@ class Label {
     };
 
     const values = {
-      color  : getValue(this.fontOptions, mod, 'color'  ),
-      size   : getValue(this.fontOptions, mod, 'size'   ),
-      face   : getValue(this.fontOptions, mod, 'face'   ),
-      mod    : getValue(this.fontOptions, mod, 'mod'    ),
-      vadjust: getValue(this.fontOptions, mod, 'vadjust'),
+      color: getValue(this.fontOptions, mod, "color"),
+      size: getValue(this.fontOptions, mod, "size"),
+      face: getValue(this.fontOptions, mod, "face"),
+      mod: getValue(this.fontOptions, mod, "mod"),
+      vadjust: getValue(this.fontOptions, mod, "vadjust"),
       strokeWidth: this.fontOptions.strokeWidth,
-      strokeColor: this.fontOptions.strokeColor
+      strokeColor: this.fontOptions.strokeColor,
     };
     if (selected || hover) {
-      if (mod === "normal" && (this.fontOptions.chooser === true) && (this.elementOptions.labelHighlightBold)) {
-          values.mod = 'bold';
+      if (
+        mod === "normal" &&
+        this.fontOptions.chooser === true &&
+        this.elementOptions.labelHighlightBold
+      ) {
+        values.mod = "bold";
       } else {
-        if (typeof this.fontOptions.chooser === 'function') {
-          this.fontOptions.chooser(values, this.elementOptions.id, selected, hover);
+        if (typeof this.fontOptions.chooser === "function") {
+          this.fontOptions.chooser(
+            values,
+            this.elementOptions.id,
+            selected,
+            hover
+          );
         }
       }
     }
 
     let fontString = "";
-    if (values.mod !== undefined && values.mod !== "") {  // safeguard for undefined - this happened
+    if (values.mod !== undefined && values.mod !== "") {
+      // safeguard for undefined - this happened
       fontString += values.mod + " ";
     }
     fontString += values.size + "px " + values.face;
@@ -4291,7 +4291,6 @@ class Label {
     return values;
   }
 
-
   /**
    *
    * @param {boolean} selected
@@ -4299,9 +4298,8 @@ class Label {
    * @returns {boolean}
    */
   differentState(selected, hover) {
-    return ((selected !== this.selectedState) || (hover !== this.hoverState));
+    return selected !== this.selectedState || hover !== this.hoverState;
   }
-   
 
   /**
    * This explodes the passed text into lines and determines the width, height and number of lines.
@@ -4318,27 +4316,31 @@ class Label {
     return splitter.process(inText);
   }
 
-
   /**
    * This explodes the label string into lines and sets the width, height and number of lines.
+   *
    * @param {CanvasRenderingContext2D} ctx
    * @param {boolean} selected
    * @param {boolean} hover
    * @private
    */
   _processLabel(ctx, selected, hover) {
-
-    if(this.labelDirty === false && !this.differentState(selected,hover))
+    if (this.labelDirty === false && !this.differentState(selected, hover))
       return;
-    
-    const state = this._processLabelText(ctx, selected, hover, this.elementOptions.label);
 
-    if ((this.fontOptions.minWdt > 0) && (state.width < this.fontOptions.minWdt)) {
+    const state = this._processLabelText(
+      ctx,
+      selected,
+      hover,
+      this.elementOptions.label
+    );
+
+    if (this.fontOptions.minWdt > 0 && state.width < this.fontOptions.minWdt) {
       state.width = this.fontOptions.minWdt;
     }
 
-    this.size.labelHeight =state.height;
-    if ((this.fontOptions.minHgt > 0) && (state.height < this.fontOptions.minHgt)) {
+    this.size.labelHeight = state.height;
+    if (this.fontOptions.minHgt > 0 && state.height < this.fontOptions.minHgt) {
       state.height = this.fontOptions.minHgt;
     }
 
@@ -4352,21 +4354,23 @@ class Label {
     this.labelDirty = false;
   }
 
-
   /**
    * Check if this label is visible
    *
-   * @return {boolean} true if this label will be show, false otherwise
+   * @returns {boolean} true if this label will be show, false otherwise
    */
   visible() {
-    if ((this.size.width === 0 || this.size.height === 0)
-      || this.elementOptions.label === undefined) {
-      return false;  // nothing to display
+    if (
+      this.size.width === 0 ||
+      this.size.height === 0 ||
+      this.elementOptions.label === undefined
+    ) {
+      return false; // nothing to display
     }
 
     const viewFontSize = this.fontOptions.size * this.body.view.scale;
     if (viewFontSize < this.elementOptions.scaling.label.drawThreshold - 1) {
-      return false;  // Too small or too far away to show
+      return false; // Too small or too far away to show
     }
 
     return true;
@@ -4378,8 +4382,8 @@ class Label {
  */
 class NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -4393,12 +4397,12 @@ class NodeBase {
     this.radius = undefined;
     this.margin = undefined;
     this.refreshNeeded = true;
-    this.boundingBox = {top: 0, left: 0, right: 0, bottom: 0};
+    this.boundingBox = { top: 0, left: 0, right: 0, bottom: 0 };
   }
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
@@ -4412,7 +4416,7 @@ class NodeBase {
   _setMargins(labelModule) {
     this.margin = {};
     if (this.options.margin) {
-      if (typeof this.options.margin == 'object') {
+      if (typeof this.options.margin == "object") {
         this.margin.top = this.options.margin.top;
         this.margin.right = this.options.margin.right;
         this.margin.bottom = this.options.margin.bottom;
@@ -4434,14 +4438,17 @@ class NodeBase {
    * @returns {number}
    * @private
    */
-  _distanceToBorder(ctx,angle) {
+  _distanceToBorder(ctx, angle) {
     const borderWidth = this.options.borderWidth;
-    if (ctx){
+    if (ctx) {
       this.resize(ctx);
     }
-    return Math.min(
+    return (
+      Math.min(
         Math.abs(this.width / 2 / Math.cos(angle)),
-        Math.abs(this.height / 2 / Math.sin(angle))) + borderWidth;
+        Math.abs(this.height / 2 / Math.sin(angle))
+      ) + borderWidth
+    );
   }
 
   /**
@@ -4465,7 +4472,7 @@ class NodeBase {
    */
   disableShadow(ctx, values) {
     if (values.shadow) {
-      ctx.shadowColor = 'rgba(0,0,0,0)';
+      ctx.shadowColor = "rgba(0,0,0,0)";
       ctx.shadowBlur = 0;
       ctx.shadowOffsetX = 0;
       ctx.shadowOffsetY = 0;
@@ -4482,12 +4489,13 @@ class NodeBase {
       if (ctx.setLineDash !== undefined) {
         let dashes = values.borderDashes;
         if (dashes === true) {
-          dashes = [5,15];
+          dashes = [5, 15];
         }
         ctx.setLineDash(dashes);
-      }
-      else {
-        console.warn("setLineDash is not supported in this browser. The dashed borders cannot be used.");
+      } else {
+        console.warn(
+          "setLineDash is not supported in this browser. The dashed borders cannot be used."
+        );
         this.options.shapeProperties.borderDashes = false;
         values.borderDashes = false;
       }
@@ -4503,9 +4511,10 @@ class NodeBase {
     if (values.borderDashes !== false) {
       if (ctx.setLineDash !== undefined) {
         ctx.setLineDash([0]);
-      }
-      else {
-        console.warn("setLineDash is not supported in this browser. The dashed borders cannot be used.");
+      } else {
+        console.warn(
+          "setLineDash is not supported in this browser. The dashed borders cannot be used."
+        );
         this.options.shapeProperties.borderDashes = false;
         values.borderDashes = false;
       }
@@ -4528,7 +4537,10 @@ class NodeBase {
       return true;
     }
 
-    return  (this.width === undefined) || (this.labelModule.differentState(selected, hover));
+    return (
+      this.width === undefined ||
+      this.labelModule.differentState(selected, hover)
+    );
   }
 
   /**
@@ -4579,11 +4591,10 @@ class NodeBase {
     ctx.fill();
     // disable shadows for other elements.
     this.disableShadow(ctx, values);
-    
+
     ctx.restore();
     this.performStroke(ctx, values);
   }
-
 
   /**
    *
@@ -4591,12 +4602,11 @@ class NodeBase {
    * @private
    */
   _addBoundingBoxMargin(margin) {
-    this.boundingBox.left   -= margin;
-    this.boundingBox.top    -= margin;
+    this.boundingBox.left -= margin;
+    this.boundingBox.top -= margin;
     this.boundingBox.bottom += margin;
-    this.boundingBox.right  += margin;
+    this.boundingBox.right += margin;
   }
-
 
   /**
    * Actual implementation of this method call.
@@ -4617,14 +4627,13 @@ class NodeBase {
     }
 
     this.left = x - this.width / 2;
-    this.top  = y - this.height/ 2;
+    this.top = y - this.height / 2;
 
-    this.boundingBox.left   = this.left;
-    this.boundingBox.top    = this.top;
+    this.boundingBox.left = this.left;
+    this.boundingBox.top = this.top;
     this.boundingBox.bottom = this.top + this.height;
-    this.boundingBox.right  = this.left + this.width;
+    this.boundingBox.right = this.left + this.width;
   }
-
 
   /**
    * Default implementation of this method call.
@@ -4639,7 +4648,6 @@ class NodeBase {
   updateBoundingBox(x, y, ctx, selected, hover) {
     this._updateBoundingBox(x, y, ctx, selected, hover);
   }
-
 
   /**
    * Determine the dimensions to use for nodes with an internal label
@@ -4658,33 +4666,33 @@ class NodeBase {
     // NOTE: previously 'textSize' was not put in 'this' for Ellipse
     // TODO: examine the consequences.
     this.textSize = this.labelModule.getTextSize(ctx, selected, hover);
-    let width  = this.textSize.width;
+    let width = this.textSize.width;
     let height = this.textSize.height;
 
     const DEFAULT_SIZE = 14;
     if (width === 0) {
       // This happens when there is no label text set
-      width = DEFAULT_SIZE;  // use a decent default
+      width = DEFAULT_SIZE; // use a decent default
       height = DEFAULT_SIZE; // if width zero, then height also always zero
     }
 
-    return {width:width, height:height};
+    return { width: width, height: height };
   }
 }
 
 /**
  * A Box Node/Cluster shape.
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
-class Box extends NodeBase {
+let Box$1 = class Box extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
-  constructor (options, body, labelModule) {
-    super(options,body,labelModule);
+  constructor(options, body, labelModule) {
+    super(options, body, labelModule);
     this._setMargins(labelModule);
   }
 
@@ -4698,7 +4706,7 @@ class Box extends NodeBase {
     if (this.needsRefresh(selected, hover)) {
       const dimensions = this.getDimensionsFromLabel(ctx, selected, hover);
 
-      this.width  = dimensions.width + this.margin.right + this.margin.left;
+      this.width = dimensions.width + this.margin.right + this.margin.left;
       this.height = dimensions.height + this.margin.top + this.margin.bottom;
       this.radius = this.width / 2;
     }
@@ -4719,12 +4727,24 @@ class Box extends NodeBase {
     this.top = y - this.height / 2;
 
     this.initContextForDraw(ctx, values);
-    drawRoundRect(ctx, this.left, this.top, this.width, this.height, values.borderRadius);
+    drawRoundRect(
+      ctx,
+      this.left,
+      this.top,
+      this.width,
+      this.height,
+      values.borderRadius
+    );
     this.performFill(ctx, values);
 
     this.updateBoundingBox(x, y, ctx, selected, hover);
-    this.labelModule.draw(ctx, this.left + this.textSize.width / 2 + this.margin.left,
-                               this.top + this.textSize.height / 2 + this.margin.top, selected, hover);
+    this.labelModule.draw(
+      ctx,
+      this.left + this.textSize.width / 2 + this.margin.left,
+      this.top + this.textSize.height / 2 + this.margin.top,
+      selected,
+      hover
+    );
   }
 
   /**
@@ -4754,11 +4774,14 @@ class Box extends NodeBase {
     }
     const borderWidth = this.options.borderWidth;
 
-    return Math.min(
-        Math.abs((this.width) / 2 / Math.cos(angle)),
-        Math.abs((this.height)  / 2 / Math.sin(angle))) + borderWidth;
+    return (
+      Math.min(
+        Math.abs(this.width / 2 / Math.cos(angle)),
+        Math.abs(this.height / 2 / Math.sin(angle))
+      ) + borderWidth
+    );
   }
-}
+};
 
 /**
  * NOTE: This is a bad base class
@@ -4773,12 +4796,12 @@ class Box extends NodeBase {
  *       Rename this to ImageBase
  *       Consolidate common code in Image and CircleImage to base class
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
 class CircleImageBase extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -4789,9 +4812,9 @@ class CircleImageBase extends NodeBase {
 
   /**
    *
-   * @param {Object} options
-   * @param {Object} [imageObj]
-   * @param {Object} [imageObjAlt]
+   * @param {object} options
+   * @param {object} [imageObj]
+   * @param {object} [imageObjAlt]
    */
   setOptions(options, imageObj, imageObjAlt) {
     this.options = options;
@@ -4801,12 +4824,11 @@ class CircleImageBase extends NodeBase {
     }
   }
 
-
   /**
    * Set the images for this node.
    *
    * The images can be updated after the initial setting of options;
-   * therefore, this method needs to be reentrant. 
+   * therefore, this method needs to be reentrant.
    *
    * For correct working in error cases, it is necessary to properly set
    * field 'nodes.brokenImage' in the options.
@@ -4816,10 +4838,10 @@ class CircleImageBase extends NodeBase {
    */
   setImages(imageObj, imageObjAlt) {
     if (imageObjAlt && this.selected) {
-      this.imageObj    = imageObjAlt;
+      this.imageObj = imageObjAlt;
       this.imageObjAlt = imageObj;
     } else {
-      this.imageObj    = imageObj;
+      this.imageObj = imageObj;
       this.imageObjAlt = imageObjAlt;
     }
   }
@@ -4832,8 +4854,9 @@ class CircleImageBase extends NodeBase {
    * @param {boolean} selected value of new selected state for current node
    */
   switchImages(selected) {
-    const selection_changed = ((selected && !this.selected) || (!selected && this.selected));
-    this.selected = selected;    // Remember new selection
+    const selection_changed =
+      (selected && !this.selected) || (!selected && this.selected);
+    this.selected = selected; // Remember new selection
 
     if (this.imageObjAlt !== undefined && selection_changed) {
       const imageTmp = this.imageObj;
@@ -4849,23 +4872,23 @@ class CircleImageBase extends NodeBase {
    * @private
    */
   _getImagePadding() {
-    const imgPadding = { top: 0, right: 0, bottom: 0, left: 0};
-      if (this.options.imagePadding) {          
-        const optImgPadding = this.options.imagePadding;
-        if (typeof optImgPadding == 'object') {
-          imgPadding.top = optImgPadding.top;
-          imgPadding.right = optImgPadding.right;
-          imgPadding.bottom = optImgPadding.bottom;
-          imgPadding.left = optImgPadding.left;
-        } else {
-          imgPadding.top = optImgPadding;
-          imgPadding.right = optImgPadding;
-          imgPadding.bottom = optImgPadding;
-          imgPadding.left = optImgPadding;
-        }
+    const imgPadding = { top: 0, right: 0, bottom: 0, left: 0 };
+    if (this.options.imagePadding) {
+      const optImgPadding = this.options.imagePadding;
+      if (typeof optImgPadding == "object") {
+        imgPadding.top = optImgPadding.top;
+        imgPadding.right = optImgPadding.right;
+        imgPadding.bottom = optImgPadding.bottom;
+        imgPadding.left = optImgPadding.left;
+      } else {
+        imgPadding.top = optImgPadding;
+        imgPadding.right = optImgPadding;
+        imgPadding.bottom = optImgPadding;
+        imgPadding.left = optImgPadding;
       }
+    }
 
-      return imgPadding  
+    return imgPadding;
   }
 
   /**
@@ -4878,23 +4901,21 @@ class CircleImageBase extends NodeBase {
 
     if (this.options.shapeProperties.useImageSize === false) {
       // Use the size property
-      let ratio_width  = 1;
+      let ratio_width = 1;
       let ratio_height = 1;
 
       // Only calculate the proper ratio if both width and height not zero
       if (this.imageObj.width && this.imageObj.height) {
         if (this.imageObj.width > this.imageObj.height) {
           ratio_width = this.imageObj.width / this.imageObj.height;
-        }
-        else {
+        } else {
           ratio_height = this.imageObj.height / this.imageObj.width;
         }
       }
-	  
-	  width = this.options.size * 2 * ratio_width;
+
+      width = this.options.size * 2 * ratio_width;
       height = this.options.size * 2 * ratio_height;
-    }
-    else {
+    } else {
       // Use the image size with image padding
       const imgPadding = this._getImagePadding();
       width = this.imageObj.width + imgPadding.left + imgPadding.right;
@@ -4936,16 +4957,23 @@ class CircleImageBase extends NodeBase {
 
       let factor = 1;
       if (this.options.shapeProperties.interpolation === true) {
-        factor = (this.imageObj.width / this.width) / this.body.view.scale;
+        factor = this.imageObj.width / this.width / this.body.view.scale;
       }
 
       const imgPadding = this._getImagePadding();
 
-      const imgPosLeft =  this.left + imgPadding.left;
+      const imgPosLeft = this.left + imgPadding.left;
       const imgPosTop = this.top + imgPadding.top;
       const imgWidth = this.width - imgPadding.left - imgPadding.right;
       const imgHeight = this.height - imgPadding.top - imgPadding.bottom;
-      this.imageObj.drawImageAtPosition(ctx, factor, imgPosLeft, imgPosTop, imgWidth, imgHeight);
+      this.imageObj.drawImageAtPosition(
+        ctx,
+        factor,
+        imgPosLeft,
+        imgPosTop,
+        imgWidth,
+        imgHeight
+      );
 
       // disable shadows for other elements.
       this.disableShadow(ctx, values);
@@ -4966,7 +4994,11 @@ class CircleImageBase extends NodeBase {
 
     if (this.height !== undefined) {
       offset = this.height * 0.5;
-      const labelDimensions = this.labelModule.getTextSize(ctx, selected, hover);
+      const labelDimensions = this.labelModule.getTextSize(
+        ctx,
+        selected,
+        hover
+      );
       if (labelDimensions.lineCount >= 1) {
         offset += labelDimensions.height / 2;
       }
@@ -4977,19 +5009,19 @@ class CircleImageBase extends NodeBase {
     if (this.options.label) {
       this.labelOffset = offset;
     }
-    this.labelModule.draw(ctx, x, yLabel, selected, hover, 'hanging');
+    this.labelModule.draw(ctx, x, yLabel, selected, hover, "hanging");
   }
 }
 
 /**
  * A Circle Node/Cluster shape.
  *
- * @extends CircleImageBase
+ * @augments CircleImageBase
  */
-class Circle extends CircleImageBase {
+let Circle$1 = class Circle extends CircleImageBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5007,8 +5039,10 @@ class Circle extends CircleImageBase {
     if (this.needsRefresh(selected, hover)) {
       const dimensions = this.getDimensionsFromLabel(ctx, selected, hover);
 
-      const diameter = Math.max(dimensions.width  + this.margin.right + this.margin.left,
-                              dimensions.height + this.margin.top   + this.margin.bottom);
+      const diameter = Math.max(
+        dimensions.width + this.margin.right + this.margin.left,
+        dimensions.height + this.margin.top + this.margin.bottom
+      );
 
       this.options.size = diameter / 2; // NOTE: this size field only set here, not in Ellipse, Database, Box
       this.width = diameter;
@@ -5033,9 +5067,14 @@ class Circle extends CircleImageBase {
 
     this._drawRawCircle(ctx, x, y, values);
 
-    this.updateBoundingBox(x,y);
-    this.labelModule.draw(ctx, this.left + this.textSize.width / 2 + this.margin.left,
-                               y, selected, hover);
+    this.updateBoundingBox(x, y);
+    this.labelModule.draw(
+      ctx,
+      this.left + this.textSize.width / 2 + this.margin.left,
+      y,
+      selected,
+      hover
+    );
   }
 
   /**
@@ -5053,31 +5092,30 @@ class Circle extends CircleImageBase {
   /**
    *
    * @param {CanvasRenderingContext2D} ctx
-   * @param {number} angle - Unused
    * @returns {number}
    */
-  distanceToBorder(ctx, angle) {  // eslint-disable-line no-unused-vars
+  distanceToBorder(ctx) {
     if (ctx) {
       this.resize(ctx);
     }
     return this.width * 0.5;
   }
-}
+};
 
 /**
  * A CircularImage Node/Cluster shape.
  *
- * @extends CircleImageBase
+ * @augments CircleImageBase
  */
 class CircularImage extends CircleImageBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    * @param {Image} imageObj
    * @param {Image} imageObjAlt
    */
-  constructor (options, body, labelModule, imageObj, imageObjAlt) {
+  constructor(options, body, labelModule, imageObj, imageObjAlt) {
     super(options, body, labelModule);
 
     this.setImages(imageObj, imageObjAlt);
@@ -5090,16 +5128,17 @@ class CircularImage extends CircleImageBase {
    * @param {boolean} [hover]
    */
   resize(ctx, selected = this.selected, hover = this.hover) {
-    const imageAbsent = (this.imageObj.src === undefined) ||
-        (this.imageObj.width === undefined) ||
-        (this.imageObj.height === undefined);
+    const imageAbsent =
+      this.imageObj.src === undefined ||
+      this.imageObj.width === undefined ||
+      this.imageObj.height === undefined;
 
     if (imageAbsent) {
       const diameter = this.options.size * 2;
       this.width = diameter;
       this.height = diameter;
-      this.radius = 0.5*this.width;
-			return;
+      this.radius = 0.5 * this.width;
+      return;
     }
 
     // At this point, an image is present, i.e. this.imageObj is valid.
@@ -5124,7 +5163,7 @@ class CircularImage extends CircleImageBase {
     let labelX = x,
       labelY = y;
 
-    if (this.options.shapeProperties.coordinateOrigin === 'top-left') {
+    if (this.options.shapeProperties.coordinateOrigin === "top-left") {
       this.left = x;
       this.top = y;
       labelX += this.width / 2;
@@ -5148,7 +5187,7 @@ class CircularImage extends CircleImageBase {
 
     this._drawImageLabel(ctx, labelX, labelY, selected, hover);
 
-    this.updateBoundingBox(x,y);
+    this.updateBoundingBox(x, y);
   }
 
   // TODO: compare with Circle.updateBoundingBox(), consolidate? More stuff is happening here
@@ -5157,8 +5196,8 @@ class CircularImage extends CircleImageBase {
    * @param {number} x width
    * @param {number} y height
    */
-  updateBoundingBox(x,y) {
-    if (this.options.shapeProperties.coordinateOrigin === 'top-left') {
+  updateBoundingBox(x, y) {
+    if (this.options.shapeProperties.coordinateOrigin === "top-left") {
       this.boundingBox.top = y;
       this.boundingBox.left = x;
       this.boundingBox.right = x + this.options.size * 2;
@@ -5171,19 +5210,26 @@ class CircularImage extends CircleImageBase {
     }
 
     // TODO: compare with Image.updateBoundingBox(), consolidate?
-    this.boundingBox.left = Math.min(this.boundingBox.left, this.labelModule.size.left);
-    this.boundingBox.right = Math.max(this.boundingBox.right, this.labelModule.size.left + this.labelModule.size.width);
-    this.boundingBox.bottom = Math.max(this.boundingBox.bottom, this.boundingBox.bottom + this.labelOffset);
+    this.boundingBox.left = Math.min(
+      this.boundingBox.left,
+      this.labelModule.size.left
+    );
+    this.boundingBox.right = Math.max(
+      this.boundingBox.right,
+      this.labelModule.size.left + this.labelModule.size.width
+    );
+    this.boundingBox.bottom = Math.max(
+      this.boundingBox.bottom,
+      this.boundingBox.bottom + this.labelOffset
+    );
   }
-
 
   /**
    *
    * @param {CanvasRenderingContext2D} ctx
-   * @param {number} angle - Unused
    * @returns {number}
    */
-  distanceToBorder(ctx, angle) {  // eslint-disable-line no-unused-vars
+  distanceToBorder(ctx) {
     if (ctx) {
       this.resize(ctx);
     }
@@ -5194,12 +5240,12 @@ class CircularImage extends CircleImageBase {
 /**
  * Base class for constructing Node/Cluster Shapes.
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
 class ShapeBase extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5211,15 +5257,20 @@ class ShapeBase extends NodeBase {
    * @param {CanvasRenderingContext2D} ctx
    * @param {boolean} [selected]
    * @param {boolean} [hover]
-   * @param {Object} [values={size: this.options.size}]
+   * @param {object} [values={size: this.options.size}]
    */
-  resize(ctx, selected = this.selected, hover = this.hover, values = { size: this.options.size }) {
+  resize(
+    ctx,
+    selected = this.selected,
+    hover = this.hover,
+    values = { size: this.options.size }
+  ) {
     if (this.needsRefresh(selected, hover)) {
       this.labelModule.getTextSize(ctx, selected, hover);
       const size = 2 * values.size;
-      this.width = size;
-      this.height = size;
-      this.radius = 0.5*this.width;
+      this.width = this.customSizeWidth ?? size;
+      this.height = this.customSizeHeight ?? size;
+      this.radius = 0.5 * this.width;
     }
   }
 
@@ -5233,30 +5284,25 @@ class ShapeBase extends NodeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
-   * @param {function} customRenderer - a custom shape renderer similar to getShape(shape) functions
    * @private
+   * @returns {object} Callbacks to draw later on higher layers.
    */
-  _drawShape(ctx, shape, sizeMultiplier, x, y, selected, hover, values, customRenderer) {
+  _drawShape(ctx, shape, sizeMultiplier, x, y, selected, hover, values) {
     this.resize(ctx, selected, hover, values);
     this.left = x - this.width / 2;
     this.top = y - this.height / 2;
 
-    if (shape === 'custom') {
-      ctx.save();
-      customRenderer({ ctx, x, y, state: { selected, hover }, style: { ...values }, label: this.options.label });
-      ctx.restore();
-      return
-    } else {
-      this.initContextForDraw(ctx, values);
-      getShape(shape)(ctx, x, y, values.size);
-      this.performFill(ctx, values);
-    }
-    
+    this.initContextForDraw(ctx, values);
+    getShape(shape)(ctx, x, y, values.size);
+    this.performFill(ctx, values);
+
     if (this.options.icon !== undefined) {
       if (this.options.icon.code !== undefined) {
-        ctx.font = (selected ? "bold " : "")
-            + (this.height / 2) + "px "
-            + (this.options.icon.face || 'FontAwesome');
+        ctx.font =
+          (selected ? "bold " : "") +
+          this.height / 2 +
+          "px " +
+          (this.options.icon.face || "FontAwesome");
         ctx.fillStyle = this.options.icon.color || "black";
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
@@ -5264,14 +5310,27 @@ class ShapeBase extends NodeBase {
       }
     }
 
-    if (this.options.label !== undefined) {
-      // Need to call following here in order to ensure value for `this.labelModule.size.height`
-      this.labelModule.calculateLabelSize(ctx, selected, hover, x, y, 'hanging');
-      const yLabel = y + 0.5 * this.height + 0.5 * this.labelModule.size.height;
-      this.labelModule.draw(ctx, x, yLabel, selected, hover, 'hanging');
-    }
+    return {
+      drawExternalLabel: () => {
+        if (this.options.label !== undefined) {
+          // Need to call following here in order to ensure value for
+          // `this.labelModule.size.height`.
+          this.labelModule.calculateLabelSize(
+            ctx,
+            selected,
+            hover,
+            x,
+            y,
+            "hanging"
+          );
+          const yLabel =
+            y + 0.5 * this.height + 0.5 * this.labelModule.size.height;
+          this.labelModule.draw(ctx, x, yLabel, selected, hover, "hanging");
+        }
 
-    this.updateBoundingBox(x,y);
+        this.updateBoundingBox(x, y);
+      },
+    };
   }
 
   /**
@@ -5286,9 +5345,18 @@ class ShapeBase extends NodeBase {
     this.boundingBox.bottom = y + this.options.size;
 
     if (this.options.label !== undefined && this.labelModule.size.width > 0) {
-      this.boundingBox.left = Math.min(this.boundingBox.left, this.labelModule.size.left);
-      this.boundingBox.right = Math.max(this.boundingBox.right, this.labelModule.size.left + this.labelModule.size.width);
-      this.boundingBox.bottom = Math.max(this.boundingBox.bottom, this.boundingBox.bottom + this.labelModule.size.height);
+      this.boundingBox.left = Math.min(
+        this.boundingBox.left,
+        this.labelModule.size.left
+      );
+      this.boundingBox.right = Math.max(
+        this.boundingBox.right,
+        this.labelModule.size.left + this.labelModule.size.width
+      );
+      this.boundingBox.bottom = Math.max(
+        this.boundingBox.bottom,
+        this.boundingBox.bottom + this.labelModule.size.height
+      );
     }
   }
 }
@@ -5296,15 +5364,14 @@ class ShapeBase extends NodeBase {
 /**
  * A CustomShape Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
 class CustomShape extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
-   * @param {function} ctxRenderer
-
+   * @param {Function} ctxRenderer
    */
   constructor(options, body, labelModule, ctxRenderer) {
     super(options, body, labelModule, ctxRenderer);
@@ -5319,9 +5386,46 @@ class CustomShape extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on different layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'custom', 4, x, y, selected, hover, values, this.ctxRenderer);
+    this.resize(ctx, selected, hover, values);
+    this.left = x - this.width / 2;
+    this.top = y - this.height / 2;
+
+    // Guard right away because someone may just draw in the function itself.
+    ctx.save();
+    const drawLater = this.ctxRenderer({
+      ctx,
+      id: this.options.id,
+      x,
+      y,
+      state: { selected, hover },
+      style: { ...values },
+      label: this.options.label,
+    });
+    // Render the node shape bellow arrows.
+    if (drawLater.drawNode != null) {
+      drawLater.drawNode();
+    }
+    ctx.restore();
+
+    if (drawLater.drawExternalLabel) {
+      // Guard the external label (above arrows) drawing function.
+      const drawExternalLabel = drawLater.drawExternalLabel;
+      drawLater.drawExternalLabel = () => {
+        ctx.save();
+        drawExternalLabel();
+        ctx.restore();
+      };
+    }
+
+    if (drawLater.nodeDimensions) {
+      this.customSizeWidth = drawLater.nodeDimensions.width;
+      this.customSizeHeight = drawLater.nodeDimensions.height;
+    }
+
+    return drawLater;
   }
 
   /**
@@ -5331,22 +5435,22 @@ class CustomShape extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
 /**
  * A Database Node/Cluster shape.
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
 class Database extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
-  constructor (options, body, labelModule) {
+  constructor(options, body, labelModule) {
     super(options, body, labelModule);
     this._setMargins(labelModule);
   }
@@ -5362,7 +5466,7 @@ class Database extends NodeBase {
       const dimensions = this.getDimensionsFromLabel(ctx, selected, hover);
       const size = dimensions.width + this.margin.right + this.margin.left;
 
-      this.width  = size;
+      this.width = size;
       this.height = size;
       this.radius = this.width / 2;
     }
@@ -5380,15 +5484,26 @@ class Database extends NodeBase {
   draw(ctx, x, y, selected, hover, values) {
     this.resize(ctx, selected, hover);
     this.left = x - this.width / 2;
-    this.top  = y - this.height / 2;
+    this.top = y - this.height / 2;
 
     this.initContextForDraw(ctx, values);
-    drawDatabase(ctx, x - this.width / 2, y - this.height / 2, this.width, this.height);
+    drawDatabase(
+      ctx,
+      x - this.width / 2,
+      y - this.height / 2,
+      this.width,
+      this.height
+    );
     this.performFill(ctx, values);
 
     this.updateBoundingBox(x, y, ctx, selected, hover);
-    this.labelModule.draw(ctx, this.left + this.textSize.width / 2 + this.margin.left,
-                               this.top + this.textSize.height / 2 + this.margin.top, selected, hover);
+    this.labelModule.draw(
+      ctx,
+      this.left + this.textSize.width / 2 + this.margin.left,
+      this.top + this.textSize.height / 2 + this.margin.top,
+      selected,
+      hover
+    );
   }
   /**
    *
@@ -5404,12 +5519,12 @@ class Database extends NodeBase {
 /**
  * A Diamond Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
-class Diamond extends ShapeBase {
+let Diamond$1 = class Diamond extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5424,9 +5539,10 @@ class Diamond extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'diamond', 4, x, y, selected, hover, values);
+    return this._drawShape(ctx, "diamond", 4, x, y, selected, hover, values);
   }
 
   /**
@@ -5436,19 +5552,19 @@ class Diamond extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
-}
+};
 
 /**
  * A Dot Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
 class Dot extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5463,18 +5579,18 @@ class Dot extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'circle', 2, x, y, selected, hover, values);
+    return this._drawShape(ctx, "circle", 2, x, y, selected, hover, values);
   }
 
   /**
    *
    * @param {CanvasRenderingContext2D} ctx
-   * @param {number} angle
    * @returns {number}
    */
-  distanceToBorder(ctx, angle) {  // eslint-disable-line no-unused-vars
+  distanceToBorder(ctx) {
     if (ctx) {
       this.resize(ctx);
     }
@@ -5485,12 +5601,12 @@ class Dot extends ShapeBase {
 /**
  * Am Ellipse Node/Cluster shape.
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
 class Ellipse extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5508,8 +5624,8 @@ class Ellipse extends NodeBase {
       const dimensions = this.getDimensionsFromLabel(ctx, selected, hover);
 
       this.height = dimensions.height * 2;
-      this.width  = dimensions.width + dimensions.height;
-      this.radius = 0.5*this.width;
+      this.width = dimensions.width + dimensions.height;
+      this.radius = 0.5 * this.width;
     }
   }
 
@@ -5547,21 +5663,21 @@ class Ellipse extends NodeBase {
     }
     const a = this.width * 0.5;
     const b = this.height * 0.5;
-    const w = (Math.sin(angle) * a);
-    const h = (Math.cos(angle) * b);
-    return a * b / Math.sqrt(w * w + h * h);
+    const w = Math.sin(angle) * a;
+    const h = Math.cos(angle) * b;
+    return (a * b) / Math.sqrt(w * w + h * h);
   }
 }
 
 /**
  * An icon replacement for the default Node shape.
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
 class Icon extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5579,11 +5695,11 @@ class Icon extends NodeBase {
     if (this.needsRefresh(selected, hover)) {
       this.iconSize = {
         width: Number(this.options.icon.size),
-        height: Number(this.options.icon.size)
+        height: Number(this.options.icon.size),
       };
       this.width = this.iconSize.width + this.margin.right + this.margin.left;
       this.height = this.iconSize.height + this.margin.top + this.margin.bottom;
-      this.radius = 0.5*this.width;
+      this.radius = 0.5 * this.width;
     }
   }
 
@@ -5595,22 +5711,31 @@ class Icon extends NodeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
     this.resize(ctx, selected, hover);
     this.options.icon.size = this.options.icon.size || 50;
 
     this.left = x - this.width / 2;
-    this.top  = y - this.height / 2;
+    this.top = y - this.height / 2;
     this._icon(ctx, x, y, selected, hover, values);
 
-    if (this.options.label !== undefined) {
-      const iconTextSpacing = 5;
-      this.labelModule.draw(ctx, this.left + this.iconSize.width / 2 + this.margin.left,
-                                 y + this.height / 2 + iconTextSpacing, selected);
-    }
+    return {
+      drawExternalLabel: () => {
+        if (this.options.label !== undefined) {
+          const iconTextSpacing = 5;
+          this.labelModule.draw(
+            ctx,
+            this.left + this.iconSize.width / 2 + this.margin.left,
+            y + this.height / 2 + iconTextSpacing,
+            selected
+          );
+        }
 
-    this.updateBoundingBox(x, y);
+        this.updateBoundingBox(x, y);
+      },
+    };
   }
 
   /**
@@ -5619,16 +5744,25 @@ class Icon extends NodeBase {
    * @param {number} y
    */
   updateBoundingBox(x, y) {
-    this.boundingBox.top    = y - this.options.icon.size * 0.5;
-    this.boundingBox.left   = x - this.options.icon.size * 0.5;
-    this.boundingBox.right  = x + this.options.icon.size * 0.5;
+    this.boundingBox.top = y - this.options.icon.size * 0.5;
+    this.boundingBox.left = x - this.options.icon.size * 0.5;
+    this.boundingBox.right = x + this.options.icon.size * 0.5;
     this.boundingBox.bottom = y + this.options.icon.size * 0.5;
 
     if (this.options.label !== undefined && this.labelModule.size.width > 0) {
       const iconTextSpacing = 5;
-      this.boundingBox.left = Math.min(this.boundingBox.left, this.labelModule.size.left);
-      this.boundingBox.right = Math.max(this.boundingBox.right, this.labelModule.size.left + this.labelModule.size.width);
-      this.boundingBox.bottom = Math.max(this.boundingBox.bottom, this.boundingBox.bottom + this.labelModule.size.height + iconTextSpacing);
+      this.boundingBox.left = Math.min(
+        this.boundingBox.left,
+        this.labelModule.size.left
+      );
+      this.boundingBox.right = Math.max(
+        this.boundingBox.right,
+        this.labelModule.size.left + this.labelModule.size.width
+      );
+      this.boundingBox.bottom = Math.max(
+        this.boundingBox.bottom,
+        this.boundingBox.bottom + this.labelModule.size.height + iconTextSpacing
+      );
     }
   }
 
@@ -5656,7 +5790,7 @@ class Icon extends NodeBase {
         (this.options.icon.weight != null && selected ? 5 : 0) +
           iconSize +
           "px",
-        this.options.icon.face
+        this.options.icon.face,
       ].join(" ");
 
       // draw icon
@@ -5671,9 +5805,10 @@ class Icon extends NodeBase {
       // disable shadows for other elements.
       this.disableShadow(ctx, values);
     } else {
-      console.error('When using the icon shape, you need to define the code in the icon options object. This can be done per node or globally.');
+      console.error(
+        "When using the icon shape, you need to define the code in the icon options object. This can be done per node or globally."
+      );
     }
-
   }
 
   /**
@@ -5683,24 +5818,24 @@ class Icon extends NodeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
 /**
  * An image-based replacement for the default Node shape.
  *
- * @extends CircleImageBase
+ * @augments CircleImageBase
  */
-class Image$1 extends CircleImageBase {
+let Image$2 = class Image extends CircleImageBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    * @param {Image} imageObj
    * @param {Image} imageObjAlt
    */
-  constructor (options, body, labelModule, imageObj, imageObjAlt) {
+  constructor(options, body, labelModule, imageObj, imageObjAlt) {
     super(options, body, labelModule);
 
     this.setImages(imageObj, imageObjAlt);
@@ -5713,9 +5848,10 @@ class Image$1 extends CircleImageBase {
    * @param {boolean} [hover]
    */
   resize(ctx, selected = this.selected, hover = this.hover) {
-    const imageAbsent = (this.imageObj.src === undefined) ||
-        (this.imageObj.width === undefined) ||
-        (this.imageObj.height === undefined);
+    const imageAbsent =
+      this.imageObj.src === undefined ||
+      this.imageObj.width === undefined ||
+      this.imageObj.height === undefined;
 
     if (imageAbsent) {
       const side = this.options.size * 2;
@@ -5746,7 +5882,7 @@ class Image$1 extends CircleImageBase {
     let labelX = x,
       labelY = y;
 
-    if (this.options.shapeProperties.coordinateOrigin === 'top-left') {
+    if (this.options.shapeProperties.coordinateOrigin === "top-left") {
       this.left = x;
       this.top = y;
       labelX += this.width / 2;
@@ -5758,13 +5894,24 @@ class Image$1 extends CircleImageBase {
 
     if (this.options.shapeProperties.useBorderWithImage === true) {
       const neutralborderWidth = this.options.borderWidth;
-      const selectionLineWidth = this.options.borderWidthSelected || 2 * this.options.borderWidth;
-      const borderWidth = (selected ? selectionLineWidth : neutralborderWidth) / this.body.view.scale;
+      const selectionLineWidth =
+        this.options.borderWidthSelected || 2 * this.options.borderWidth;
+      const borderWidth =
+        (selected ? selectionLineWidth : neutralborderWidth) /
+        this.body.view.scale;
       ctx.lineWidth = Math.min(this.width, borderWidth);
 
       ctx.beginPath();
-      let strokeStyle = selected ? this.options.color.highlight.border : hover ? this.options.color.hover.border : this.options.color.border;
-      let fillStyle = selected ? this.options.color.highlight.background : hover ? this.options.color.hover.background : this.options.color.background;
+      let strokeStyle = selected
+        ? this.options.color.highlight.border
+        : hover
+        ? this.options.color.hover.border
+        : this.options.color.border;
+      let fillStyle = selected
+        ? this.options.color.highlight.background
+        : hover
+        ? this.options.color.hover.background
+        : this.options.color.background;
 
       if (values.opacity !== undefined) {
         strokeStyle = overrideOpacity(strokeStyle, values.opacity);
@@ -5777,14 +5924,16 @@ class Image$1 extends CircleImageBase {
       ctx.fillStyle = fillStyle;
 
       // draw a rectangle to form the border around. This rectangle is filled so the opacity of a picture (in future vis releases?) can be used to tint the image
-      ctx.rect(this.left - 0.5 * ctx.lineWidth,
+      ctx.rect(
+        this.left - 0.5 * ctx.lineWidth,
         this.top - 0.5 * ctx.lineWidth,
         this.width + ctx.lineWidth,
-        this.height + ctx.lineWidth);
+        this.height + ctx.lineWidth
+      );
       ctx.fill();
 
-     this.performStroke(ctx, values);
- 
+      this.performStroke(ctx, values);
+
       ctx.closePath();
     }
 
@@ -5792,7 +5941,7 @@ class Image$1 extends CircleImageBase {
 
     this._drawImageLabel(ctx, labelX, labelY, selected, hover);
 
-    this.updateBoundingBox(x,y);
+    this.updateBoundingBox(x, y);
     ctx.restore();
   }
 
@@ -5804,7 +5953,7 @@ class Image$1 extends CircleImageBase {
   updateBoundingBox(x, y) {
     this.resize();
 
-    if (this.options.shapeProperties.coordinateOrigin === 'top-left') {
+    if (this.options.shapeProperties.coordinateOrigin === "top-left") {
       this.left = x;
       this.top = y;
     } else {
@@ -5818,9 +5967,18 @@ class Image$1 extends CircleImageBase {
     this.boundingBox.right = this.left + this.width;
 
     if (this.options.label !== undefined && this.labelModule.size.width > 0) {
-      this.boundingBox.left = Math.min(this.boundingBox.left, this.labelModule.size.left);
-      this.boundingBox.right = Math.max(this.boundingBox.right, this.labelModule.size.left + this.labelModule.size.width);
-      this.boundingBox.bottom = Math.max(this.boundingBox.bottom, this.boundingBox.bottom + this.labelOffset);
+      this.boundingBox.left = Math.min(
+        this.boundingBox.left,
+        this.labelModule.size.left
+      );
+      this.boundingBox.right = Math.max(
+        this.boundingBox.right,
+        this.labelModule.size.left + this.labelModule.size.width
+      );
+      this.boundingBox.bottom = Math.max(
+        this.boundingBox.bottom,
+        this.boundingBox.bottom + this.labelOffset
+      );
     }
   }
 
@@ -5831,19 +5989,19 @@ class Image$1 extends CircleImageBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-     return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
-}
+};
 
 /**
  * A Square Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
 class Square extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5858,9 +6016,10 @@ class Square extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'square', 2, x, y, selected, hover, values);
+    return this._drawShape(ctx, "square", 2, x, y, selected, hover, values);
   }
 
   /**
@@ -5870,19 +6029,19 @@ class Square extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
 /**
  * A Hexagon Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
 class Hexagon extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5897,9 +6056,10 @@ class Hexagon extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'hexagon', 4, x, y, selected, hover, values);
+    return this._drawShape(ctx, "hexagon", 4, x, y, selected, hover, values);
   }
 
   /**
@@ -5909,19 +6069,19 @@ class Hexagon extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
 /**
  * A Star Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
 class Star extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5936,9 +6096,10 @@ class Star extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'star', 4, x, y, selected, hover, values);
+    return this._drawShape(ctx, "star", 4, x, y, selected, hover, values);
   }
 
   /**
@@ -5948,19 +6109,19 @@ class Star extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
 /**
  * A text-based replacement for the default Node shape.
  *
- * @extends NodeBase
+ * @augments NodeBase
  */
 class Text extends NodeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -5979,7 +6140,7 @@ class Text extends NodeBase {
       this.textSize = this.labelModule.getTextSize(ctx, selected, hover);
       this.width = this.textSize.width + this.margin.right + this.margin.left;
       this.height = this.textSize.height + this.margin.top + this.margin.bottom;
-      this.radius = 0.5*this.width;
+      this.radius = 0.5 * this.width;
     }
   }
 
@@ -5999,8 +6160,13 @@ class Text extends NodeBase {
 
     // draw shadow if enabled
     this.enableShadow(ctx, values);
-    this.labelModule.draw(ctx, this.left + this.textSize.width / 2 + this.margin.left,
-                               this.top + this.textSize.height / 2 + this.margin.top, selected, hover);
+    this.labelModule.draw(
+      ctx,
+      this.left + this.textSize.width / 2 + this.margin.left,
+      this.top + this.textSize.height / 2 + this.margin.top,
+      selected,
+      hover
+    );
 
     // disable shadows for other elements.
     this.disableShadow(ctx, values);
@@ -6015,19 +6181,19 @@ class Text extends NodeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
 /**
  * A Triangle Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
-class Triangle extends ShapeBase {
+let Triangle$1 = class Triangle extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -6042,9 +6208,10 @@ class Triangle extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'triangle', 3, x, y, selected, hover, values);
+    return this._drawShape(ctx, "triangle", 3, x, y, selected, hover, values);
   }
 
   /**
@@ -6054,19 +6221,19 @@ class Triangle extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
+    return this._distanceToBorder(ctx, angle);
   }
-}
+};
 
 /**
  * A downward facing Triangle Node/Cluster shape.
  *
- * @extends ShapeBase
+ * @augments ShapeBase
  */
 class TriangleDown extends ShapeBase {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Label} labelModule
    */
   constructor(options, body, labelModule) {
@@ -6081,9 +6248,19 @@ class TriangleDown extends ShapeBase {
    * @param {boolean} selected
    * @param {boolean} hover
    * @param {ArrowOptions} values
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx, x, y, selected, hover, values) {
-    this._drawShape(ctx, 'triangleDown', 3, x, y, selected, hover, values);
+    return this._drawShape(
+      ctx,
+      "triangleDown",
+      3,
+      x,
+      y,
+      selected,
+      hover,
+      values
+    );
   }
 
   /**
@@ -6093,352 +6270,7 @@ class TriangleDown extends ShapeBase {
    * @returns {number}
    */
   distanceToBorder(ctx, angle) {
-    return this._distanceToBorder(ctx,angle);
-  }
-}
-
-let errorFound = false;
-let allOptions;
-const printStyle = 'background: #FFeeee; color: #dd0000';
-/**
- *  Used to validate options.
- */
-class Validator {
-  /**
-   * @ignore
-   */
-  constructor() {
-  }
-
-  /**
-   * Main function to be called
-   * @param {Object} options
-   * @param {Object} referenceOptions
-   * @param {Object} subObject
-   * @returns {boolean}
-   * @static
-   */
-  static validate(options, referenceOptions, subObject) {
-    errorFound = false;
-    allOptions = referenceOptions;
-    let usedOptions = referenceOptions;
-    if (subObject !== undefined) {
-      usedOptions = referenceOptions[subObject];
-    }
-    Validator.parse(options, usedOptions, []);
-    return errorFound;
-  }
-
-
-  /**
-   * Will traverse an object recursively and check every value
-   * @param {Object} options
-   * @param {Object} referenceOptions
-   * @param {array} path    | where to look for the actual option
-   * @static
-   */
-  static parse(options, referenceOptions, path) {
-    for (const option in options) {
-      if (Object.prototype.hasOwnProperty.call(options, option)) {
-        Validator.check(option, options, referenceOptions, path);
-      }
-    }
-  }
-
-
-  /**
-   * Check every value. If the value is an object, call the parse function on that object.
-   * @param {string} option
-   * @param {Object} options
-   * @param {Object} referenceOptions
-   * @param {array} path    | where to look for the actual option
-   * @static
-   */
-  static check(option, options, referenceOptions, path) {
-    if (referenceOptions[option] === undefined && referenceOptions.__any__ === undefined) {
-      Validator.getSuggestion(option, referenceOptions, path);
-      return;
-    }
-
-    let referenceOption = option;
-    let is_object = true;
-
-    if (referenceOptions[option] === undefined && referenceOptions.__any__ !== undefined) {
-      // NOTE: This only triggers if the __any__ is in the top level of the options object.
-      //       THAT'S A REALLY BAD PLACE TO ALLOW IT!!!!
-      // TODO: Examine if needed, remove if possible
-
-      // __any__ is a wildcard. Any value is accepted and will be further analysed by reference.
-      referenceOption = '__any__';
-
-      // if the any-subgroup is not a predefined object in the configurator,
-      // we do not look deeper into the object.
-      is_object = (Validator.getType(options[option]) === 'object');
-    }
-
-    let refOptionObj = referenceOptions[referenceOption];
-    if (is_object && refOptionObj.__type__ !== undefined) {
-      refOptionObj = refOptionObj.__type__;
-    }
-
-    Validator.checkFields(option, options, referenceOptions, referenceOption, refOptionObj, path);
-  }
-
-  /**
-   *
-   * @param {string}  option           | the option property
-   * @param {Object}  options          | The supplied options object
-   * @param {Object}  referenceOptions | The reference options containing all options and their allowed formats
-   * @param {string}  referenceOption  | Usually this is the same as option, except when handling an __any__ tag.
-   * @param {string}  refOptionObj     | This is the type object from the reference options
-   * @param {Array}   path             | where in the object is the option
-   * @static
-   */
-  static checkFields(option, options, referenceOptions, referenceOption, refOptionObj, path) {
-    const log = function(message) {
-      console.log('%c' + message + Validator.printLocation(path, option), printStyle);
-    };
-
-    const optionType = Validator.getType(options[option]);
-    const refOptionType = refOptionObj[optionType];
-
-    if (refOptionType !== undefined) {
-      // if the type is correct, we check if it is supposed to be one of a few select values
-      if (Validator.getType(refOptionType) === 'array' && refOptionType.indexOf(options[option]) === -1) {
-        log('Invalid option detected in "' + option + '".' +
-          ' Allowed values are:' + Validator.print(refOptionType) +
-          ' not "' + options[option] + '". ');
-        errorFound = true;
-      }
-      else if (optionType === 'object' && referenceOption !== "__any__") {
-        path = copyAndExtendArray(path, option);
-        Validator.parse(options[option], referenceOptions[referenceOption], path);
-      }
-    }
-    else if (refOptionObj['any'] === undefined) {
-      // type of the field is incorrect and the field cannot be any
-      log('Invalid type received for "' + option +
-        '". Expected: ' + Validator.print(Object.keys(refOptionObj)) +
-        '. Received ['  + optionType + '] "' + options[option] + '"');
-      errorFound = true;
-    }
-  }
-
-  /**
-   *
-   * @param {Object|boolean|number|string|Array.<number>|Date|Node|Moment|undefined|null} object
-   * @returns {string}
-   * @static
-   */
-  static getType(object) {
-    const type = typeof object;
-
-    if (type === 'object') {
-      if (object === null) {
-        return 'null';
-      }
-      if (object instanceof Boolean) {
-        return 'boolean';
-      }
-      if (object instanceof Number) {
-        return 'number';
-      }
-      if (object instanceof String) {
-        return 'string';
-      }
-      if (Array.isArray(object)) {
-        return 'array';
-      }
-      if (object instanceof Date) {
-        return 'date';
-      }
-      if (object.nodeType !== undefined) {
-        return 'dom';
-      }
-      if (object._isAMomentObject === true) {
-        return 'moment';
-      }
-      return 'object';
-    }
-    else if (type === 'number') {
-      return 'number';
-    }
-    else if (type === 'boolean') {
-      return 'boolean';
-    }
-    else if (type === 'string') {
-      return 'string';
-    }
-    else if (type === undefined) {
-      return 'undefined';
-    }
-    return type;
-  }
-
-  /**
-   * @param {string} option
-   * @param {Object} options
-   * @param {Array.<string>} path
-   * @static
-   */
-  static getSuggestion(option, options, path) {
-    const localSearch = Validator.findInOptions(option,options,path,false);
-    const globalSearch = Validator.findInOptions(option,allOptions,[],true);
-
-    const localSearchThreshold = 8;
-    const globalSearchThreshold = 4;
-
-    let msg;
-    if (localSearch.indexMatch !== undefined) {
-      msg = ' in ' + Validator.printLocation(localSearch.path, option,'') +
-        'Perhaps it was incomplete? Did you mean: "' + localSearch.indexMatch + '"?\n\n';
-    }
-    else if (globalSearch.distance <= globalSearchThreshold && localSearch.distance > globalSearch.distance) {
-      msg = ' in ' + Validator.printLocation(localSearch.path, option,'') +
-        'Perhaps it was misplaced? Matching option found at: ' +
-        Validator.printLocation(globalSearch.path, globalSearch.closestMatch,'');
-    }
-    else if (localSearch.distance <= localSearchThreshold) {
-      msg = '. Did you mean "' + localSearch.closestMatch + '"?' +
-        Validator.printLocation(localSearch.path, option);
-    }
-    else {
-      msg = '. Did you mean one of these: ' + Validator.print(Object.keys(options)) +
-      Validator.printLocation(path, option);
-    }
-
-    console.log('%cUnknown option detected: "' + option + '"' + msg, printStyle);
-    errorFound = true;
-  }
-
-  /**
-   * traverse the options in search for a match.
-   * @param {string} option
-   * @param {Object} options
-   * @param {Array} path    | where to look for the actual option
-   * @param {boolean} [recursive=false]
-   * @returns {{closestMatch: string, path: Array, distance: number}}
-   * @static
-   */
-  static findInOptions(option, options, path, recursive = false) {
-    let min = 1e9;
-    let closestMatch = '';
-    let closestMatchPath = [];
-    const lowerCaseOption = option.toLowerCase();
-    let indexMatch = undefined;
-    for (const op in options) {  // eslint-disable-line guard-for-in
-      let distance;
-      if (options[op].__type__ !== undefined && recursive === true) {
-        const result = Validator.findInOptions(option, options[op], copyAndExtendArray(path,op));
-        if (min > result.distance) {
-          closestMatch = result.closestMatch;
-          closestMatchPath = result.path;
-          min = result.distance;
-          indexMatch = result.indexMatch;
-        }
-      }
-      else {
-        if (op.toLowerCase().indexOf(lowerCaseOption) !== -1) {
-          indexMatch = op;
-        }
-        distance = Validator.levenshteinDistance(option, op);
-        if (min > distance) {
-          closestMatch = op;
-          closestMatchPath = copyArray(path);
-          min = distance;
-        }
-      }
-    }
-    return {closestMatch:closestMatch, path:closestMatchPath, distance:min, indexMatch: indexMatch};
-  }
-
-  /**
-   * @param {Array.<string>} path
-   * @param {Object} option
-   * @param {string} prefix
-   * @returns {String}
-   * @static
-   */
-  static printLocation(path, option, prefix = 'Problem value found at: \n') {
-    let str = '\n\n' + prefix + 'options = {\n';
-    for (let i = 0; i < path.length; i++) {
-      for (let j = 0; j < i + 1; j++) {
-        str += '  ';
-      }
-      str += path[i] + ': {\n';
-    }
-    for (let j = 0; j < path.length + 1; j++) {
-      str += '  ';
-    }
-    str += option + '\n';
-    for (let i = 0; i < path.length + 1; i++) {
-      for (let j = 0; j < path.length - i; j++) {
-        str += '  ';
-      }
-      str += '}\n';
-    }
-    return str + '\n\n';
-  }
-
-  /**
-   * @param {Object} options
-   * @returns {String}
-   * @static
-   */
-  static print(options) {
-    return JSON.stringify(options).replace(/(\")|(\[)|(\])|(,"__type__")/g, "").replace(/(\,)/g, ', ')
-  }
-
-
-  /**
-   *  Compute the edit distance between the two given strings
-   * http://en.wikibooks.org/wiki/Algorithm_Implementation/Strings/Levenshtein_distance#JavaScript
-   *
-   * Copyright (c) 2011 Andrei Mackenzie
-   *
-   * Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
-   *
-   * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-   *
-   * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-   *
-   * @param {string} a
-   * @param {string} b
-   * @returns {Array.<Array.<number>>}}
-   * @static
-   */
-  static levenshteinDistance(a, b) {
-    if (a.length === 0) return b.length;
-    if (b.length === 0) return a.length;
-
-    const matrix = [];
-
-    // increment along the first column of each row
-    let i;
-    for (i = 0; i <= b.length; i++) {
-      matrix[i] = [i];
-    }
-
-    // increment each column in the first row
-    let j;
-    for (j = 0; j <= a.length; j++) {
-      matrix[0][j] = j;
-    }
-
-    // Fill in the rest of the matrix
-    for (i = 1; i <= b.length; i++) {
-      for (j = 1; j <= a.length; j++) {
-        if (b.charAt(i - 1) == a.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1];
-        } else {
-          matrix[i][j] = Math.min(matrix[i - 1][j - 1] + 1, // substitution
-            Math.min(matrix[i][j - 1] + 1, // insertion
-              matrix[i - 1][j] + 1)); // deletion
-        }
-      }
-    }
-
-    return matrix[b.length][a.length];
+    return this._distanceToBorder(ctx, angle);
   }
 }
 
@@ -6458,15 +6290,21 @@ class Node {
    *                              {string} image  An image url
    *                              {string} title  A title text, can be HTML
    *                              {anytype} group A group name or number
-   *
-   * @param {Object} body               Shared state of current network instance
+   * @param {object} body               Shared state of current network instance
    * @param {Network.Images} imagelist  A list with images. Only needed when the node has an image
    * @param {Groups} grouplist          A list with groups. Needed for retrieving group options
-   * @param {Object} globalOptions      Current global node options; these serve as defaults for the node instance
-   * @param {Object} defaultOptions     Global default options for nodes; note that this is also the prototype
+   * @param {object} globalOptions      Current global node options; these serve as defaults for the node instance
+   * @param {object} defaultOptions     Global default options for nodes; note that this is also the prototype
    *                                    for parameter `globalOptions`.
    */
-  constructor(options, body, imagelist, grouplist, globalOptions, defaultOptions) {
+  constructor(
+    options,
+    body,
+    imagelist,
+    grouplist,
+    globalOptions,
+    defaultOptions
+  ) {
     this.options = bridgeObject(globalOptions);
     this.globalOptions = globalOptions;
     this.defaultOptions = defaultOptions;
@@ -6488,13 +6326,17 @@ class Node {
     this.selected = false;
     this.hover = false;
 
-    this.labelModule = new Label(this.body, this.options, false /* Not edge label */);
+    this.labelModule = new Label(
+      this.body,
+      this.options,
+      false /* Not edge label */
+    );
     this.setOptions(options);
   }
 
-
   /**
    * Attach a edge to the node
+   *
    * @param {Edge} edge
    */
   attachEdge(edge) {
@@ -6502,7 +6344,6 @@ class Node {
       this.edges.push(edge);
     }
   }
-
 
   /**
    * Detach a edge from the node
@@ -6516,30 +6357,31 @@ class Node {
     }
   }
 
-
   /**
    * Set or overwrite options for the node
    *
-   * @param {Object} options an object with options
+   * @param {object} options an object with options
    * @returns {null|boolean}
    */
   setOptions(options) {
     const currentShape = this.options.shape;
-    
+
     if (!options) {
-      return;  // Note that the return value will be 'undefined'! This is OK.
+      return; // Note that the return value will be 'undefined'! This is OK.
     }
 
     // Save the color for later.
     // This is necessary in order to prevent local color from being overwritten by group color.
     // TODO: To prevent such workarounds the way options are handled should be rewritten from scratch.
     // This is not the only problem with current options handling.
-    if (typeof options.color !== 'undefined') {
+    if (typeof options.color !== "undefined") {
       this._localColor = options.color;
     }
 
     // basic options
-    if (options.id !== undefined)    {this.id = options.id;}
+    if (options.id !== undefined) {
+      this.id = options.id;
+    }
 
     if (this.id === undefined) {
       throw new Error("Node must have an id");
@@ -6550,23 +6392,41 @@ class Node {
     // set these options locally
     // clear x and y positions
     if (options.x !== undefined) {
-      if (options.x === null) {this.x = undefined; this.predefinedPosition = false;}
-      else                    {this.x = parseInt(options.x); this.predefinedPosition = true;}
+      if (options.x === null) {
+        this.x = undefined;
+        this.predefinedPosition = false;
+      } else {
+        this.x = parseInt(options.x);
+        this.predefinedPosition = true;
+      }
     }
     if (options.y !== undefined) {
-      if (options.y === null) {this.y = undefined; this.predefinedPosition = false;}
-      else                    {this.y = parseInt(options.y); this.predefinedPosition = true;}
+      if (options.y === null) {
+        this.y = undefined;
+        this.predefinedPosition = false;
+      } else {
+        this.y = parseInt(options.y);
+        this.predefinedPosition = true;
+      }
     }
-    if (options.size !== undefined)  {this.baseSize = options.size;}
-    if (options.value !== undefined) {options.value = parseFloat(options.value);}
+    if (options.size !== undefined) {
+      this.baseSize = options.size;
+    }
+    if (options.value !== undefined) {
+      options.value = parseFloat(options.value);
+    }
 
     // this transforms all shorthands into fully defined options
-    Node.parseOptions(this.options, options, true, this.globalOptions, this.grouplist);
-    
-    const pile = [options, this.options, this.defaultOptions];
-    this.chooser = choosify('node', pile);
+    Node.parseOptions(
+      this.options,
+      options,
+      true,
+      this.globalOptions,
+      this.grouplist
+    );
 
-    
+    const pile = [options, this.options, this.defaultOptions];
+    this.chooser = choosify("node", pile);
 
     this._load_images();
     this.updateLabelModule(options);
@@ -6578,9 +6438,8 @@ class Node {
 
     this.updateShape(currentShape);
 
-    return (options.hidden !== undefined || options.physics !== undefined);
+    return options.hidden !== undefined || options.physics !== undefined;
   }
-
 
   /**
    * Load the images from the options, for the nodes that need them.
@@ -6591,9 +6450,16 @@ class Node {
    * @private
    */
   _load_images() {
-    if (this.options.shape === 'circularImage' || this.options.shape === 'image') {
+    if (
+      this.options.shape === "circularImage" ||
+      this.options.shape === "image"
+    ) {
       if (this.options.image === undefined) {
-        throw new Error("Option image must be defined for node type '" + this.options.shape + "'");
+        throw new Error(
+          "Option image must be defined for node type '" +
+            this.options.shape +
+            "'"
+        );
       }
     }
 
@@ -6605,41 +6471,53 @@ class Node {
       throw new Error("Internal Error: No images provided");
     }
 
-    if (typeof this.options.image === 'string') {
-      this.imageObj = this.imagelist.load(this.options.image, this.options.brokenImage, this.id);
+    if (typeof this.options.image === "string") {
+      this.imageObj = this.imagelist.load(
+        this.options.image,
+        this.options.brokenImage,
+        this.id
+      );
     } else {
       if (this.options.image.unselected === undefined) {
         throw new Error("No unselected image provided");
       }
 
-      this.imageObj = this.imagelist.load(this.options.image.unselected, this.options.brokenImage, this.id);
+      this.imageObj = this.imagelist.load(
+        this.options.image.unselected,
+        this.options.brokenImage,
+        this.id
+      );
 
       if (this.options.image.selected !== undefined) {
-        this.imageObjAlt = this.imagelist.load(this.options.image.selected, this.options.brokenImage, this.id);
+        this.imageObjAlt = this.imagelist.load(
+          this.options.image.selected,
+          this.options.brokenImage,
+          this.id
+        );
       } else {
         this.imageObjAlt = undefined;
       }
     }
   }
-  
+
   /**
    * Check that opacity is only between 0 and 1
-   * 
-   * @param {Number} opacity 
+   *
+   * @param {number} opacity
    * @returns {boolean}
    */
-  static checkOpacity (opacity) {
+  static checkOpacity(opacity) {
     return 0 <= opacity && opacity <= 1;
   }
 
   /**
    * Check that origin is 'center' or 'top-left'
-   * 
-   * @param {String} origin 
+   *
+   * @param {string} origin
    * @returns {boolean}
    */
-  static checkCoordinateOrigin (origin) {
-    return origin === undefined || origin === 'center' || origin === 'top-left'; 
+  static checkCoordinateOrigin(origin) {
+    return origin === undefined || origin === "center" || origin === "top-left";
   }
 
   /**
@@ -6650,38 +6528,48 @@ class Node {
    *
    * This method must also be called also if the global node options have changed and the group options did not.
    *
-   * @param {Object} parentOptions
-   * @param {Object} newOptions  new values for the options, currently only passed in for check
-   * @param {Object} groupList
+   * @param {object} parentOptions
+   * @param {object} newOptions  new values for the options, currently only passed in for check
+   * @param {object} groupList
    */
   static updateGroupOptions(parentOptions, newOptions, groupList) {
-    if (groupList === undefined) return;  // No groups, nothing to do
+    if (groupList === undefined) return; // No groups, nothing to do
 
     const group = parentOptions.group;
 
     // paranoia: the selected group is already merged into node options, check.
-    if (newOptions !== undefined && newOptions.group !== undefined && group !== newOptions.group) {
-      throw new Error("updateGroupOptions: group values in options don't match.");
+    if (
+      newOptions !== undefined &&
+      newOptions.group !== undefined &&
+      group !== newOptions.group
+    ) {
+      throw new Error(
+        "updateGroupOptions: group values in options don't match."
+      );
     }
 
-    
-    const hasGroup = (typeof group === 'number' || (typeof group === 'string' && group != ''));
-    if (!hasGroup) return;  // current node has no group, no need to merge
-    
-    
+    const hasGroup =
+      typeof group === "number" || (typeof group === "string" && group != "");
+    if (!hasGroup) return; // current node has no group, no need to merge
+
     const groupObj = groupList.get(group);
 
     if (groupObj.opacity !== undefined && newOptions.opacity === undefined) {
       if (!Node.checkOpacity(groupObj.opacity)) {
-        console.error("Invalid option for node opacity. Value must be between 0 and 1, found: " + groupObj.opacity);
+        console.error(
+          "Invalid option for node opacity. Value must be between 0 and 1, found: " +
+            groupObj.opacity
+        );
         groupObj.opacity = undefined;
       }
     }
 
     // Skip any new option to avoid them being overridden by the group options.
-    const skipProperties = Object.getOwnPropertyNames(newOptions).filter(p => newOptions[p] != null);
+    const skipProperties = Object.getOwnPropertyNames(newOptions).filter(
+      (p) => newOptions[p] != null
+    );
     // Always skip merging group font options into parent; these are required to be distinct for labels
-    skipProperties.push('font');
+    skipProperties.push("font");
     selectiveNotDeepExtend(skipProperties, parentOptions, groupObj);
 
     // the color object needs to be completely defined.
@@ -6689,87 +6577,107 @@ class Node {
     parentOptions.color = parseColor(parentOptions.color);
   }
 
-
   /**
    * This process all possible shorthands in the new options and makes sure that the parentOptions are fully defined.
    * Static so it can also be used by the handler.
    *
-   * @param {Object} parentOptions
-   * @param {Object} newOptions
+   * @param {object} parentOptions
+   * @param {object} newOptions
    * @param {boolean} [allowDeletion=false]
-   * @param {Object} [globalOptions={}]
-   * @param {Object} [groupList]
+   * @param {object} [globalOptions={}]
+   * @param {object} [groupList]
    * @static
    */
-  static parseOptions(parentOptions, newOptions, allowDeletion = false, globalOptions = {}, groupList) {
-    const fields = [
-      'color',
-      'fixed',
-      'shadow'
-    ];
+  static parseOptions(
+    parentOptions,
+    newOptions,
+    allowDeletion = false,
+    globalOptions = {},
+    groupList
+  ) {
+    const fields = ["color", "fixed", "shadow"];
     selectiveNotDeepExtend(fields, parentOptions, newOptions, allowDeletion);
 
     Node.checkMass(newOptions);
 
-    
     if (parentOptions.opacity !== undefined) {
       if (!Node.checkOpacity(parentOptions.opacity)) {
-        console.error("Invalid option for node opacity. Value must be between 0 and 1, found: " + parentOptions.opacity);
+        console.error(
+          "Invalid option for node opacity. Value must be between 0 and 1, found: " +
+            parentOptions.opacity
+        );
         parentOptions.opacity = undefined;
       }
     }
 
     if (newOptions.opacity !== undefined) {
       if (!Node.checkOpacity(newOptions.opacity)) {
-        console.error("Invalid option for node opacity. Value must be between 0 and 1, found: " + newOptions.opacity);
+        console.error(
+          "Invalid option for node opacity. Value must be between 0 and 1, found: " +
+            newOptions.opacity
+        );
         newOptions.opacity = undefined;
       }
     }
 
-    if(newOptions.shapeProperties && !Node.checkCoordinateOrigin(newOptions.shapeProperties.coordinateOrigin)){
-      console.error("Invalid option for node coordinateOrigin, found: " + newOptions.shapeProperties.coordinateOrigin);
+    if (
+      newOptions.shapeProperties &&
+      !Node.checkCoordinateOrigin(newOptions.shapeProperties.coordinateOrigin)
+    ) {
+      console.error(
+        "Invalid option for node coordinateOrigin, found: " +
+          newOptions.shapeProperties.coordinateOrigin
+      );
     }
 
     // merge the shadow options into the parent.
-    mergeOptions(parentOptions, newOptions, 'shadow', globalOptions);
+    mergeOptions(parentOptions, newOptions, "shadow", globalOptions);
 
     // individual shape newOptions
     if (newOptions.color !== undefined && newOptions.color !== null) {
       const parsedColor = parseColor(newOptions.color);
       fillIfDefined(parentOptions.color, parsedColor);
-    }
-    else if (allowDeletion === true && newOptions.color === null) {
+    } else if (allowDeletion === true && newOptions.color === null) {
       parentOptions.color = bridgeObject(globalOptions.color); // set the object back to the global options
     }
 
     // handle the fixed options
     if (newOptions.fixed !== undefined && newOptions.fixed !== null) {
-      if (typeof newOptions.fixed === 'boolean') {
+      if (typeof newOptions.fixed === "boolean") {
         parentOptions.fixed.x = newOptions.fixed;
         parentOptions.fixed.y = newOptions.fixed;
-      }
-      else {
-        if (newOptions.fixed.x !== undefined && typeof newOptions.fixed.x === 'boolean') {
+      } else {
+        if (
+          newOptions.fixed.x !== undefined &&
+          typeof newOptions.fixed.x === "boolean"
+        ) {
           parentOptions.fixed.x = newOptions.fixed.x;
         }
-        if (newOptions.fixed.y !== undefined && typeof newOptions.fixed.y === 'boolean') {
+        if (
+          newOptions.fixed.y !== undefined &&
+          typeof newOptions.fixed.y === "boolean"
+        ) {
           parentOptions.fixed.y = newOptions.fixed.y;
         }
       }
     }
 
     if (allowDeletion === true && newOptions.font === null) {
-      parentOptions.font =  bridgeObject(globalOptions.font); // set the object back to the global options
+      parentOptions.font = bridgeObject(globalOptions.font); // set the object back to the global options
     }
 
     Node.updateGroupOptions(parentOptions, newOptions, groupList);
 
     // handle the scaling options, specifically the label part
     if (newOptions.scaling !== undefined) {
-      mergeOptions(parentOptions.scaling, newOptions.scaling, 'label', globalOptions.scaling);
+      mergeOptions(
+        parentOptions.scaling,
+        newOptions.scaling,
+        "label",
+        globalOptions.scaling
+      );
     }
   }
-
 
   /**
    *
@@ -6788,12 +6696,16 @@ class Node {
       shadowColor: this.options.shadow.color,
       shadowSize: this.options.shadow.size,
       shadowX: this.options.shadow.x,
-      shadowY: this.options.shadow.y
+      shadowY: this.options.shadow.y,
     };
     if (this.selected || this.hover) {
       if (this.chooser === true) {
         if (this.selected) {
-          values.borderWidth *= 2;
+          if (this.options.borderWidthSelected != null) {
+            values.borderWidth = this.options.borderWidthSelected;
+          } else {
+            values.borderWidth *= 2;
+          }
           values.color = this.options.color.highlight.background;
           values.borderColor = this.options.color.highlight.border;
           values.shadow = this.options.shadow.enabled;
@@ -6802,13 +6714,15 @@ class Node {
           values.borderColor = this.options.color.hover.border;
           values.shadow = this.options.shadow.enabled;
         }
-      } else if (typeof this.chooser === 'function') {
+      } else if (typeof this.chooser === "function") {
         this.chooser(values, this.options.id, this.selected, this.hover);
         if (values.shadow === false) {
-          if ((values.shadowColor !== this.options.shadow.color) ||
-              (values.shadowSize !== this.options.shadow.size) ||
-              (values.shadowX !== this.options.shadow.x) ||
-              (values.shadowY !== this.options.shadow.y)) {
+          if (
+            values.shadowColor !== this.options.shadow.color ||
+            values.shadowSize !== this.options.shadow.size ||
+            values.shadowX !== this.options.shadow.x ||
+            values.shadowY !== this.options.shadow.y
+          ) {
             values.shadow = true;
           }
         }
@@ -6825,21 +6739,20 @@ class Node {
     return values;
   }
 
-
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   updateLabelModule(options) {
     if (this.options.label === undefined || this.options.label === null) {
-      this.options.label = '';
+      this.options.label = "";
     }
 
     Node.updateGroupOptions(
       this.options,
       {
         ...options,
-        color: (options && options.color) || this._localColor || undefined
+        color: (options && options.color) || this._localColor || undefined,
       },
       this.grouplist
     );
@@ -6856,11 +6769,11 @@ class Node {
     //
     const currentGroup = this.grouplist.get(this.options.group, false);
     const pile = [
-      options,             // new options
-      this.options,        // current node options, see comment above for prototype
-      currentGroup,        // group options, if any
-      this.globalOptions,  // Currently set global node options
-      this.defaultOptions  // Default global node options
+      options, // new options
+      this.options, // current node options, see comment above for prototype
+      currentGroup, // group options, if any
+      this.globalOptions, // Currently set global node options
+      this.defaultOptions, // Default global node options
     ];
     this.labelModule.update(this.options, pile);
 
@@ -6869,7 +6782,6 @@ class Node {
     }
   }
 
-
   /**
    *
    * @param {string} currentShape
@@ -6877,57 +6789,81 @@ class Node {
   updateShape(currentShape) {
     if (currentShape === this.options.shape && this.shape) {
       this.shape.setOptions(this.options, this.imageObj, this.imageObjAlt);
-    }
-    else {
+    } else {
       // choose draw method depending on the shape
       switch (this.options.shape) {
-        case 'box':
-          this.shape = new Box(this.options, this.body, this.labelModule);
+        case "box":
+          this.shape = new Box$1(this.options, this.body, this.labelModule);
           break;
-        case 'circle':
-          this.shape = new Circle(this.options, this.body, this.labelModule);
+        case "circle":
+          this.shape = new Circle$1(this.options, this.body, this.labelModule);
           break;
-        case 'circularImage':
-          this.shape = new CircularImage(this.options, this.body, this.labelModule, this.imageObj, this.imageObjAlt);
+        case "circularImage":
+          this.shape = new CircularImage(
+            this.options,
+            this.body,
+            this.labelModule,
+            this.imageObj,
+            this.imageObjAlt
+          );
           break;
-        case 'custom':
-          this.shape = new CustomShape(this.options, this.body, this.labelModule, this.options.ctxRenderer);
+        case "custom":
+          this.shape = new CustomShape(
+            this.options,
+            this.body,
+            this.labelModule,
+            this.options.ctxRenderer
+          );
           break;
-        case 'database':
+        case "database":
           this.shape = new Database(this.options, this.body, this.labelModule);
           break;
-        case 'diamond':
-          this.shape = new Diamond(this.options, this.body, this.labelModule);
+        case "diamond":
+          this.shape = new Diamond$1(this.options, this.body, this.labelModule);
           break;
-        case 'dot':
+        case "dot":
           this.shape = new Dot(this.options, this.body, this.labelModule);
           break;
-        case 'ellipse':
+        case "ellipse":
           this.shape = new Ellipse(this.options, this.body, this.labelModule);
           break;
-        case 'icon':
+        case "icon":
           this.shape = new Icon(this.options, this.body, this.labelModule);
           break;
-        case 'image':
-          this.shape = new Image$1(this.options, this.body, this.labelModule, this.imageObj, this.imageObjAlt);
+        case "image":
+          this.shape = new Image$2(
+            this.options,
+            this.body,
+            this.labelModule,
+            this.imageObj,
+            this.imageObjAlt
+          );
           break;
-        case 'square':
+        case "square":
           this.shape = new Square(this.options, this.body, this.labelModule);
           break;
-        case 'hexagon':
+        case "hexagon":
           this.shape = new Hexagon(this.options, this.body, this.labelModule);
           break;
-        case 'star':
+        case "star":
           this.shape = new Star(this.options, this.body, this.labelModule);
           break;
-        case 'text':
+        case "text":
           this.shape = new Text(this.options, this.body, this.labelModule);
           break;
-        case 'triangle':
-          this.shape = new Triangle(this.options, this.body, this.labelModule);
+        case "triangle":
+          this.shape = new Triangle$1(
+            this.options,
+            this.body,
+            this.labelModule
+          );
           break;
-        case 'triangleDown':
-          this.shape = new TriangleDown(this.options, this.body, this.labelModule);
+        case "triangleDown":
+          this.shape = new TriangleDown(
+            this.options,
+            this.body,
+            this.labelModule
+          );
           break;
         default:
           this.shape = new Ellipse(this.options, this.body, this.labelModule);
@@ -6937,7 +6873,6 @@ class Node {
     this.needsRefresh();
   }
 
-
   /**
    * select this node
    */
@@ -6945,7 +6880,6 @@ class Node {
     this.selected = true;
     this.needsRefresh();
   }
-
 
   /**
    * unselect this node
@@ -6955,8 +6889,6 @@ class Node {
     this.needsRefresh();
   }
 
-
-
   /**
    * Reset the calculated size of the node, forces it to recalculate its size
    */
@@ -6964,83 +6896,88 @@ class Node {
     this.shape.refreshNeeded = true;
   }
 
-
   /**
    * get the title of this node.
-   * @return {string} title    The title of the node, or undefined when no title
+   *
+   * @returns {string} title    The title of the node, or undefined when no title
    *                           has been set.
    */
   getTitle() {
     return this.options.title;
   }
 
-
   /**
    * Calculate the distance to the border of the Node
+   *
    * @param {CanvasRenderingContext2D}   ctx
    * @param {number} angle        Angle in radians
    * @returns {number} distance   Distance to the border in pixels
    */
   distanceToBorder(ctx, angle) {
-    return this.shape.distanceToBorder(ctx,angle);
+    return this.shape.distanceToBorder(ctx, angle);
   }
-
 
   /**
    * Check if this node has a fixed x and y position
-   * @return {boolean}      true if fixed, false if not
+   *
+   * @returns {boolean}      true if fixed, false if not
    */
   isFixed() {
-    return (this.options.fixed.x && this.options.fixed.y);
+    return this.options.fixed.x && this.options.fixed.y;
   }
-
 
   /**
    * check if this node is selecte
-   * @return {boolean} selected   True if node is selected, else false
+   *
+   * @returns {boolean} selected   True if node is selected, else false
    */
   isSelected() {
     return this.selected;
   }
 
-
   /**
    * Retrieve the value of the node. Can be undefined
-   * @return {number} value
+   *
+   * @returns {number} value
    */
   getValue() {
     return this.options.value;
   }
 
-
   /**
    * Get the current dimensions of the label
    *
-   * @return {rect}
+   * @returns {rect}
    */
   getLabelSize() {
     return this.labelModule.size();
   }
 
-
   /**
    * Adjust the value range of the node. The node will adjust it's size
    * based on its value.
+   *
    * @param {number} min
    * @param {number} max
    * @param {number} total
    */
   setValueRange(min, max, total) {
     if (this.options.value !== undefined) {
-      const scale = this.options.scaling.customScalingFunction(min, max, total, this.options.value);
+      const scale = this.options.scaling.customScalingFunction(
+        min,
+        max,
+        total,
+        this.options.value
+      );
       const sizeDiff = this.options.scaling.max - this.options.scaling.min;
       if (this.options.scaling.label.enabled === true) {
-        const fontDiff = this.options.scaling.label.max - this.options.scaling.label.min;
-        this.options.font.size = this.options.scaling.label.min + scale * fontDiff;
+        const fontDiff =
+          this.options.scaling.label.max - this.options.scaling.label.min;
+        this.options.font.size =
+          this.options.scaling.label.min + scale * fontDiff;
       }
       this.options.size = this.options.scaling.min + scale * sizeDiff;
-    }
-    else {
+    } else {
       this.options.size = this.baseSize;
       this.options.font.size = this.baseFontSize;
     }
@@ -7048,37 +6985,40 @@ class Node {
     this.updateLabelModule();
   }
 
-
   /**
    * Draw this node in the given canvas
    * The 2d context of a HTML canvas can be retrieved by canvas.getContext("2d");
+   *
    * @param {CanvasRenderingContext2D}   ctx
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   draw(ctx) {
     const values = this.getFormattingValues();
-    this.shape.draw(ctx, this.x, this.y, this.selected, this.hover, values);
+    return (
+      this.shape.draw(ctx, this.x, this.y, this.selected, this.hover, values) ||
+      {}
+    );
   }
-
 
   /**
    * Update the bounding box of the shape
+   *
    * @param {CanvasRenderingContext2D}   ctx
    */
   updateBoundingBox(ctx) {
-    this.shape.updateBoundingBox(this.x,this.y,ctx);
+    this.shape.updateBoundingBox(this.x, this.y, ctx);
   }
-
 
   /**
    * Recalculate the size of this node in the given canvas
    * The 2d context of a HTML canvas can be retrieved by canvas.getContext("2d");
+   *
    * @param {CanvasRenderingContext2D}   ctx
    */
   resize(ctx) {
     const values = this.getFormattingValues();
     this.shape.resize(ctx, this.selected, this.hover, values);
   }
-
 
   /**
    * Determine all visual elements of this node instance, in which the given
@@ -7092,22 +7032,22 @@ class Node {
 
     if (this.labelModule.visible()) {
       if (pointInRect(this.labelModule.getSize(), point)) {
-        ret.push({nodeId:this.id, labelId:0});
+        ret.push({ nodeId: this.id, labelId: 0 });
       }
     }
 
     if (pointInRect(this.shape.boundingBox, point)) {
-      ret.push({nodeId:this.id});
+      ret.push({ nodeId: this.id });
     }
 
     return ret;
   }
 
-
   /**
    * Check if this object is overlapping with the provided object
-   * @param {Object} obj   an object with parameters left, top, right, bottom
-   * @return {boolean}     True if location is located on node
+   *
+   * @param {object} obj   an object with parameters left, top, right, bottom
+   * @returns {boolean}     True if location is located on node
    */
   isOverlappingWith(obj) {
     return (
@@ -7118,11 +7058,11 @@ class Node {
     );
   }
 
-
   /**
    * Check if this object is overlapping with the provided object
-   * @param {Object} obj   an object with parameters left, top, right, bottom
-   * @return {boolean}     True if location is located on node
+   *
+   * @param {object} obj   an object with parameters left, top, right, bottom
+   * @returns {boolean}     True if location is located on node
    */
   isBoundingBoxOverlappingWith(obj) {
     return (
@@ -7133,24 +7073,25 @@ class Node {
     );
   }
 
-
   /**
-  * Check valid values for mass
-  *
-  * The mass may not be negative or zero. If it is, reset to 1
-  *
-  * @param {object} options
-  * @param {Node.id} id
+   * Check valid values for mass
+   *
+   * The mass may not be negative or zero. If it is, reset to 1
+   *
+   * @param {object} options
+   * @param {Node.id} id
    * @static
-  */
+   */
   static checkMass(options, id) {
     if (options.mass !== undefined && options.mass <= 0) {
-      let strId = '';
+      let strId = "";
       if (id !== undefined) {
-        strId = ' in node id: ' + id;
+        strId = " in node id: " + id;
       }
-      console.log('%cNegative or zero mass disallowed' + strId +
-                  ', setting mass to 1.' , printStyle);
+      console.error(
+        "%cNegative or zero mass disallowed" + strId + ", setting mass to 1.",
+        VALIDATOR_PRINT_STYLE
+      );
       options.mass = 1;
     }
   }
@@ -7161,7 +7102,7 @@ class Node {
  */
 class NodesHandler {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Images} images
    * @param {Array.<Group>} groups
    * @param {LayoutEngine} layoutEngine
@@ -7176,72 +7117,79 @@ class NodesHandler {
     this.body.functions.createNode = this.create.bind(this);
 
     this.nodesListeners = {
-      add: (event, params) => { this.add(params.items); },
-      update: (event, params) => { this.update(params.items, params.data, params.oldData); },
-      remove: (event, params) => { this.remove(params.items); }
+      add: (event, params) => {
+        this.add(params.items);
+      },
+      update: (event, params) => {
+        this.update(params.items, params.data, params.oldData);
+      },
+      remove: (event, params) => {
+        this.remove(params.items);
+      },
     };
 
     this.defaultOptions = {
       borderWidth: 1,
-      borderWidthSelected: 2,
+      borderWidthSelected: undefined,
       brokenImage: undefined,
       color: {
-        border: '#2B7CE9',
-        background: '#97C2FC',
+        border: "#2B7CE9",
+        background: "#97C2FC",
         highlight: {
-          border: '#2B7CE9',
-          background: '#D2E5FF'
+          border: "#2B7CE9",
+          background: "#D2E5FF",
         },
         hover: {
-          border: '#2B7CE9',
-          background: '#D2E5FF'
-        }
+          border: "#2B7CE9",
+          background: "#D2E5FF",
+        },
       },
       opacity: undefined, // number between 0 and 1
       fixed: {
         x: false,
-        y: false
+        y: false,
       },
       font: {
-        color: '#343434',
+        color: "#343434",
         size: 14, // px
-        face: 'arial',
-        background: 'none',
+        face: "arial",
+        background: "none",
         strokeWidth: 0, // px
-        strokeColor: '#ffffff',
-        align: 'center',
+        strokeColor: "#ffffff",
+        align: "center",
         vadjust: 0,
         multi: false,
         bold: {
-          mod: 'bold'
+          mod: "bold",
         },
         boldital: {
-          mod: 'bold italic'
+          mod: "bold italic",
         },
         ital: {
-          mod: 'italic'
+          mod: "italic",
         },
         mono: {
-          mod: '',
+          mod: "",
           size: 15, // px
-          face: 'monospace',
-          vadjust: 2
-        }
+          face: "monospace",
+          vadjust: 2,
+        },
       },
       group: undefined,
       hidden: false,
       icon: {
-        face: 'FontAwesome',  //'FontAwesome',
-        code: undefined,  //'\uf007',
-        size: 50,  //50,
-        color: '#2B7CE9'   //'#aa00ff'
+        face: "FontAwesome", //'FontAwesome',
+        code: undefined, //'\uf007',
+        size: 50, //50,
+        color: "#2B7CE9", //'#aa00ff'
       },
       image: undefined, // --> URL
-      imagePadding: { // only for image shape
+      imagePadding: {
+        // only for image shape
         top: 0,
         right: 0,
         bottom: 0,
-        left: 0
+        left: 0,
       },
       label: undefined,
       labelHighlightBold: true,
@@ -7250,7 +7198,7 @@ class NodesHandler {
         top: 5,
         right: 5,
         bottom: 5,
-        left: 5
+        left: 5,
       },
       mass: 1,
       physics: true,
@@ -7262,44 +7210,43 @@ class NodesHandler {
           min: 14,
           max: 30,
           maxVisible: 30,
-          drawThreshold: 5
+          drawThreshold: 5,
         },
         customScalingFunction: function (min, max, total, value) {
           if (max === min) {
             return 0.5;
-          }
-          else {
+          } else {
             const scale = 1 / (max - min);
             return Math.max(0, (value - min) * scale);
           }
-        }
+        },
       },
       shadow: {
         enabled: false,
-        color: 'rgba(0,0,0,0.5)',
+        color: "rgba(0,0,0,0.5)",
         size: 10,
         x: 5,
-        y: 5
+        y: 5,
       },
-      shape: 'ellipse',
+      shape: "ellipse",
       shapeProperties: {
         borderDashes: false, // only for borders
-        borderRadius: 6,     // only for box shape
-        interpolation: true,  // only for image and circularImage shapes
-        useImageSize: false,  // only for image and circularImage shapes
-        useBorderWithImage: false,  // only for image shape
-        coordinateOrigin: 'center'  // only for image and circularImage shapes
+        borderRadius: 6, // only for box shape
+        interpolation: true, // only for image and circularImage shapes
+        useImageSize: false, // only for image and circularImage shapes
+        useBorderWithImage: false, // only for image shape
+        coordinateOrigin: "center", // only for image and circularImage shapes
       },
       size: 25,
       title: undefined,
       value: undefined,
       x: undefined,
-      y: undefined
+      y: undefined,
     };
 
     // Protect from idiocy
     if (this.defaultOptions.mass <= 0) {
-      throw 'Internal error: mass in defaultOptions of NodesHandler may not be zero or negative';
+      throw "Internal error: mass in defaultOptions of NodesHandler may not be zero or negative";
     }
 
     this.options = bridgeObject(this.defaultOptions);
@@ -7312,12 +7259,11 @@ class NodesHandler {
    */
   bindEventListeners() {
     // refresh the nodes. Used when reverting from hierarchical layout
-    this.body.emitter.on('refreshNodes', this.refresh.bind(this));
-    this.body.emitter.on('refresh', this.refresh.bind(this));
-    this.body.emitter.on('destroy', () => {
+    this.body.emitter.on("refreshNodes", this.refresh.bind(this));
+    this.body.emitter.on("refresh", this.refresh.bind(this));
+    this.body.emitter.on("destroy", () => {
       forEach(this.nodesListeners, (callback, event) => {
-        if (this.body.data.nodes)
-          this.body.data.nodes.off(event, callback);
+        if (this.body.data.nodes) this.body.data.nodes.off(event, callback);
       });
       delete this.body.functions.createNode;
       delete this.nodesListeners.add;
@@ -7329,19 +7275,26 @@ class NodesHandler {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
       Node.parseOptions(this.options, options);
-      
+
       // Need to set opacity here because Node.parseOptions is also used for groups,
       // if you set opacity in Node.parseOptions it overwrites group opacity.
       if (options.opacity !== undefined) {
-        if (Number.isNaN(options.opacity) || !Number.isFinite(options.opacity) || options.opacity < 0 || options.opacity > 1) {
-          console.error("Invalid option for node opacity. Value must be between 0 and 1, found: " + options.opacity);
-        }
-        else {
+        if (
+          Number.isNaN(options.opacity) ||
+          !Number.isFinite(options.opacity) ||
+          options.opacity < 0 ||
+          options.opacity > 1
+        ) {
+          console.error(
+            "Invalid option for node opacity. Value must be between 0 and 1, found: " +
+              options.opacity
+          );
+        } else {
           this.options.opacity = options.opacity;
         }
       }
@@ -7378,32 +7331,30 @@ class NodesHandler {
 
       // update the state of the variables if needed
       if (options.hidden !== undefined || options.physics !== undefined) {
-        this.body.emitter.emit('_dataChanged');
+        this.body.emitter.emit("_dataChanged");
       }
     }
   }
 
   /**
    * Set a data set with nodes for the network
+   *
    * @param {Array | DataSet | DataView} nodes         The data containing the nodes.
-   * @param {boolean} [doNotEmit=false]
+   * @param {boolean} [doNotEmit=false] - Suppress data changed event.
    * @private
    */
   setData(nodes, doNotEmit = false) {
     const oldNodesData = this.body.data.nodes;
 
-    if (nodes instanceof DataSet || nodes instanceof DataView) {
+    if (isDataViewLike("id", nodes)) {
       this.body.data.nodes = nodes;
-    }
-    else if (Array.isArray(nodes)) {
+    } else if (Array.isArray(nodes)) {
       this.body.data.nodes = new DataSet();
       this.body.data.nodes.add(nodes);
-    }
-    else if (!nodes) {
+    } else if (!nodes) {
       this.body.data.nodes = new DataSet();
-    }
-    else {
-      throw new TypeError('Array or DataSet expected');
+    } else {
+      throw new TypeError("Array or DataSet expected");
     }
 
     if (oldNodesData) {
@@ -7433,9 +7384,9 @@ class NodesHandler {
     }
   }
 
-
   /**
    * Add nodes
+   *
    * @param {number[] | string[]} ids
    * @param {boolean} [doNotEmit=false]
    * @private
@@ -7460,6 +7411,7 @@ class NodesHandler {
 
   /**
    * Update existing nodes, or create them when not yet existing
+   *
    * @param {number[] | string[]} ids id's of changed nodes
    * @param {Array} changedData array with changed data
    * @param {Array|undefined} oldData optional; array with previous data
@@ -7477,8 +7429,7 @@ class NodesHandler {
         if (node.setOptions(data)) {
           dataChanged = true;
         }
-      }
-      else {
+      } else {
         dataChanged = true;
         // create node
         node = this.create(data);
@@ -7490,22 +7441,22 @@ class NodesHandler {
       // Check for any changes which should trigger a layout recalculation
       // For now, this is just 'level' for hierarchical layout
       // Assumption: old and new data arranged in same order; at time of writing, this holds.
-      dataChanged = changedData.some(function(newValue, index) {
+      dataChanged = changedData.some(function (newValue, index) {
         const oldValue = oldData[index];
-        return (oldValue && oldValue.level !== newValue.level);
+        return oldValue && oldValue.level !== newValue.level;
       });
     }
 
     if (dataChanged === true) {
       this.body.emitter.emit("_dataChanged");
-    }
-    else {
+    } else {
       this.body.emitter.emit("_dataUpdated");
     }
   }
 
   /**
    * Remove existing nodes. If nodes do not exist, the method will just ignore it.
+   *
    * @param {number[] | string[]} ids
    * @private
    */
@@ -7520,17 +7471,23 @@ class NodesHandler {
     this.body.emitter.emit("_dataChanged");
   }
 
-
   /**
    * create a node
-   * @param {Object} properties
+   *
+   * @param {object} properties
    * @param {class} [constructorClass=Node.default]
    * @returns {*}
    */
   create(properties, constructorClass = Node) {
-    return new constructorClass(properties, this.body, this.images, this.groups, this.options, this.defaultOptions)
+    return new constructorClass(
+      properties,
+      this.body,
+      this.images,
+      this.groups,
+      this.options,
+      this.defaultOptions
+    );
   }
-
 
   /**
    *
@@ -7541,7 +7498,7 @@ class NodesHandler {
       const data = this.body.data.nodes.get(nodeId);
       if (data !== undefined) {
         if (clearPositions === true) {
-          node.setOptions({x:null, y:null});
+          node.setOptions({ x: null, y: null });
         }
         node.setOptions({ fixed: false });
         node.setOptions(data);
@@ -7549,10 +7506,10 @@ class NodesHandler {
     });
   }
 
-
   /**
    * Returns the positions of the nodes.
-   * @param {Array.<Node.id>|String} [ids]  --> optional, can be array of nodeIds, can be string
+   *
+   * @param {Array.<Node.id> | string} [ids]  --> optional, can be array of nodeIds, can be string
    * @returns {{}}
    */
   getPositions(ids) {
@@ -7562,46 +7519,52 @@ class NodesHandler {
         for (let i = 0; i < ids.length; i++) {
           if (this.body.nodes[ids[i]] !== undefined) {
             const node = this.body.nodes[ids[i]];
-            dataArray[ids[i]] = { x: Math.round(node.x), y: Math.round(node.y) };
+            dataArray[ids[i]] = {
+              x: Math.round(node.x),
+              y: Math.round(node.y),
+            };
           }
         }
-      }
-      else {
+      } else {
         if (this.body.nodes[ids] !== undefined) {
           const node = this.body.nodes[ids];
           dataArray[ids] = { x: Math.round(node.x), y: Math.round(node.y) };
         }
       }
-    }
-    else {
+    } else {
       for (let i = 0; i < this.body.nodeIndices.length; i++) {
         const node = this.body.nodes[this.body.nodeIndices[i]];
-        dataArray[this.body.nodeIndices[i]] = { x: Math.round(node.x), y: Math.round(node.y) };
+        dataArray[this.body.nodeIndices[i]] = {
+          x: Math.round(node.x),
+          y: Math.round(node.y),
+        };
       }
     }
     return dataArray;
   }
-  
+
   /**
    * Retrieves the x y position of a specific id.
    *
    * @param {string} id The id to retrieve.
-   *
    * @throws {TypeError} If no id is included.
    * @throws {ReferenceError} If an invalid id is provided.
-   *
    * @returns {{ x: number, y: number }} Returns X, Y canvas position of the node with given id.
    */
   getPosition(id) {
     if (id == undefined) {
       throw new TypeError("No id was specified for getPosition method.");
     } else if (this.body.nodes[id] == undefined) {
-      throw new ReferenceError(`NodeId provided for getPosition does not exist. Provided: ${id}`);
+      throw new ReferenceError(
+        `NodeId provided for getPosition does not exist. Provided: ${id}`
+      );
     } else {
-      return { x: Math.round(this.body.nodes[id].x), y: Math.round(this.body.nodes[id].y) };
+      return {
+        x: Math.round(this.body.nodes[id].x),
+        y: Math.round(this.body.nodes[id].y),
+      };
     }
   }
-
 
   /**
    * Load the XY positions of the nodes into the dataset.
@@ -7627,6 +7590,7 @@ class NodesHandler {
 
   /**
    * get the bounding box of a node.
+   *
    * @param {Node.id} nodeId
    * @returns {j|*}
    */
@@ -7636,9 +7600,9 @@ class NodesHandler {
     }
   }
 
-
   /**
    * Get the Ids of nodes connected to this node.
+   *
    * @param {Node.id} nodeId
    * @param {'to'|'from'|undefined} direction values 'from' and 'to' select respectively parent and child nodes only.
    *                                          Any other value returns both parent and child nodes.
@@ -7651,13 +7615,14 @@ class NodesHandler {
       const nodeObj = {}; // used to quickly check if node already exists
       for (let i = 0; i < node.edges.length; i++) {
         const edge = node.edges[i];
-        if (direction !== 'to' && edge.toId == node.id) { // these are double equals since ids can be numeric or string
+        if (direction !== "to" && edge.toId == node.id) {
+          // these are double equals since ids can be numeric or string
           if (nodeObj[edge.fromId] === undefined) {
             nodeList.push(edge.fromId);
             nodeObj[edge.fromId] = true;
           }
-        }
-        else if (direction !== 'from' && edge.fromId == node.id) { // these are double equals since ids can be numeric or string
+        } else if (direction !== "from" && edge.fromId == node.id) {
+          // these are double equals since ids can be numeric or string
           if (nodeObj[edge.toId] === undefined) {
             nodeList.push(edge.toId);
             nodeObj[edge.toId] = true;
@@ -7670,6 +7635,7 @@ class NodesHandler {
 
   /**
    * Get the ids of the edges connected to this node.
+   *
    * @param {Node.id} nodeId
    * @returns {*}
    */
@@ -7680,13 +7646,14 @@ class NodesHandler {
       for (let i = 0; i < node.edges.length; i++) {
         edgeList.push(node.edges[i].id);
       }
-    }
-    else {
-      console.log("NodeId provided for getConnectedEdges does not exist. Provided: ", nodeId);
+    } else {
+      console.error(
+        "NodeId provided for getConnectedEdges does not exist. Provided: ",
+        nodeId
+      );
     }
     return edgeList;
   }
-
 
   /**
    * Move a node.
@@ -7699,15 +7666,20 @@ class NodesHandler {
     if (this.body.nodes[nodeId] !== undefined) {
       this.body.nodes[nodeId].x = Number(x);
       this.body.nodes[nodeId].y = Number(y);
-      setTimeout(() => {this.body.emitter.emit("startSimulation");},0);
-    }
-    else {
-      console.log("Node id supplied to moveNode does not exist. Provided: ", nodeId);
+      setTimeout(() => {
+        this.body.emitter.emit("startSimulation");
+      }, 0);
+    } else {
+      console.error(
+        "Node id supplied to moveNode does not exist. Provided: ",
+        nodeId
+      );
     }
   }
 }
 
-/** ============================================================================
+/**
+ * ============================================================================
  * Location of all the endpoint drawing routines.
  *
  * Every endpoint has its own drawing routine, which contains an endpoint definition.
@@ -7732,282 +7704,294 @@ class NodesHandler {
  *   Scan for 'arrows.to.type` and add it to the description.
  * - Add the endpoint to the examples. At the very least, add it to example
  *   `edgeStyles/arrowTypes`.
- * ============================================================================= */
+ * =============================================================================
+ */
 /**
  * Common methods for endpoints
  *
  * @class
  */
 class EndPoint {
-    /**
-     * Apply transformation on points for display.
-     *
-     * The following is done:
-     * - rotate by the specified angle
-     * - multiply the (normalized) coordinates by the passed length
-     * - offset by the target coordinates
-     *
-     * @param points - The point(s) to be transformed.
-     * @param arrowData - The data determining the result of the transformation.
-     */
-    static transform(points, arrowData) {
-        if (!Array.isArray(points)) {
-            points = [points];
-        }
-        const x = arrowData.point.x;
-        const y = arrowData.point.y;
-        const angle = arrowData.angle;
-        const length = arrowData.length;
-        for (let i = 0; i < points.length; ++i) {
-            const p = points[i];
-            const xt = p.x * Math.cos(angle) - p.y * Math.sin(angle);
-            const yt = p.x * Math.sin(angle) + p.y * Math.cos(angle);
-            p.x = x + length * xt;
-            p.y = y + length * yt;
-        }
+  /**
+   * Apply transformation on points for display.
+   *
+   * The following is done:
+   * - rotate by the specified angle
+   * - multiply the (normalized) coordinates by the passed length
+   * - offset by the target coordinates
+   *
+   * @param points - The point(s) to be transformed.
+   * @param arrowData - The data determining the result of the transformation.
+   */
+  static transform(points, arrowData) {
+    if (!Array.isArray(points)) {
+      points = [points];
     }
-    /**
-     * Draw a closed path using the given real coordinates.
-     *
-     * @param ctx - The path will be rendered into this context.
-     * @param points - The points of the path.
-     */
-    static drawPath(ctx, points) {
-        ctx.beginPath();
-        ctx.moveTo(points[0].x, points[0].y);
-        for (let i = 1; i < points.length; ++i) {
-            ctx.lineTo(points[i].x, points[i].y);
-        }
-        ctx.closePath();
+    const x = arrowData.point.x;
+    const y = arrowData.point.y;
+    const angle = arrowData.angle;
+    const length = arrowData.length;
+    for (let i = 0; i < points.length; ++i) {
+      const p = points[i];
+      const xt = p.x * Math.cos(angle) - p.y * Math.sin(angle);
+      const yt = p.x * Math.sin(angle) + p.y * Math.cos(angle);
+      p.x = x + length * xt;
+      p.y = y + length * yt;
     }
+  }
+  /**
+   * Draw a closed path using the given real coordinates.
+   *
+   * @param ctx - The path will be rendered into this context.
+   * @param points - The points of the path.
+   */
+  static drawPath(ctx, points) {
+    ctx.beginPath();
+    ctx.moveTo(points[0].x, points[0].y);
+    for (let i = 1; i < points.length; ++i) {
+      ctx.lineTo(points[i].x, points[i].y);
+    }
+    ctx.closePath();
+  }
 }
 /**
  * Drawing methods for the arrow endpoint.
  */
-class Image$2 extends EndPoint {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns False as there is no way to fill an image.
-     */
-    static draw(ctx, arrowData) {
-        if (arrowData.image) {
-            ctx.save();
-            ctx.translate(arrowData.point.x, arrowData.point.y);
-            ctx.rotate(Math.PI / 2 + arrowData.angle);
-            const width = arrowData.imageWidth != null
-                ? arrowData.imageWidth
-                : arrowData.image.width;
-            const height = arrowData.imageHeight != null
-                ? arrowData.imageHeight
-                : arrowData.image.height;
-            arrowData.image.drawImageAtPosition(ctx, 1, // scale
-            -width / 2, // x
-            0, // y
-            width, height);
-            ctx.restore();
-        }
-        return false;
+let Image$1 = class Image extends EndPoint {
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns False as there is no way to fill an image.
+   */
+  static draw(ctx, arrowData) {
+    if (arrowData.image) {
+      ctx.save();
+      ctx.translate(arrowData.point.x, arrowData.point.y);
+      ctx.rotate(Math.PI / 2 + arrowData.angle);
+      const width =
+        arrowData.imageWidth != null
+          ? arrowData.imageWidth
+          : arrowData.image.width;
+      const height =
+        arrowData.imageHeight != null
+          ? arrowData.imageHeight
+          : arrowData.image.height;
+      arrowData.image.drawImageAtPosition(
+        ctx,
+        1, // scale
+        -width / 2, // x
+        0, // y
+        width,
+        height
+      );
+      ctx.restore();
     }
-}
+    return false;
+  }
+};
 /**
  * Drawing methods for the arrow endpoint.
  */
 class Arrow extends EndPoint {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const points = [
-            { x: 0, y: 0 },
-            { x: -1, y: 0.3 },
-            { x: -0.9, y: 0 },
-            { x: -1, y: -0.3 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const points = [
+      { x: 0, y: 0 },
+      { x: -1, y: 0.3 },
+      { x: -0.9, y: 0 },
+      { x: -1, y: -0.3 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the crow endpoint.
  */
 class Crow {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const points = [
-            { x: -1, y: 0 },
-            { x: 0, y: 0.3 },
-            { x: -0.4, y: 0 },
-            { x: 0, y: -0.3 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const points = [
+      { x: -1, y: 0 },
+      { x: 0, y: 0.3 },
+      { x: -0.4, y: 0 },
+      { x: 0, y: -0.3 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the curve endpoint.
  */
 class Curve {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const point = { x: -0.4, y: 0 };
-        EndPoint.transform(point, arrowData);
-        // Update endpoint style for drawing transparent arc.
-        ctx.strokeStyle = ctx.fillStyle;
-        ctx.fillStyle = "rgba(0, 0, 0, 0)";
-        // Define curve endpoint as semicircle.
-        const pi = Math.PI;
-        const startAngle = arrowData.angle - pi / 2;
-        const endAngle = arrowData.angle + pi / 2;
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, arrowData.length * 0.4, startAngle, endAngle, false);
-        ctx.stroke();
-        return true;
-    }
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const point = { x: -0.4, y: 0 };
+    EndPoint.transform(point, arrowData);
+    // Update endpoint style for drawing transparent arc.
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.fillStyle = "rgba(0, 0, 0, 0)";
+    // Define curve endpoint as semicircle.
+    const pi = Math.PI;
+    const startAngle = arrowData.angle - pi / 2;
+    const endAngle = arrowData.angle + pi / 2;
+    ctx.beginPath();
+    ctx.arc(
+      point.x,
+      point.y,
+      arrowData.length * 0.4,
+      startAngle,
+      endAngle,
+      false
+    );
+    ctx.stroke();
+    return true;
+  }
 }
 /**
  * Drawing methods for the inverted curve endpoint.
  */
 class InvertedCurve {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const point = { x: -0.3, y: 0 };
-        EndPoint.transform(point, arrowData);
-        // Update endpoint style for drawing transparent arc.
-        ctx.strokeStyle = ctx.fillStyle;
-        ctx.fillStyle = "rgba(0, 0, 0, 0)";
-        // Define inverted curve endpoint as semicircle.
-        const pi = Math.PI;
-        const startAngle = arrowData.angle + pi / 2;
-        const endAngle = arrowData.angle + (3 * pi) / 2;
-        ctx.beginPath();
-        ctx.arc(point.x, point.y, arrowData.length * 0.4, startAngle, endAngle, false);
-        ctx.stroke();
-        return true;
-    }
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const point = { x: -0.3, y: 0 };
+    EndPoint.transform(point, arrowData);
+    // Update endpoint style for drawing transparent arc.
+    ctx.strokeStyle = ctx.fillStyle;
+    ctx.fillStyle = "rgba(0, 0, 0, 0)";
+    // Define inverted curve endpoint as semicircle.
+    const pi = Math.PI;
+    const startAngle = arrowData.angle + pi / 2;
+    const endAngle = arrowData.angle + (3 * pi) / 2;
+    ctx.beginPath();
+    ctx.arc(
+      point.x,
+      point.y,
+      arrowData.length * 0.4,
+      startAngle,
+      endAngle,
+      false
+    );
+    ctx.stroke();
+    return true;
+  }
 }
 /**
  * Drawing methods for the trinagle endpoint.
  */
-class Triangle$1 {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const points = [
-            { x: 0.02, y: 0 },
-            { x: -1, y: 0.3 },
-            { x: -1, y: -0.3 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+class Triangle {
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const points = [
+      { x: 0.02, y: 0 },
+      { x: -1, y: 0.3 },
+      { x: -1, y: -0.3 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the inverted trinagle endpoint.
  */
 class InvertedTriangle {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const points = [
-            { x: 0, y: 0.3 },
-            { x: 0, y: -0.3 },
-            { x: -1, y: 0 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const points = [
+      { x: 0, y: 0.3 },
+      { x: 0, y: -0.3 },
+      { x: -1, y: 0 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the circle endpoint.
  */
-class Circle$1 {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        const point = { x: -0.4, y: 0 };
-        EndPoint.transform(point, arrowData);
-        drawCircle(ctx, point.x, point.y, arrowData.length * 0.4);
-        return true;
-    }
+class Circle {
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    const point = { x: -0.4, y: 0 };
+    EndPoint.transform(point, arrowData);
+    drawCircle(ctx, point.x, point.y, arrowData.length * 0.4);
+    return true;
+  }
 }
 /**
  * Drawing methods for the bar endpoint.
  */
 class Bar {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        /*
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    /*
         var points = [
           {x:0, y:0.5},
           {x:0, y:-0.5}
@@ -8019,764 +8003,760 @@ class Bar {
         ctx.lineTo(points[1].x, points[1].y);
         ctx.stroke();
     */
-        const points = [
-            { x: 0, y: 0.5 },
-            { x: 0, y: -0.5 },
-            { x: -0.15, y: -0.5 },
-            { x: -0.15, y: 0.5 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+    const points = [
+      { x: 0, y: 0.5 },
+      { x: 0, y: -0.5 },
+      { x: -0.15, y: -0.5 },
+      { x: -0.15, y: 0.5 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the box endpoint.
  */
-class Box$1 {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        const points = [
-            { x: 0, y: 0.3 },
-            { x: 0, y: -0.3 },
-            { x: -0.6, y: -0.3 },
-            { x: -0.6, y: 0.3 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+class Box {
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    const points = [
+      { x: 0, y: 0.3 },
+      { x: 0, y: -0.3 },
+      { x: -0.6, y: -0.3 },
+      { x: -0.6, y: 0.3 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the diamond endpoint.
  */
-class Diamond$1 {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        const points = [
-            { x: 0, y: 0 },
-            { x: -0.5, y: -0.3 },
-            { x: -1, y: 0 },
-            { x: -0.5, y: 0.3 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+class Diamond {
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    const points = [
+      { x: 0, y: 0 },
+      { x: -0.5, y: -0.3 },
+      { x: -1, y: 0 },
+      { x: -0.5, y: 0.3 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the vee endpoint.
  */
 class Vee {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-        // Normalized points of closed path, in the order that they should be drawn.
-        // (0, 0) is the attachment point, and the point around which should be rotated
-        const points = [
-            { x: -1, y: 0.3 },
-            { x: -0.5, y: 0 },
-            { x: -1, y: -0.3 },
-            { x: 0, y: 0 }
-        ];
-        EndPoint.transform(points, arrowData);
-        EndPoint.drawPath(ctx, points);
-        return true;
-    }
+  /**
+   * Draw this shape at the end of a line.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True because ctx.fill() can be used to fill the arrow.
+   */
+  static draw(ctx, arrowData) {
+    // Normalized points of closed path, in the order that they should be drawn.
+    // (0, 0) is the attachment point, and the point around which should be rotated
+    const points = [
+      { x: -1, y: 0.3 },
+      { x: -0.5, y: 0 },
+      { x: -1, y: -0.3 },
+      { x: 0, y: 0 },
+    ];
+    EndPoint.transform(points, arrowData);
+    EndPoint.drawPath(ctx, points);
+    return true;
+  }
 }
 /**
  * Drawing methods for the endpoints.
  */
 class EndPoints {
-    /**
-     * Draw an endpoint.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     *
-     * @returns True if ctx.fill() can be used to fill the arrow, false otherwise.
-     */
-    static draw(ctx, arrowData) {
-        let type;
-        if (arrowData.type) {
-            type = arrowData.type.toLowerCase();
-        }
-        switch (type) {
-            case "image":
-                return Image$2.draw(ctx, arrowData);
-            case "circle":
-                return Circle$1.draw(ctx, arrowData);
-            case "box":
-                return Box$1.draw(ctx, arrowData);
-            case "crow":
-                return Crow.draw(ctx, arrowData);
-            case "curve":
-                return Curve.draw(ctx, arrowData);
-            case "diamond":
-                return Diamond$1.draw(ctx, arrowData);
-            case "inv_curve":
-                return InvertedCurve.draw(ctx, arrowData);
-            case "triangle":
-                return Triangle$1.draw(ctx, arrowData);
-            case "inv_triangle":
-                return InvertedTriangle.draw(ctx, arrowData);
-            case "bar":
-                return Bar.draw(ctx, arrowData);
-            case "vee":
-                return Vee.draw(ctx, arrowData);
-            case "arrow": // fall-through
-            default:
-                return Arrow.draw(ctx, arrowData);
-        }
+  /**
+   * Draw an endpoint.
+   *
+   * @param ctx - The shape will be rendered into this context.
+   * @param arrowData - The data determining the shape.
+   * @returns True if ctx.fill() can be used to fill the arrow, false otherwise.
+   */
+  static draw(ctx, arrowData) {
+    let type;
+    if (arrowData.type) {
+      type = arrowData.type.toLowerCase();
     }
+    switch (type) {
+      case "image":
+        return Image$1.draw(ctx, arrowData);
+      case "circle":
+        return Circle.draw(ctx, arrowData);
+      case "box":
+        return Box.draw(ctx, arrowData);
+      case "crow":
+        return Crow.draw(ctx, arrowData);
+      case "curve":
+        return Curve.draw(ctx, arrowData);
+      case "diamond":
+        return Diamond.draw(ctx, arrowData);
+      case "inv_curve":
+        return InvertedCurve.draw(ctx, arrowData);
+      case "triangle":
+        return Triangle.draw(ctx, arrowData);
+      case "inv_triangle":
+        return InvertedTriangle.draw(ctx, arrowData);
+      case "bar":
+        return Bar.draw(ctx, arrowData);
+      case "vee":
+        return Vee.draw(ctx, arrowData);
+      case "arrow": // fall-through
+      default:
+        return Arrow.draw(ctx, arrowData);
+    }
+  }
 }
 
 /**
  * The Base Class for all edges.
  */
 class EdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param _body - The body of the network.
-     * @param _labelModule - Label module.
-     */
-    constructor(options, _body, _labelModule) {
-        this._body = _body;
-        this._labelModule = _labelModule;
-        this.color = {};
-        this.colorDirty = true;
-        this.hoverWidth = 1.5;
-        this.selectionWidth = 2;
-        this.setOptions(options);
-        this.fromPoint = this.from;
-        this.toPoint = this.to;
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param _body - The body of the network.
+   * @param _labelModule - Label module.
+   */
+  constructor(options, _body, _labelModule) {
+    this._body = _body;
+    this._labelModule = _labelModule;
+    this.color = {};
+    this.colorDirty = true;
+    this.hoverWidth = 1.5;
+    this.selectionWidth = 2;
+    this.setOptions(options);
+    this.fromPoint = this.from;
+    this.toPoint = this.to;
+  }
+  /** @inheritDoc */
+  connect() {
+    this.from = this._body.nodes[this.options.from];
+    this.to = this._body.nodes[this.options.to];
+  }
+  /** @inheritDoc */
+  cleanup() {
+    return false;
+  }
+  /**
+   * Set new edge options.
+   *
+   * @param options - The new edge options object.
+   */
+  setOptions(options) {
+    this.options = options;
+    this.from = this._body.nodes[this.options.from];
+    this.to = this._body.nodes[this.options.to];
+    this.id = this.options.id;
+  }
+  /** @inheritDoc */
+  drawLine(ctx, values, _selected, _hover, viaNode = this.getViaNode()) {
+    // set style
+    ctx.strokeStyle = this.getColor(ctx, values);
+    ctx.lineWidth = values.width;
+    if (values.dashes !== false) {
+      this._drawDashedLine(ctx, values, viaNode);
+    } else {
+      this._drawLine(ctx, values, viaNode);
     }
-    /** @inheritdoc */
-    connect() {
-        this.from = this._body.nodes[this.options.from];
-        this.to = this._body.nodes[this.options.to];
+  }
+  /**
+   * Draw a line with given style between two nodes through supplied node(s).
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values like color, opacity or shadow.
+   * @param viaNode - Additional control point(s) for the edge.
+   * @param fromPoint - TODO: Seems ignored, remove?
+   * @param toPoint - TODO: Seems ignored, remove?
+   */
+  _drawLine(ctx, values, viaNode, fromPoint, toPoint) {
+    if (this.from != this.to) {
+      // draw line
+      this._line(ctx, values, viaNode, fromPoint, toPoint);
+    } else {
+      const [x, y, radius] = this._getCircleData(ctx);
+      this._circle(ctx, values, x, y, radius);
     }
-    /** @inheritdoc */
-    cleanup() {
-        return false;
+  }
+  /**
+   * Draw a dashed line with given style between two nodes through supplied node(s).
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values like color, opacity or shadow.
+   * @param viaNode - Additional control point(s) for the edge.
+   * @param _fromPoint - Ignored (TODO: remove in the future).
+   * @param _toPoint - Ignored (TODO: remove in the future).
+   */
+  _drawDashedLine(ctx, values, viaNode, _fromPoint, _toPoint) {
+    ctx.lineCap = "round";
+    const pattern = Array.isArray(values.dashes) ? values.dashes : [5, 5];
+    // only firefox and chrome support this method, else we use the legacy one.
+    if (ctx.setLineDash !== undefined) {
+      ctx.save();
+      // set dash settings for chrome or firefox
+      ctx.setLineDash(pattern);
+      ctx.lineDashOffset = 0;
+      // draw the line
+      if (this.from != this.to) {
+        // draw line
+        this._line(ctx, values, viaNode);
+      } else {
+        const [x, y, radius] = this._getCircleData(ctx);
+        this._circle(ctx, values, x, y, radius);
+      }
+      // restore the dash settings.
+      ctx.setLineDash([0]);
+      ctx.lineDashOffset = 0;
+      ctx.restore();
+    } else {
+      // unsupporting smooth lines
+      if (this.from != this.to) {
+        // draw line
+        drawDashedLine(
+          ctx,
+          this.from.x,
+          this.from.y,
+          this.to.x,
+          this.to.y,
+          pattern
+        );
+      } else {
+        const [x, y, radius] = this._getCircleData(ctx);
+        this._circle(ctx, values, x, y, radius);
+      }
+      // draw shadow if enabled
+      this.enableShadow(ctx, values);
+      ctx.stroke();
+      // disable shadows for other elements.
+      this.disableShadow(ctx, values);
     }
-    /**
-     * Set new edge options.
-     *
-     * @param options - The new edge options object.
-     */
-    setOptions(options) {
-        this.options = options;
-        this.from = this._body.nodes[this.options.from];
-        this.to = this._body.nodes[this.options.to];
-        this.id = this.options.id;
+  }
+  /**
+   * Find the intersection between the border of the node and the edge.
+   *
+   * @param node - The node (either from or to node of the edge).
+   * @param ctx - The context that will be used for rendering.
+   * @param options - Additional options.
+   * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
+   */
+  findBorderPosition(node, ctx, options) {
+    if (this.from != this.to) {
+      return this._findBorderPosition(node, ctx, options);
+    } else {
+      return this._findBorderPositionCircle(node, ctx, options);
     }
-    /** @inheritdoc */
-    drawLine(ctx, values, _selected, _hover, viaNode = this.getViaNode()) {
-        // set style
-        ctx.strokeStyle = this.getColor(ctx, values);
-        ctx.lineWidth = values.width;
-        if (values.dashes !== false) {
-            this._drawDashedLine(ctx, values, viaNode);
-        }
-        else {
-            this._drawLine(ctx, values, viaNode);
-        }
+  }
+  /** @inheritDoc */
+  findBorderPositions(ctx) {
+    if (this.from != this.to) {
+      return {
+        from: this._findBorderPosition(this.from, ctx),
+        to: this._findBorderPosition(this.to, ctx),
+      };
+    } else {
+      const [x, y] = this._getCircleData(ctx).slice(0, 2);
+      return {
+        from: this._findBorderPositionCircle(this.from, ctx, {
+          x,
+          y,
+          low: 0.25,
+          high: 0.6,
+          direction: -1,
+        }),
+        to: this._findBorderPositionCircle(this.from, ctx, {
+          x,
+          y,
+          low: 0.6,
+          high: 0.8,
+          direction: 1,
+        }),
+      };
     }
-    /**
-     * Draw a line with given style between two nodes through supplied node(s).
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param viaNode - Additional control point(s) for the edge.
-     * @param fromPoint - TODO: Seems ignored, remove?
-     * @param toPoint - TODO: Seems ignored, remove?
-     */
-    _drawLine(ctx, values, viaNode, fromPoint, toPoint) {
-        if (this.from != this.to) {
-            // draw line
-            this._line(ctx, values, viaNode, fromPoint, toPoint);
-        }
-        else {
-            const [x, y, radius] = this._getCircleData(ctx);
-            this._circle(ctx, values, x, y, radius);
-        }
+  }
+  /**
+   * Compute the center point and radius of an edge connected to the same node at both ends.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @returns `[x, y, radius]`
+   */
+  _getCircleData(ctx) {
+    const radius = this.options.selfReference.size;
+    if (ctx !== undefined) {
+      if (this.from.shape.width === undefined) {
+        this.from.shape.resize(ctx);
+      }
     }
-    /**
-     * Draw a dashed line with given style between two nodes through supplied node(s).
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param viaNode - Additional control point(s) for the edge.
-     * @param _fromPoint - Ignored (TODO: remove in the future).
-     * @param _toPoint - Ignored (TODO: remove in the future).
-     */
-    _drawDashedLine(ctx, values, viaNode, _fromPoint, _toPoint) {
-        ctx.lineCap = "round";
-        const pattern = Array.isArray(values.dashes) ? values.dashes : [5, 5];
-        // only firefox and chrome support this method, else we use the legacy one.
-        if (ctx.setLineDash !== undefined) {
-            ctx.save();
-            // set dash settings for chrome or firefox
-            ctx.setLineDash(pattern);
-            ctx.lineDashOffset = 0;
-            // draw the line
-            if (this.from != this.to) {
-                // draw line
-                this._line(ctx, values, viaNode);
-            }
-            else {
-                const [x, y, radius] = this._getCircleData(ctx);
-                this._circle(ctx, values, x, y, radius);
-            }
-            // restore the dash settings.
-            ctx.setLineDash([0]);
-            ctx.lineDashOffset = 0;
-            ctx.restore();
-        }
-        else {
-            // unsupporting smooth lines
-            if (this.from != this.to) {
-                // draw line
-                drawDashedLine(ctx, this.from.x, this.from.y, this.to.x, this.to.y, pattern);
-            }
-            else {
-                const [x, y, radius] = this._getCircleData(ctx);
-                this._circle(ctx, values, x, y, radius);
-            }
-            // draw shadow if enabled
-            this.enableShadow(ctx, values);
-            ctx.stroke();
-            // disable shadows for other elements.
-            this.disableShadow(ctx, values);
-        }
+    // get circle coordinates
+    const coordinates = getSelfRefCoordinates(
+      ctx,
+      this.options.selfReference.angle,
+      radius,
+      this.from
+    );
+    return [coordinates.x, coordinates.y, radius];
+  }
+  /**
+   * Get a point on a circle.
+   *
+   * @param x - Center of the circle on the x axis.
+   * @param y - Center of the circle on the y axis.
+   * @param radius - Radius of the circle.
+   * @param position - Value between 0 (line start) and 1 (line end).
+   * @returns Cartesian coordinates of requested point on the circle.
+   */
+  _pointOnCircle(x, y, radius, position) {
+    const angle = position * 2 * Math.PI;
+    return {
+      x: x + radius * Math.cos(angle),
+      y: y - radius * Math.sin(angle),
+    };
+  }
+  /**
+   * Find the intersection between the border of the node and the edge.
+   *
+   * @remarks
+   * This function uses binary search to look for the point where the circle crosses the border of the node.
+   * @param nearNode - The node (either from or to node of the edge).
+   * @param ctx - The context that will be used for rendering.
+   * @param options - Additional options.
+   * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
+   */
+  _findBorderPositionCircle(nearNode, ctx, options) {
+    const x = options.x;
+    const y = options.y;
+    let low = options.low;
+    let high = options.high;
+    const direction = options.direction;
+    const maxIterations = 10;
+    const radius = this.options.selfReference.size;
+    const threshold = 0.05;
+    let pos;
+    let middle = (low + high) * 0.5;
+    let endPointOffset = 0;
+    if (this.options.arrowStrikethrough === true) {
+      if (direction === -1) {
+        endPointOffset = this.options.endPointOffset.from;
+      } else if (direction === 1) {
+        endPointOffset = this.options.endPointOffset.to;
+      }
     }
-    /**
-     * Find the intersection between the border of the node and the edge.
-     *
-     * @param node - The node (either from or to node of the edge).
-     * @param ctx - The context that will be used for rendering.
-     * @param options - Additional options.
-     *
-     * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
-     */
-    findBorderPosition(node, ctx, options) {
-        if (this.from != this.to) {
-            return this._findBorderPosition(node, ctx, options);
+    let iteration = 0;
+    do {
+      middle = (low + high) * 0.5;
+      pos = this._pointOnCircle(x, y, radius, middle);
+      const angle = Math.atan2(nearNode.y - pos.y, nearNode.x - pos.x);
+      const distanceToBorder =
+        nearNode.distanceToBorder(ctx, angle) + endPointOffset;
+      const distanceToPoint = Math.sqrt(
+        Math.pow(pos.x - nearNode.x, 2) + Math.pow(pos.y - nearNode.y, 2)
+      );
+      const difference = distanceToBorder - distanceToPoint;
+      if (Math.abs(difference) < threshold) {
+        break; // found
+      } else if (difference > 0) {
+        // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
+        if (direction > 0) {
+          low = middle;
+        } else {
+          high = middle;
         }
-        else {
-            return this._findBorderPositionCircle(node, ctx, options);
+      } else {
+        if (direction > 0) {
+          high = middle;
+        } else {
+          low = middle;
         }
+      }
+      ++iteration;
+    } while (low <= high && iteration < maxIterations);
+    return {
+      ...pos,
+      t: middle,
+    };
+  }
+  /**
+   * Get the line width of the edge. Depends on width and whether one of the connected nodes is selected.
+   *
+   * @param selected - Determines wheter the line is selected.
+   * @param hover - Determines wheter the line is being hovered, only applies if selected is false.
+   * @returns The width of the line.
+   */
+  getLineWidth(selected, hover) {
+    if (selected === true) {
+      return Math.max(this.selectionWidth, 0.3 / this._body.view.scale);
+    } else if (hover === true) {
+      return Math.max(this.hoverWidth, 0.3 / this._body.view.scale);
+    } else {
+      return Math.max(this.options.width, 0.3 / this._body.view.scale);
     }
-    /** @inheritdoc */
-    findBorderPositions(ctx) {
-        if (this.from != this.to) {
-            return {
-                from: this._findBorderPosition(this.from, ctx),
-                to: this._findBorderPosition(this.to, ctx)
-            };
+  }
+  /**
+   * Compute the color or gradient for given edge.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values like color, opacity or shadow.
+   * @param _selected - Ignored (TODO: remove in the future).
+   * @param _hover - Ignored (TODO: remove in the future).
+   * @returns Color string if single color is inherited or gradient if two.
+   */
+  getColor(ctx, values) {
+    if (values.inheritsColor !== false) {
+      // when this is a loop edge, just use the 'from' method
+      if (values.inheritsColor === "both" && this.from.id !== this.to.id) {
+        const grd = ctx.createLinearGradient(
+          this.from.x,
+          this.from.y,
+          this.to.x,
+          this.to.y
+        );
+        let fromColor = this.from.options.color.highlight.border;
+        let toColor = this.to.options.color.highlight.border;
+        if (this.from.selected === false && this.to.selected === false) {
+          fromColor = overrideOpacity(
+            this.from.options.color.border,
+            values.opacity
+          );
+          toColor = overrideOpacity(
+            this.to.options.color.border,
+            values.opacity
+          );
+        } else if (this.from.selected === true && this.to.selected === false) {
+          toColor = this.to.options.color.border;
+        } else if (this.from.selected === false && this.to.selected === true) {
+          fromColor = this.from.options.color.border;
         }
-        else {
-            const [x, y] = this._getCircleData(ctx).slice(0, 2);
-            return {
-                from: this._findBorderPositionCircle(this.from, ctx, {
-                    x,
-                    y,
-                    low: 0.25,
-                    high: 0.6,
-                    direction: -1
-                }),
-                to: this._findBorderPositionCircle(this.from, ctx, {
-                    x,
-                    y,
-                    low: 0.6,
-                    high: 0.8,
-                    direction: 1
-                })
-            };
-        }
+        grd.addColorStop(0, fromColor);
+        grd.addColorStop(1, toColor);
+        // -------------------- this returns -------------------- //
+        return grd;
+      }
+      if (values.inheritsColor === "to") {
+        return overrideOpacity(this.to.options.color.border, values.opacity);
+      } else {
+        // "from"
+        return overrideOpacity(this.from.options.color.border, values.opacity);
+      }
+    } else {
+      return overrideOpacity(values.color, values.opacity);
     }
-    /**
-     * Compute the center point and radius of an edge connected to the same node at both ends.
-     *
-     * @param ctx - The context that will be used for rendering.
-     *
-     * @returns `[x, y, radius]`
-     */
-    _getCircleData(ctx) {
-        const radius = this.options.selfReference.size;
-        if (ctx !== undefined) {
-            if (this.from.shape.width === undefined) {
-                this.from.shape.resize(ctx);
-            }
-        }
-        // get circle coordinates
-        const coordinates = getSelfRefCoordinates(ctx, this.options.selfReference.angle, radius, this.from);
-        return [coordinates.x, coordinates.y, radius];
+  }
+  /**
+   * Draw a line from a node to itself, a circle.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values like color, opacity or shadow.
+   * @param x - Center of the circle on the x axis.
+   * @param y - Center of the circle on the y axis.
+   * @param radius - Radius of the circle.
+   */
+  _circle(ctx, values, x, y, radius) {
+    // draw shadow if enabled
+    this.enableShadow(ctx, values);
+    //full circle
+    let angleFrom = 0;
+    let angleTo = Math.PI * 2;
+    if (!this.options.selfReference.renderBehindTheNode) {
+      //render only parts which are not overlaping with parent node
+      //need to find x,y of from point and x,y to point
+      //calculating radians
+      const low = this.options.selfReference.angle;
+      const high = this.options.selfReference.angle + Math.PI;
+      const pointTFrom = this._findBorderPositionCircle(this.from, ctx, {
+        x,
+        y,
+        low,
+        high,
+        direction: -1,
+      });
+      const pointTTo = this._findBorderPositionCircle(this.from, ctx, {
+        x,
+        y,
+        low,
+        high,
+        direction: 1,
+      });
+      angleFrom = Math.atan2(pointTFrom.y - y, pointTFrom.x - x);
+      angleTo = Math.atan2(pointTTo.y - y, pointTTo.x - x);
     }
-    /**
-     * Get a point on a circle.
-     *
-     * @param x - Center of the circle on the x axis.
-     * @param y - Center of the circle on the y axis.
-     * @param radius - Radius of the circle.
-     * @param position - Value between 0 (line start) and 1 (line end).
-     *
-     * @returns Cartesian coordinates of requested point on the circle.
-     */
-    _pointOnCircle(x, y, radius, position) {
-        const angle = position * 2 * Math.PI;
-        return {
-            x: x + radius * Math.cos(angle),
-            y: y - radius * Math.sin(angle)
-        };
+    // draw a circle
+    ctx.beginPath();
+    ctx.arc(x, y, radius, angleFrom, angleTo, false);
+    ctx.stroke();
+    // disable shadows for other elements.
+    this.disableShadow(ctx, values);
+  }
+  /**
+   * @inheritDoc
+   * @remarks
+   * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
+   */
+  getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
+    if (this.from != this.to) {
+      return this._getDistanceToEdge(x1, y1, x2, y2, x3, y3);
+    } else {
+      const [x, y, radius] = this._getCircleData(undefined);
+      const dx = x - x3;
+      const dy = y - y3;
+      return Math.abs(Math.sqrt(dx * dx + dy * dy) - radius);
     }
-    /**
-     * Find the intersection between the border of the node and the edge.
-     *
-     * @remarks
-     * This function uses binary search to look for the point where the circle crosses the border of the node.
-     *
-     * @param nearNode - The node (either from or to node of the edge).
-     * @param ctx - The context that will be used for rendering.
-     * @param options - Additional options.
-     *
-     * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
-     */
-    _findBorderPositionCircle(nearNode, ctx, options) {
-        const x = options.x;
-        const y = options.y;
-        let low = options.low;
-        let high = options.high;
-        const direction = options.direction;
-        const maxIterations = 10;
-        const radius = this.options.selfReference.size;
-        const threshold = 0.05;
-        let pos;
-        let middle = (low + high) * 0.5;
-        let endPointOffset = 0;
-        if (this.options.arrowStrikethrough === true) {
-            if (direction === -1) {
-                endPointOffset = this.options.endPointOffset.from;
-            }
-            else if (direction === 1) {
-                endPointOffset = this.options.endPointOffset.to;
-            }
-        }
-        let iteration = 0;
-        do {
-            middle = (low + high) * 0.5;
-            pos = this._pointOnCircle(x, y, radius, middle);
-            const angle = Math.atan2(nearNode.y - pos.y, nearNode.x - pos.x);
-            const distanceToBorder = nearNode.distanceToBorder(ctx, angle) + endPointOffset;
-            const distanceToPoint = Math.sqrt(Math.pow(pos.x - nearNode.x, 2) + Math.pow(pos.y - nearNode.y, 2));
-            const difference = distanceToBorder - distanceToPoint;
-            if (Math.abs(difference) < threshold) {
-                break; // found
-            }
-            else if (difference > 0) {
-                // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
-                if (direction > 0) {
-                    low = middle;
-                }
-                else {
-                    high = middle;
-                }
-            }
-            else {
-                if (direction > 0) {
-                    high = middle;
-                }
-                else {
-                    low = middle;
-                }
-            }
-            ++iteration;
-        } while (low <= high && iteration < maxIterations);
-        return {
-            ...pos,
-            t: middle
-        };
+  }
+  /**
+   * Calculate the distance between a point (x3, y3) and a line segment from (x1, y1) to (x2, y2).
+   *
+   * @param x1 - First end of the line segment on the x axis.
+   * @param y1 - First end of the line segment on the y axis.
+   * @param x2 - Second end of the line segment on the x axis.
+   * @param y2 - Second end of the line segment on the y axis.
+   * @param x3 - Position of the point on the x axis.
+   * @param y3 - Position of the point on the y axis.
+   * @returns The distance between the line segment and the point.
+   */
+  _getDistanceToLine(x1, y1, x2, y2, x3, y3) {
+    const px = x2 - x1;
+    const py = y2 - y1;
+    const something = px * px + py * py;
+    let u = ((x3 - x1) * px + (y3 - y1) * py) / something;
+    if (u > 1) {
+      u = 1;
+    } else if (u < 0) {
+      u = 0;
     }
-    /**
-     * Get the line width of the edge. Depends on width and whether one of the connected nodes is selected.
-     *
-     * @param selected - Determines wheter the line is selected.
-     * @param hover - Determines wheter the line is being hovered, only applies if selected is false.
-     *
-     * @returns The width of the line.
-     */
-    getLineWidth(selected, hover) {
-        if (selected === true) {
-            return Math.max(this.selectionWidth, 0.3 / this._body.view.scale);
-        }
-        else if (hover === true) {
-            return Math.max(this.hoverWidth, 0.3 / this._body.view.scale);
-        }
-        else {
-            return Math.max(this.options.width, 0.3 / this._body.view.scale);
-        }
+    const x = x1 + u * px;
+    const y = y1 + u * py;
+    const dx = x - x3;
+    const dy = y - y3;
+    //# Note: If the actual distance does not matter,
+    //# if you only want to compare what this function
+    //# returns to other results of this function, you
+    //# can just return the squared distance instead
+    //# (i.e. remove the sqrt) to gain a little performance
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  /** @inheritDoc */
+  getArrowData(ctx, position, viaNode, _selected, _hover, values) {
+    // set lets
+    let angle;
+    let arrowPoint;
+    let node1;
+    let node2;
+    let reversed;
+    let scaleFactor;
+    let type;
+    const lineWidth = values.width;
+    if (position === "from") {
+      node1 = this.from;
+      node2 = this.to;
+      reversed = values.fromArrowScale < 0;
+      scaleFactor = Math.abs(values.fromArrowScale);
+      type = values.fromArrowType;
+    } else if (position === "to") {
+      node1 = this.to;
+      node2 = this.from;
+      reversed = values.toArrowScale < 0;
+      scaleFactor = Math.abs(values.toArrowScale);
+      type = values.toArrowType;
+    } else {
+      node1 = this.to;
+      node2 = this.from;
+      reversed = values.middleArrowScale < 0;
+      scaleFactor = Math.abs(values.middleArrowScale);
+      type = values.middleArrowType;
     }
-    /**
-     * Compute the color or gradient for given edge.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param _selected - Ignored (TODO: remove in the future).
-     * @param _hover - Ignored (TODO: remove in the future).
-     *
-     * @returns Color string if single color is inherited or gradient if two.
-     */
-    getColor(ctx, values) {
-        if (values.inheritsColor !== false) {
-            // when this is a loop edge, just use the 'from' method
-            if (values.inheritsColor === "both" && this.from.id !== this.to.id) {
-                const grd = ctx.createLinearGradient(this.from.x, this.from.y, this.to.x, this.to.y);
-                let fromColor = this.from.options.color.highlight.border;
-                let toColor = this.to.options.color.highlight.border;
-                if (this.from.selected === false && this.to.selected === false) {
-                    fromColor = overrideOpacity(this.from.options.color.border, values.opacity);
-                    toColor = overrideOpacity(this.to.options.color.border, values.opacity);
-                }
-                else if (this.from.selected === true && this.to.selected === false) {
-                    toColor = this.to.options.color.border;
-                }
-                else if (this.from.selected === false && this.to.selected === true) {
-                    fromColor = this.from.options.color.border;
-                }
-                grd.addColorStop(0, fromColor);
-                grd.addColorStop(1, toColor);
-                // -------------------- this returns -------------------- //
-                return grd;
-            }
-            if (values.inheritsColor === "to") {
-                return overrideOpacity(this.to.options.color.border, values.opacity);
-            }
-            else {
-                // "from"
-                return overrideOpacity(this.from.options.color.border, values.opacity);
-            }
+    const length = 15 * scaleFactor + 3 * lineWidth; // 3* lineWidth is the width of the edge.
+    // if not connected to itself
+    if (node1 != node2) {
+      const approximateEdgeLength = Math.hypot(
+        node1.x - node2.x,
+        node1.y - node2.y
+      );
+      const relativeLength = length / approximateEdgeLength;
+      if (position !== "middle") {
+        // draw arrow head
+        if (this.options.smooth.enabled === true) {
+          const pointT = this._findBorderPosition(node1, ctx, { via: viaNode });
+          const guidePos = this.getPoint(
+            pointT.t + relativeLength * (position === "from" ? 1 : -1),
+            viaNode
+          );
+          angle = Math.atan2(pointT.y - guidePos.y, pointT.x - guidePos.x);
+          arrowPoint = pointT;
+        } else {
+          angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
+          arrowPoint = this._findBorderPosition(node1, ctx);
         }
-        else {
-            return overrideOpacity(values.color, values.opacity);
-        }
+      } else {
+        // Negative half length reverses arrow direction.
+        const halfLength = (reversed ? -relativeLength : relativeLength) / 2;
+        const guidePos1 = this.getPoint(0.5 + halfLength, viaNode);
+        const guidePos2 = this.getPoint(0.5 - halfLength, viaNode);
+        angle = Math.atan2(
+          guidePos1.y - guidePos2.y,
+          guidePos1.x - guidePos2.x
+        );
+        arrowPoint = this.getPoint(0.5, viaNode);
+      }
+    } else {
+      // draw circle
+      const [x, y, radius] = this._getCircleData(ctx);
+      if (position === "from") {
+        const low = this.options.selfReference.angle;
+        const high = this.options.selfReference.angle + Math.PI;
+        const pointT = this._findBorderPositionCircle(this.from, ctx, {
+          x,
+          y,
+          low,
+          high,
+          direction: -1,
+        });
+        angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
+        arrowPoint = pointT;
+      } else if (position === "to") {
+        const low = this.options.selfReference.angle;
+        const high = this.options.selfReference.angle + Math.PI;
+        const pointT = this._findBorderPositionCircle(this.from, ctx, {
+          x,
+          y,
+          low,
+          high,
+          direction: 1,
+        });
+        angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI - 1.1 * Math.PI;
+        arrowPoint = pointT;
+      } else {
+        const pos = this.options.selfReference.angle / (2 * Math.PI);
+        arrowPoint = this._pointOnCircle(x, y, radius, pos);
+        angle = pos * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
+      }
     }
-    /**
-     * Draw a line from a node to itself, a circle.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param x - Center of the circle on the x axis.
-     * @param y - Center of the circle on the y axis.
-     * @param radius - Radius of the circle.
-     */
-    _circle(ctx, values, x, y, radius) {
-        // draw shadow if enabled
-        this.enableShadow(ctx, values);
-        //full circle
-        let angleFrom = 0;
-        let angleTo = Math.PI * 2;
-        if (!this.options.selfReference.renderBehindTheNode) {
-            //render only parts which are not overlaping with parent node
-            //need to find x,y of from point and x,y to point
-            //calculating radians
-            const low = this.options.selfReference.angle;
-            const high = this.options.selfReference.angle + Math.PI;
-            const pointTFrom = this._findBorderPositionCircle(this.from, ctx, {
-                x,
-                y,
-                low,
-                high,
-                direction: -1
-            });
-            const pointTTo = this._findBorderPositionCircle(this.from, ctx, {
-                x,
-                y,
-                low,
-                high,
-                direction: 1
-            });
-            angleFrom = Math.atan2(pointTFrom.y - y, pointTFrom.x - x);
-            angleTo = Math.atan2(pointTTo.y - y, pointTTo.x - x);
-        }
-        // draw a circle
-        ctx.beginPath();
-        ctx.arc(x, y, radius, angleFrom, angleTo, false);
-        ctx.stroke();
-        // disable shadows for other elements.
-        this.disableShadow(ctx, values);
+    const xi = arrowPoint.x - length * 0.9 * Math.cos(angle);
+    const yi = arrowPoint.y - length * 0.9 * Math.sin(angle);
+    const arrowCore = { x: xi, y: yi };
+    return {
+      point: arrowPoint,
+      core: arrowCore,
+      angle: angle,
+      length: length,
+      type: type,
+    };
+  }
+  /** @inheritDoc */
+  drawArrowHead(ctx, values, _selected, _hover, arrowData) {
+    // set style
+    ctx.strokeStyle = this.getColor(ctx, values);
+    ctx.fillStyle = ctx.strokeStyle;
+    ctx.lineWidth = values.width;
+    const canFill = EndPoints.draw(ctx, arrowData);
+    if (canFill) {
+      // draw shadow if enabled
+      this.enableShadow(ctx, values);
+      ctx.fill();
+      // disable shadows for other elements.
+      this.disableShadow(ctx, values);
     }
-    /**
-     * @inheritdoc
-     *
-     * @remarks
-     * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
-     */
-    getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
-        if (this.from != this.to) {
-            return this._getDistanceToEdge(x1, y1, x2, y2, x3, y3);
-        }
-        else {
-            const [x, y, radius] = this._getCircleData(undefined);
-            const dx = x - x3;
-            const dy = y - y3;
-            return Math.abs(Math.sqrt(dx * dx + dy * dy) - radius);
-        }
+  }
+  /**
+   * Set the shadow formatting values in the context if enabled, do nothing otherwise.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values for the shadow.
+   */
+  enableShadow(ctx, values) {
+    if (values.shadow === true) {
+      ctx.shadowColor = values.shadowColor;
+      ctx.shadowBlur = values.shadowSize;
+      ctx.shadowOffsetX = values.shadowX;
+      ctx.shadowOffsetY = values.shadowY;
     }
-    /**
-     * Calculate the distance between a point (x3, y3) and a line segment from (x1, y1) to (x2, y2).
-     *
-     * @param x1 - First end of the line segment on the x axis.
-     * @param y1 - First end of the line segment on the y axis.
-     * @param x2 - Second end of the line segment on the x axis.
-     * @param y2 - Second end of the line segment on the y axis.
-     * @param x3 - Position of the point on the x axis.
-     * @param y3 - Position of the point on the y axis.
-     *
-     * @returns The distance between the line segment and the point.
-     */
-    _getDistanceToLine(x1, y1, x2, y2, x3, y3) {
-        const px = x2 - x1;
-        const py = y2 - y1;
-        const something = px * px + py * py;
-        let u = ((x3 - x1) * px + (y3 - y1) * py) / something;
-        if (u > 1) {
-            u = 1;
-        }
-        else if (u < 0) {
-            u = 0;
-        }
-        const x = x1 + u * px;
-        const y = y1 + u * py;
-        const dx = x - x3;
-        const dy = y - y3;
-        //# Note: If the actual distance does not matter,
-        //# if you only want to compare what this function
-        //# returns to other results of this function, you
-        //# can just return the squared distance instead
-        //# (i.e. remove the sqrt) to gain a little performance
-        return Math.sqrt(dx * dx + dy * dy);
+  }
+  /**
+   * Reset the shadow formatting values in the context if enabled, do nothing otherwise.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values for the shadow.
+   */
+  disableShadow(ctx, values) {
+    if (values.shadow === true) {
+      ctx.shadowColor = "rgba(0,0,0,0)";
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
     }
-    /** @inheritdoc */
-    getArrowData(ctx, position, viaNode, _selected, _hover, values) {
-        // set lets
-        let angle;
-        let arrowPoint;
-        let node1;
-        let node2;
-        let reversed;
-        let scaleFactor;
-        let type;
-        const lineWidth = values.width;
-        if (position === "from") {
-            node1 = this.from;
-            node2 = this.to;
-            reversed = values.fromArrowScale < 0;
-            scaleFactor = Math.abs(values.fromArrowScale);
-            type = values.fromArrowType;
-        }
-        else if (position === "to") {
-            node1 = this.to;
-            node2 = this.from;
-            reversed = values.toArrowScale < 0;
-            scaleFactor = Math.abs(values.toArrowScale);
-            type = values.toArrowType;
-        }
-        else {
-            node1 = this.to;
-            node2 = this.from;
-            reversed = values.middleArrowScale < 0;
-            scaleFactor = Math.abs(values.middleArrowScale);
-            type = values.middleArrowType;
-        }
-        const length = 15 * scaleFactor + 3 * lineWidth; // 3* lineWidth is the width of the edge.
-        // if not connected to itself
-        if (node1 != node2) {
-            const approximateEdgeLength = Math.hypot(node1.x - node2.x, node1.y - node2.y);
-            const relativeLength = length / approximateEdgeLength;
-            if (position !== "middle") {
-                // draw arrow head
-                if (this.options.smooth.enabled === true) {
-                    const pointT = this._findBorderPosition(node1, ctx, { via: viaNode });
-                    const guidePos = this.getPoint(pointT.t + relativeLength * (position === "from" ? 1 : -1), viaNode);
-                    angle = Math.atan2(pointT.y - guidePos.y, pointT.x - guidePos.x);
-                    arrowPoint = pointT;
-                }
-                else {
-                    angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
-                    arrowPoint = this._findBorderPosition(node1, ctx);
-                }
-            }
-            else {
-                // Negative half length reverses arrow direction.
-                const halfLength = (reversed ? -relativeLength : relativeLength) / 2;
-                const guidePos1 = this.getPoint(0.5 + halfLength, viaNode);
-                const guidePos2 = this.getPoint(0.5 - halfLength, viaNode);
-                angle = Math.atan2(guidePos1.y - guidePos2.y, guidePos1.x - guidePos2.x);
-                arrowPoint = this.getPoint(0.5, viaNode);
-            }
-        }
-        else {
-            // draw circle
-            const [x, y, radius] = this._getCircleData(ctx);
-            if (position === "from") {
-                const low = this.options.selfReference.angle;
-                const high = this.options.selfReference.angle + Math.PI;
-                const pointT = this._findBorderPositionCircle(this.from, ctx, {
-                    x,
-                    y,
-                    low,
-                    high,
-                    direction: -1
-                });
-                angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
-                arrowPoint = pointT;
-            }
-            else if (position === "to") {
-                const low = this.options.selfReference.angle;
-                const high = this.options.selfReference.angle + Math.PI;
-                const pointT = this._findBorderPositionCircle(this.from, ctx, {
-                    x,
-                    y,
-                    low,
-                    high,
-                    direction: 1
-                });
-                angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI - 1.1 * Math.PI;
-                arrowPoint = pointT;
-            }
-            else {
-                const pos = this.options.selfReference.angle / (2 * Math.PI);
-                arrowPoint = this._pointOnCircle(x, y, radius, pos);
-                angle = pos * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
-            }
-        }
-        const xi = arrowPoint.x - length * 0.9 * Math.cos(angle);
-        const yi = arrowPoint.y - length * 0.9 * Math.sin(angle);
-        const arrowCore = { x: xi, y: yi };
-        return {
-            point: arrowPoint,
-            core: arrowCore,
-            angle: angle,
-            length: length,
-            type: type
-        };
+  }
+  /**
+   * Render the background according to the formatting values.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Formatting values for the background.
+   */
+  drawBackground(ctx, values) {
+    if (values.background !== false) {
+      // save original line attrs
+      const origCtxAttr = {
+        strokeStyle: ctx.strokeStyle,
+        lineWidth: ctx.lineWidth,
+        dashes: ctx.dashes,
+      };
+      ctx.strokeStyle = values.backgroundColor;
+      ctx.lineWidth = values.backgroundSize;
+      this.setStrokeDashed(ctx, values.backgroundDashes);
+      ctx.stroke();
+      // restore original line attrs
+      ctx.strokeStyle = origCtxAttr.strokeStyle;
+      ctx.lineWidth = origCtxAttr.lineWidth;
+      ctx.dashes = origCtxAttr.dashes;
+      this.setStrokeDashed(ctx, values.dashes);
     }
-    /** @inheritdoc */
-    drawArrowHead(ctx, values, _selected, _hover, arrowData) {
-        // set style
-        ctx.strokeStyle = this.getColor(ctx, values);
-        ctx.fillStyle = ctx.strokeStyle;
-        ctx.lineWidth = values.width;
-        const canFill = EndPoints.draw(ctx, arrowData);
-        if (canFill) {
-            // draw shadow if enabled
-            this.enableShadow(ctx, values);
-            ctx.fill();
-            // disable shadows for other elements.
-            this.disableShadow(ctx, values);
-        }
+  }
+  /**
+   * Set the line dash pattern if supported. Logs a warning to the console if it isn't supported.
+   *
+   * @param ctx - The context that will be used for rendering.
+   * @param dashes - The pattern [line, space, line…], true for default dashed line or false for normal line.
+   */
+  setStrokeDashed(ctx, dashes) {
+    if (dashes !== false) {
+      if (ctx.setLineDash !== undefined) {
+        const pattern = Array.isArray(dashes) ? dashes : [5, 5];
+        ctx.setLineDash(pattern);
+      } else {
+        console.warn(
+          "setLineDash is not supported in this browser. The dashed stroke cannot be used."
+        );
+      }
+    } else {
+      if (ctx.setLineDash !== undefined) {
+        ctx.setLineDash([]);
+      } else {
+        console.warn(
+          "setLineDash is not supported in this browser. The dashed stroke cannot be used."
+        );
+      }
     }
-    /**
-     * Set the shadow formatting values in the context if enabled, do nothing otherwise.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values for the shadow.
-     */
-    enableShadow(ctx, values) {
-        if (values.shadow === true) {
-            ctx.shadowColor = values.shadowColor;
-            ctx.shadowBlur = values.shadowSize;
-            ctx.shadowOffsetX = values.shadowX;
-            ctx.shadowOffsetY = values.shadowY;
-        }
-    }
-    /**
-     * Reset the shadow formatting values in the context if enabled, do nothing otherwise.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values for the shadow.
-     */
-    disableShadow(ctx, values) {
-        if (values.shadow === true) {
-            ctx.shadowColor = "rgba(0,0,0,0)";
-            ctx.shadowBlur = 0;
-            ctx.shadowOffsetX = 0;
-            ctx.shadowOffsetY = 0;
-        }
-    }
-    /**
-     * Render the background according to the formatting values.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values for the background.
-     */
-    drawBackground(ctx, values) {
-        if (values.background !== false) {
-            // save original line attrs
-            const origCtxAttr = {
-                strokeStyle: ctx.strokeStyle,
-                lineWidth: ctx.lineWidth,
-                dashes: ctx.dashes
-            };
-            ctx.strokeStyle = values.backgroundColor;
-            ctx.lineWidth = values.backgroundSize;
-            this.setStrokeDashed(ctx, values.backgroundDashes);
-            ctx.stroke();
-            // restore original line attrs
-            ctx.strokeStyle = origCtxAttr.strokeStyle;
-            ctx.lineWidth = origCtxAttr.lineWidth;
-            ctx.dashes = origCtxAttr.dashes;
-            this.setStrokeDashed(ctx, values.dashes);
-        }
-    }
-    /**
-     * Set the line dash pattern if supported. Logs a warning to the console if it isn't supported.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param dashes - The pattern [line, space, line…], true for default dashed line or false for normal line.
-     */
-    setStrokeDashed(ctx, dashes) {
-        if (dashes !== false) {
-            if (ctx.setLineDash !== undefined) {
-                const pattern = Array.isArray(dashes) ? dashes : [5, 5];
-                ctx.setLineDash(pattern);
-            }
-            else {
-                console.warn("setLineDash is not supported in this browser. The dashed stroke cannot be used.");
-            }
-        }
-        else {
-            if (ctx.setLineDash !== undefined) {
-                ctx.setLineDash([]);
-            }
-            else {
-                console.warn("setLineDash is not supported in this browser. The dashed stroke cannot be used.");
-            }
-        }
-    }
+  }
 }
 
 /**
@@ -8784,161 +8764,169 @@ class EdgeBase {
  * Bezier curves are used to model smooth gradual curves in paths between nodes.
  */
 class BezierEdgeBase extends EdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-        super(options, body, labelModule);
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param body - The body of the network.
+   * @param labelModule - Label module.
+   */
+  constructor(options, body, labelModule) {
+    super(options, body, labelModule);
+  }
+  /**
+   * Find the intersection between the border of the node and the edge.
+   *
+   * @remarks
+   * This function uses binary search to look for the point where the bezier curve crosses the border of the node.
+   * @param nearNode - The node (either from or to node of the edge).
+   * @param ctx - The context that will be used for rendering.
+   * @param viaNode - Additional node(s) the edge passes through.
+   * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
+   */
+  _findBorderPositionBezier(
+    nearNode,
+    ctx,
+    viaNode = this._getViaCoordinates()
+  ) {
+    const maxIterations = 10;
+    const threshold = 0.2;
+    let from = false;
+    let high = 1;
+    let low = 0;
+    let node = this.to;
+    let pos;
+    let middle;
+    let endPointOffset = this.options.endPointOffset
+      ? this.options.endPointOffset.to
+      : 0;
+    if (nearNode.id === this.from.id) {
+      node = this.from;
+      from = true;
+      endPointOffset = this.options.endPointOffset
+        ? this.options.endPointOffset.from
+        : 0;
     }
-    /**
-     * Find the intersection between the border of the node and the edge.
-     *
-     * @remarks
-     * This function uses binary search to look for the point where the bezier curve crosses the border of the node.
-     *
-     * @param nearNode - The node (either from or to node of the edge).
-     * @param ctx - The context that will be used for rendering.
-     * @param viaNode - Additional node(s) the edge passes through.
-     *
-     * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
-     */
-    _findBorderPositionBezier(nearNode, ctx, viaNode = this._getViaCoordinates()) {
-        const maxIterations = 10;
-        const threshold = 0.2;
-        let from = false;
-        let high = 1;
-        let low = 0;
-        let node = this.to;
-        let pos;
-        let middle;
-        let endPointOffset = this.options.endPointOffset
-            ? this.options.endPointOffset.to
-            : 0;
-        if (nearNode.id === this.from.id) {
-            node = this.from;
-            from = true;
-            endPointOffset = this.options.endPointOffset
-                ? this.options.endPointOffset.from
-                : 0;
-        }
-        if (this.options.arrowStrikethrough === false) {
-            endPointOffset = 0;
-        }
-        let iteration = 0;
-        do {
-            middle = (low + high) * 0.5;
-            pos = this.getPoint(middle, viaNode);
-            const angle = Math.atan2(node.y - pos.y, node.x - pos.x);
-            const distanceToBorder = node.distanceToBorder(ctx, angle) + endPointOffset;
-            const distanceToPoint = Math.sqrt(Math.pow(pos.x - node.x, 2) + Math.pow(pos.y - node.y, 2));
-            const difference = distanceToBorder - distanceToPoint;
-            if (Math.abs(difference) < threshold) {
-                break; // found
-            }
-            else if (difference < 0) {
-                // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
-                if (from === false) {
-                    low = middle;
-                }
-                else {
-                    high = middle;
-                }
-            }
-            else {
-                if (from === false) {
-                    high = middle;
-                }
-                else {
-                    low = middle;
-                }
-            }
-            ++iteration;
-        } while (low <= high && iteration < maxIterations);
-        return {
-            ...pos,
-            t: middle
-        };
+    if (this.options.arrowStrikethrough === false) {
+      endPointOffset = 0;
     }
-    /**
-     * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
-     *
-     * @remarks
-     * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
-     *
-     * @param x1 - First end of the line segment on the x axis.
-     * @param y1 - First end of the line segment on the y axis.
-     * @param x2 - Second end of the line segment on the x axis.
-     * @param y2 - Second end of the line segment on the y axis.
-     * @param x3 - Position of the point on the x axis.
-     * @param y3 - Position of the point on the y axis.
-     * @param via - The control point for the edge.
-     *
-     * @returns The distance between the line segment and the point.
-     */
-    _getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, via) {
-        // x3,y3 is the point
-        let minDistance = 1e9;
-        let distance;
-        let i, t, x, y;
-        let lastX = x1;
-        let lastY = y1;
-        for (i = 1; i < 10; i++) {
-            t = 0.1 * i;
-            x =
-                Math.pow(1 - t, 2) * x1 + 2 * t * (1 - t) * via.x + Math.pow(t, 2) * x2;
-            y =
-                Math.pow(1 - t, 2) * y1 + 2 * t * (1 - t) * via.y + Math.pow(t, 2) * y2;
-            if (i > 0) {
-                distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
-                minDistance = distance < minDistance ? distance : minDistance;
-            }
-            lastX = x;
-            lastY = y;
+    let iteration = 0;
+    do {
+      middle = (low + high) * 0.5;
+      pos = this.getPoint(middle, viaNode);
+      const angle = Math.atan2(node.y - pos.y, node.x - pos.x);
+      const distanceToBorder =
+        node.distanceToBorder(ctx, angle) + endPointOffset;
+      const distanceToPoint = Math.sqrt(
+        Math.pow(pos.x - node.x, 2) + Math.pow(pos.y - node.y, 2)
+      );
+      const difference = distanceToBorder - distanceToPoint;
+      if (Math.abs(difference) < threshold) {
+        break; // found
+      } else if (difference < 0) {
+        // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
+        if (from === false) {
+          low = middle;
+        } else {
+          high = middle;
         }
-        return minDistance;
-    }
-    /**
-     * Render a bezier curve between two nodes.
-     *
-     * @remarks
-     * The method accepts zero, one or two control points.
-     * Passing zero control points just draws a straight line.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Style options for edge drawing.
-     * @param viaNode1 - First control point for curve drawing.
-     * @param viaNode2 - Second control point for curve drawing.
-     */
-    _bezierCurve(ctx, values, viaNode1, viaNode2) {
-        ctx.beginPath();
-        ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
-        if (viaNode1 != null && viaNode1.x != null) {
-            if (viaNode2 != null && viaNode2.x != null) {
-                ctx.bezierCurveTo(viaNode1.x, viaNode1.y, viaNode2.x, viaNode2.y, this.toPoint.x, this.toPoint.y);
-            }
-            else {
-                ctx.quadraticCurveTo(viaNode1.x, viaNode1.y, this.toPoint.x, this.toPoint.y);
-            }
+      } else {
+        if (from === false) {
+          high = middle;
+        } else {
+          low = middle;
         }
-        else {
-            // fallback to normal straight edge
-            ctx.lineTo(this.toPoint.x, this.toPoint.y);
-        }
-        // draw a background
-        this.drawBackground(ctx, values);
-        // draw shadow if enabled
-        this.enableShadow(ctx, values);
-        ctx.stroke();
-        this.disableShadow(ctx, values);
+      }
+      ++iteration;
+    } while (low <= high && iteration < maxIterations);
+    return {
+      ...pos,
+      t: middle,
+    };
+  }
+  /**
+   * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
+   *
+   * @remarks
+   * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
+   * @param x1 - First end of the line segment on the x axis.
+   * @param y1 - First end of the line segment on the y axis.
+   * @param x2 - Second end of the line segment on the x axis.
+   * @param y2 - Second end of the line segment on the y axis.
+   * @param x3 - Position of the point on the x axis.
+   * @param y3 - Position of the point on the y axis.
+   * @param via - The control point for the edge.
+   * @returns The distance between the line segment and the point.
+   */
+  _getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, via) {
+    // x3,y3 is the point
+    let minDistance = 1e9;
+    let distance;
+    let i, t, x, y;
+    let lastX = x1;
+    let lastY = y1;
+    for (i = 1; i < 10; i++) {
+      t = 0.1 * i;
+      x =
+        Math.pow(1 - t, 2) * x1 + 2 * t * (1 - t) * via.x + Math.pow(t, 2) * x2;
+      y =
+        Math.pow(1 - t, 2) * y1 + 2 * t * (1 - t) * via.y + Math.pow(t, 2) * y2;
+      if (i > 0) {
+        distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
+        minDistance = distance < minDistance ? distance : minDistance;
+      }
+      lastX = x;
+      lastY = y;
     }
-    /** @inheritdoc */
-    getViaNode() {
-        return this._getViaCoordinates();
+    return minDistance;
+  }
+  /**
+   * Render a bezier curve between two nodes.
+   *
+   * @remarks
+   * The method accepts zero, one or two control points.
+   * Passing zero control points just draws a straight line.
+   * @param ctx - The context that will be used for rendering.
+   * @param values - Style options for edge drawing.
+   * @param viaNode1 - First control point for curve drawing.
+   * @param viaNode2 - Second control point for curve drawing.
+   */
+  _bezierCurve(ctx, values, viaNode1, viaNode2) {
+    ctx.beginPath();
+    ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
+    if (viaNode1 != null && viaNode1.x != null) {
+      if (viaNode2 != null && viaNode2.x != null) {
+        ctx.bezierCurveTo(
+          viaNode1.x,
+          viaNode1.y,
+          viaNode2.x,
+          viaNode2.y,
+          this.toPoint.x,
+          this.toPoint.y
+        );
+      } else {
+        ctx.quadraticCurveTo(
+          viaNode1.x,
+          viaNode1.y,
+          this.toPoint.x,
+          this.toPoint.y
+        );
+      }
+    } else {
+      // fallback to normal straight edge
+      ctx.lineTo(this.toPoint.x, this.toPoint.y);
     }
+    // draw a background
+    this.drawBackground(ctx, values);
+    // draw shadow if enabled
+    this.enableShadow(ctx, values);
+    ctx.stroke();
+    this.disableShadow(ctx, values);
+  }
+  /** @inheritDoc */
+  getViaNode() {
+    return this._getViaCoordinates();
+  }
 }
 
 /**
@@ -8946,558 +8934,566 @@ class BezierEdgeBase extends EdgeBase {
  * curves in paths between nodes. The Dynamic piece refers to how the curve
  * reacts to physics changes.
  *
- * @extends BezierEdgeBase
+ * @augments BezierEdgeBase
  */
 class BezierEdgeDynamic extends BezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-        //this.via = undefined; // Here for completeness but not allowed to defined before super() is invoked.
-        super(options, body, labelModule); // --> this calls the setOptions below
-        this.via = this.via; // constructor → super → super → setOptions → setupSupportNode
-        this._boundFunction = () => {
-            this.positionBezierNode();
-        };
-        this._body.emitter.on("_repositionBezierNodes", this._boundFunction);
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param body - The body of the network.
+   * @param labelModule - Label module.
+   */
+  constructor(options, body, labelModule) {
+    //this.via = undefined; // Here for completeness but not allowed to defined before super() is invoked.
+    super(options, body, labelModule); // --> this calls the setOptions below
+    this.via = this.via; // constructor → super → super → setOptions → setupSupportNode
+    this._boundFunction = () => {
+      this.positionBezierNode();
+    };
+    this._body.emitter.on("_repositionBezierNodes", this._boundFunction);
+  }
+  /** @inheritDoc */
+  setOptions(options) {
+    super.setOptions(options);
+    // check if the physics has changed.
+    let physicsChange = false;
+    if (this.options.physics !== options.physics) {
+      physicsChange = true;
     }
-    /** @inheritdoc */
-    setOptions(options) {
-        super.setOptions(options);
-        // check if the physics has changed.
-        let physicsChange = false;
-        if (this.options.physics !== options.physics) {
-            physicsChange = true;
-        }
-        // set the options and the to and from nodes
-        this.options = options;
-        this.id = this.options.id;
-        this.from = this._body.nodes[this.options.from];
-        this.to = this._body.nodes[this.options.to];
-        // setup the support node and connect
-        this.setupSupportNode();
-        this.connect();
-        // when we change the physics state of the edge, we reposition the support node.
-        if (physicsChange === true) {
-            this.via.setOptions({ physics: this.options.physics });
-            this.positionBezierNode();
-        }
+    // set the options and the to and from nodes
+    this.options = options;
+    this.id = this.options.id;
+    this.from = this._body.nodes[this.options.from];
+    this.to = this._body.nodes[this.options.to];
+    // setup the support node and connect
+    this.setupSupportNode();
+    this.connect();
+    // when we change the physics state of the edge, we reposition the support node.
+    if (physicsChange === true) {
+      this.via.setOptions({ physics: this.options.physics });
+      this.positionBezierNode();
     }
-    /** @inheritdoc */
-    connect() {
-        this.from = this._body.nodes[this.options.from];
-        this.to = this._body.nodes[this.options.to];
-        if (this.from === undefined ||
-            this.to === undefined ||
-            this.options.physics === false) {
-            this.via.setOptions({ physics: false });
-        }
-        else {
-            // fix weird behaviour where a self referencing node has physics enabled
-            if (this.from.id === this.to.id) {
-                this.via.setOptions({ physics: false });
-            }
-            else {
-                this.via.setOptions({ physics: true });
-            }
-        }
+  }
+  /** @inheritDoc */
+  connect() {
+    this.from = this._body.nodes[this.options.from];
+    this.to = this._body.nodes[this.options.to];
+    if (
+      this.from === undefined ||
+      this.to === undefined ||
+      this.options.physics === false
+    ) {
+      this.via.setOptions({ physics: false });
+    } else {
+      // fix weird behaviour where a self referencing node has physics enabled
+      if (this.from.id === this.to.id) {
+        this.via.setOptions({ physics: false });
+      } else {
+        this.via.setOptions({ physics: true });
+      }
     }
-    /** @inheritdoc */
-    cleanup() {
-        this._body.emitter.off("_repositionBezierNodes", this._boundFunction);
-        if (this.via !== undefined) {
-            delete this._body.nodes[this.via.id];
-            this.via = undefined;
-            return true;
-        }
-        return false;
+  }
+  /** @inheritDoc */
+  cleanup() {
+    this._body.emitter.off("_repositionBezierNodes", this._boundFunction);
+    if (this.via !== undefined) {
+      delete this._body.nodes[this.via.id];
+      this.via = undefined;
+      return true;
     }
-    /**
-     * Create and add a support node if not already present.
-     *
-     * @remarks
-     * Bezier curves require an anchor point to calculate the smooth flow.
-     * These points are nodes.
-     * These nodes are invisible but are used for the force calculation.
-     *
-     * The changed data is not called, if needed, it is returned by the main edge constructor.
-     */
-    setupSupportNode() {
-        if (this.via === undefined) {
-            const nodeId = "edgeId:" + this.id;
-            const node = this._body.functions.createNode({
-                id: nodeId,
-                shape: "circle",
-                physics: true,
-                hidden: true
-            });
-            this._body.nodes[nodeId] = node;
-            this.via = node;
-            this.via.parentEdgeId = this.id;
-            this.positionBezierNode();
-        }
+    return false;
+  }
+  /**
+   * Create and add a support node if not already present.
+   *
+   * @remarks
+   * Bezier curves require an anchor point to calculate the smooth flow.
+   * These points are nodes.
+   * These nodes are invisible but are used for the force calculation.
+   *
+   * The changed data is not called, if needed, it is returned by the main edge constructor.
+   */
+  setupSupportNode() {
+    if (this.via === undefined) {
+      const nodeId = "edgeId:" + this.id;
+      const node = this._body.functions.createNode({
+        id: nodeId,
+        shape: "circle",
+        physics: true,
+        hidden: true,
+      });
+      this._body.nodes[nodeId] = node;
+      this.via = node;
+      this.via.parentEdgeId = this.id;
+      this.positionBezierNode();
     }
-    /**
-     * Position bezier node.
-     */
-    positionBezierNode() {
-        if (this.via !== undefined &&
-            this.from !== undefined &&
-            this.to !== undefined) {
-            this.via.x = 0.5 * (this.from.x + this.to.x);
-            this.via.y = 0.5 * (this.from.y + this.to.y);
-        }
-        else if (this.via !== undefined) {
-            this.via.x = 0;
-            this.via.y = 0;
-        }
+  }
+  /**
+   * Position bezier node.
+   */
+  positionBezierNode() {
+    if (
+      this.via !== undefined &&
+      this.from !== undefined &&
+      this.to !== undefined
+    ) {
+      this.via.x = 0.5 * (this.from.x + this.to.x);
+      this.via.y = 0.5 * (this.from.y + this.to.y);
+    } else if (this.via !== undefined) {
+      this.via.x = 0;
+      this.via.y = 0;
     }
-    /** @inheritdoc */
-    _line(ctx, values, viaNode) {
-        this._bezierCurve(ctx, values, viaNode);
+  }
+  /** @inheritDoc */
+  _line(ctx, values, viaNode) {
+    this._bezierCurve(ctx, values, viaNode);
+  }
+  /** @inheritDoc */
+  _getViaCoordinates() {
+    return this.via;
+  }
+  /** @inheritDoc */
+  getViaNode() {
+    return this.via;
+  }
+  /** @inheritDoc */
+  getPoint(position, viaNode = this.via) {
+    if (this.from === this.to) {
+      const [cx, cy, cr] = this._getCircleData();
+      const a = 2 * Math.PI * (1 - position);
+      return {
+        x: cx + cr * Math.sin(a),
+        y: cy + cr - cr * (1 - Math.cos(a)),
+      };
+    } else {
+      return {
+        x:
+          Math.pow(1 - position, 2) * this.fromPoint.x +
+          2 * position * (1 - position) * viaNode.x +
+          Math.pow(position, 2) * this.toPoint.x,
+        y:
+          Math.pow(1 - position, 2) * this.fromPoint.y +
+          2 * position * (1 - position) * viaNode.y +
+          Math.pow(position, 2) * this.toPoint.y,
+      };
     }
-    /** @inheritdoc */
-    _getViaCoordinates() {
-        return this.via;
-    }
-    /** @inheritdoc */
-    getViaNode() {
-        return this.via;
-    }
-    /** @inheritdoc */
-    getPoint(position, viaNode = this.via) {
-        if (this.from === this.to) {
-            const [cx, cy, cr] = this._getCircleData();
-            const a = 2 * Math.PI * (1 - position);
-            return {
-                x: cx + cr * Math.sin(a),
-                y: cy + cr - cr * (1 - Math.cos(a))
-            };
-        }
-        else {
-            return {
-                x: Math.pow(1 - position, 2) * this.fromPoint.x +
-                    2 * position * (1 - position) * viaNode.x +
-                    Math.pow(position, 2) * this.toPoint.x,
-                y: Math.pow(1 - position, 2) * this.fromPoint.y +
-                    2 * position * (1 - position) * viaNode.y +
-                    Math.pow(position, 2) * this.toPoint.y
-            };
-        }
-    }
-    /** @inheritdoc */
-    _findBorderPosition(nearNode, ctx) {
-        return this._findBorderPositionBezier(nearNode, ctx, this.via);
-    }
-    /** @inheritdoc */
-    _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
-        // x3,y3 is the point
-        return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, this.via);
-    }
+  }
+  /** @inheritDoc */
+  _findBorderPosition(nearNode, ctx) {
+    return this._findBorderPositionBezier(nearNode, ctx, this.via);
+  }
+  /** @inheritDoc */
+  _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
+    // x3,y3 is the point
+    return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, this.via);
+  }
 }
 
 /**
  * A Static Bezier Edge. Bezier curves are used to model smooth gradual curves in paths between nodes.
  */
 class BezierEdgeStatic extends BezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-        super(options, body, labelModule);
-    }
-    /** @inheritdoc */
-    _line(ctx, values, viaNode) {
-        this._bezierCurve(ctx, values, viaNode);
-    }
-    /** @inheritdoc */
-    getViaNode() {
-        return this._getViaCoordinates();
-    }
-    /**
-     * Compute the coordinates of the via node.
-     *
-     * @remarks
-     * We do not use the to and fromPoints here to make the via nodes the same as edges without arrows.
-     *
-     * @returns Cartesian coordinates of the via node.
-     */
-    _getViaCoordinates() {
-        // Assumption: x/y coordinates in from/to always defined
-        const factor = this.options.smooth.roundness;
-        const type = this.options.smooth.type;
-        let dx = Math.abs(this.from.x - this.to.x);
-        let dy = Math.abs(this.from.y - this.to.y);
-        if (type === "discrete" || type === "diagonalCross") {
-            let stepX;
-            let stepY;
-            if (dx <= dy) {
-                stepX = stepY = factor * dy;
-            }
-            else {
-                stepX = stepY = factor * dx;
-            }
-            if (this.from.x > this.to.x) {
-                stepX = -stepX;
-            }
-            if (this.from.y >= this.to.y) {
-                stepY = -stepY;
-            }
-            let xVia = this.from.x + stepX;
-            let yVia = this.from.y + stepY;
-            if (type === "discrete") {
-                if (dx <= dy) {
-                    xVia = dx < factor * dy ? this.from.x : xVia;
-                }
-                else {
-                    yVia = dy < factor * dx ? this.from.y : yVia;
-                }
-            }
-            return { x: xVia, y: yVia };
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param body - The body of the network.
+   * @param labelModule - Label module.
+   */
+  constructor(options, body, labelModule) {
+    super(options, body, labelModule);
+  }
+  /** @inheritDoc */
+  _line(ctx, values, viaNode) {
+    this._bezierCurve(ctx, values, viaNode);
+  }
+  /** @inheritDoc */
+  getViaNode() {
+    return this._getViaCoordinates();
+  }
+  /**
+   * Compute the coordinates of the via node.
+   *
+   * @remarks
+   * We do not use the to and fromPoints here to make the via nodes the same as edges without arrows.
+   * @returns Cartesian coordinates of the via node.
+   */
+  _getViaCoordinates() {
+    // Assumption: x/y coordinates in from/to always defined
+    const factor = this.options.smooth.roundness;
+    const type = this.options.smooth.type;
+    let dx = Math.abs(this.from.x - this.to.x);
+    let dy = Math.abs(this.from.y - this.to.y);
+    if (type === "discrete" || type === "diagonalCross") {
+      let stepX;
+      let stepY;
+      if (dx <= dy) {
+        stepX = stepY = factor * dy;
+      } else {
+        stepX = stepY = factor * dx;
+      }
+      if (this.from.x > this.to.x) {
+        stepX = -stepX;
+      }
+      if (this.from.y >= this.to.y) {
+        stepY = -stepY;
+      }
+      let xVia = this.from.x + stepX;
+      let yVia = this.from.y + stepY;
+      if (type === "discrete") {
+        if (dx <= dy) {
+          xVia = dx < factor * dy ? this.from.x : xVia;
+        } else {
+          yVia = dy < factor * dx ? this.from.y : yVia;
         }
-        else if (type === "straightCross") {
-            let stepX = (1 - factor) * dx;
-            let stepY = (1 - factor) * dy;
-            if (dx <= dy) {
-                // up - down
-                stepX = 0;
-                if (this.from.y < this.to.y) {
-                    stepY = -stepY;
-                }
-            }
-            else {
-                // left - right
-                if (this.from.x < this.to.x) {
-                    stepX = -stepX;
-                }
-                stepY = 0;
-            }
-            return {
-                x: this.to.x + stepX,
-                y: this.to.y + stepY
-            };
+      }
+      return { x: xVia, y: yVia };
+    } else if (type === "straightCross") {
+      let stepX = (1 - factor) * dx;
+      let stepY = (1 - factor) * dy;
+      if (dx <= dy) {
+        // up - down
+        stepX = 0;
+        if (this.from.y < this.to.y) {
+          stepY = -stepY;
         }
-        else if (type === "horizontal") {
-            let stepX = (1 - factor) * dx;
-            if (this.from.x < this.to.x) {
-                stepX = -stepX;
-            }
-            return {
-                x: this.to.x + stepX,
-                y: this.from.y
-            };
+      } else {
+        // left - right
+        if (this.from.x < this.to.x) {
+          stepX = -stepX;
         }
-        else if (type === "vertical") {
-            let stepY = (1 - factor) * dy;
-            if (this.from.y < this.to.y) {
-                stepY = -stepY;
-            }
-            return {
-                x: this.from.x,
-                y: this.to.y + stepY
-            };
+        stepY = 0;
+      }
+      return {
+        x: this.to.x + stepX,
+        y: this.to.y + stepY,
+      };
+    } else if (type === "horizontal") {
+      let stepX = (1 - factor) * dx;
+      if (this.from.x < this.to.x) {
+        stepX = -stepX;
+      }
+      return {
+        x: this.to.x + stepX,
+        y: this.from.y,
+      };
+    } else if (type === "vertical") {
+      let stepY = (1 - factor) * dy;
+      if (this.from.y < this.to.y) {
+        stepY = -stepY;
+      }
+      return {
+        x: this.from.x,
+        y: this.to.y + stepY,
+      };
+    } else if (type === "curvedCW") {
+      dx = this.to.x - this.from.x;
+      dy = this.from.y - this.to.y;
+      const radius = Math.sqrt(dx * dx + dy * dy);
+      const pi = Math.PI;
+      const originalAngle = Math.atan2(dy, dx);
+      const myAngle = (originalAngle + (factor * 0.5 + 0.5) * pi) % (2 * pi);
+      return {
+        x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
+        y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle),
+      };
+    } else if (type === "curvedCCW") {
+      dx = this.to.x - this.from.x;
+      dy = this.from.y - this.to.y;
+      const radius = Math.sqrt(dx * dx + dy * dy);
+      const pi = Math.PI;
+      const originalAngle = Math.atan2(dy, dx);
+      const myAngle = (originalAngle + (-factor * 0.5 + 0.5) * pi) % (2 * pi);
+      return {
+        x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
+        y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle),
+      };
+    } else {
+      // continuous
+      let stepX;
+      let stepY;
+      if (dx <= dy) {
+        stepX = stepY = factor * dy;
+      } else {
+        stepX = stepY = factor * dx;
+      }
+      if (this.from.x > this.to.x) {
+        stepX = -stepX;
+      }
+      if (this.from.y >= this.to.y) {
+        stepY = -stepY;
+      }
+      let xVia = this.from.x + stepX;
+      let yVia = this.from.y + stepY;
+      if (dx <= dy) {
+        if (this.from.x <= this.to.x) {
+          xVia = this.to.x < xVia ? this.to.x : xVia;
+        } else {
+          xVia = this.to.x > xVia ? this.to.x : xVia;
         }
-        else if (type === "curvedCW") {
-            dx = this.to.x - this.from.x;
-            dy = this.from.y - this.to.y;
-            const radius = Math.sqrt(dx * dx + dy * dy);
-            const pi = Math.PI;
-            const originalAngle = Math.atan2(dy, dx);
-            const myAngle = (originalAngle + (factor * 0.5 + 0.5) * pi) % (2 * pi);
-            return {
-                x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
-                y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle)
-            };
+      } else {
+        if (this.from.y >= this.to.y) {
+          yVia = this.to.y > yVia ? this.to.y : yVia;
+        } else {
+          yVia = this.to.y < yVia ? this.to.y : yVia;
         }
-        else if (type === "curvedCCW") {
-            dx = this.to.x - this.from.x;
-            dy = this.from.y - this.to.y;
-            const radius = Math.sqrt(dx * dx + dy * dy);
-            const pi = Math.PI;
-            const originalAngle = Math.atan2(dy, dx);
-            const myAngle = (originalAngle + (-factor * 0.5 + 0.5) * pi) % (2 * pi);
-            return {
-                x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
-                y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle)
-            };
-        }
-        else {
-            // continuous
-            let stepX;
-            let stepY;
-            if (dx <= dy) {
-                stepX = stepY = factor * dy;
-            }
-            else {
-                stepX = stepY = factor * dx;
-            }
-            if (this.from.x > this.to.x) {
-                stepX = -stepX;
-            }
-            if (this.from.y >= this.to.y) {
-                stepY = -stepY;
-            }
-            let xVia = this.from.x + stepX;
-            let yVia = this.from.y + stepY;
-            if (dx <= dy) {
-                if (this.from.x <= this.to.x) {
-                    xVia = this.to.x < xVia ? this.to.x : xVia;
-                }
-                else {
-                    xVia = this.to.x > xVia ? this.to.x : xVia;
-                }
-            }
-            else {
-                if (this.from.y >= this.to.y) {
-                    yVia = this.to.y > yVia ? this.to.y : yVia;
-                }
-                else {
-                    yVia = this.to.y < yVia ? this.to.y : yVia;
-                }
-            }
-            return { x: xVia, y: yVia };
-        }
+      }
+      return { x: xVia, y: yVia };
     }
-    /** @inheritdoc */
-    _findBorderPosition(nearNode, ctx, options = {}) {
-        return this._findBorderPositionBezier(nearNode, ctx, options.via);
-    }
-    /** @inheritdoc */
-    _getDistanceToEdge(x1, y1, x2, y2, x3, y3, viaNode = this._getViaCoordinates()) {
-        // x3,y3 is the point
-        return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, viaNode);
-    }
-    /** @inheritdoc */
-    getPoint(position, viaNode = this._getViaCoordinates()) {
-        const t = position;
-        const x = Math.pow(1 - t, 2) * this.fromPoint.x +
-            2 * t * (1 - t) * viaNode.x +
-            Math.pow(t, 2) * this.toPoint.x;
-        const y = Math.pow(1 - t, 2) * this.fromPoint.y +
-            2 * t * (1 - t) * viaNode.y +
-            Math.pow(t, 2) * this.toPoint.y;
-        return { x: x, y: y };
-    }
+  }
+  /** @inheritDoc */
+  _findBorderPosition(nearNode, ctx, options = {}) {
+    return this._findBorderPositionBezier(nearNode, ctx, options.via);
+  }
+  /** @inheritDoc */
+  _getDistanceToEdge(
+    x1,
+    y1,
+    x2,
+    y2,
+    x3,
+    y3,
+    viaNode = this._getViaCoordinates()
+  ) {
+    // x3,y3 is the point
+    return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, viaNode);
+  }
+  /** @inheritDoc */
+  getPoint(position, viaNode = this._getViaCoordinates()) {
+    const t = position;
+    const x =
+      Math.pow(1 - t, 2) * this.fromPoint.x +
+      2 * t * (1 - t) * viaNode.x +
+      Math.pow(t, 2) * this.toPoint.x;
+    const y =
+      Math.pow(1 - t, 2) * this.fromPoint.y +
+      2 * t * (1 - t) * viaNode.y +
+      Math.pow(t, 2) * this.toPoint.y;
+    return { x: x, y: y };
+  }
 }
 
 /**
  * A Base Class for all Cubic Bezier Edges. Bezier curves are used to model
  * smooth gradual curves in paths between nodes.
  *
- * @extends BezierEdgeBase
+ * @augments BezierEdgeBase
  */
 class CubicBezierEdgeBase extends BezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-        super(options, body, labelModule);
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param body - The body of the network.
+   * @param labelModule - Label module.
+   */
+  constructor(options, body, labelModule) {
+    super(options, body, labelModule);
+  }
+  /**
+   * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
+   *
+   * @remarks
+   * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
+   * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+   * @param x1 - First end of the line segment on the x axis.
+   * @param y1 - First end of the line segment on the y axis.
+   * @param x2 - Second end of the line segment on the x axis.
+   * @param y2 - Second end of the line segment on the y axis.
+   * @param x3 - Position of the point on the x axis.
+   * @param y3 - Position of the point on the y axis.
+   * @param via1 - The first point this edge passes through.
+   * @param via2 - The second point this edge passes through.
+   * @returns The distance between the line segment and the point.
+   */
+  _getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2) {
+    // x3,y3 is the point
+    let minDistance = 1e9;
+    let lastX = x1;
+    let lastY = y1;
+    const vec = [0, 0, 0, 0];
+    for (let i = 1; i < 10; i++) {
+      const t = 0.1 * i;
+      vec[0] = Math.pow(1 - t, 3);
+      vec[1] = 3 * t * Math.pow(1 - t, 2);
+      vec[2] = 3 * Math.pow(t, 2) * (1 - t);
+      vec[3] = Math.pow(t, 3);
+      const x = vec[0] * x1 + vec[1] * via1.x + vec[2] * via2.x + vec[3] * x2;
+      const y = vec[0] * y1 + vec[1] * via1.y + vec[2] * via2.y + vec[3] * y2;
+      if (i > 0) {
+        const distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
+        minDistance = distance < minDistance ? distance : minDistance;
+      }
+      lastX = x;
+      lastY = y;
     }
-    /**
-     * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
-     *
-     * @remarks
-     * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
-     * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     *
-     * @param x1 - First end of the line segment on the x axis.
-     * @param y1 - First end of the line segment on the y axis.
-     * @param x2 - Second end of the line segment on the x axis.
-     * @param y2 - Second end of the line segment on the y axis.
-     * @param x3 - Position of the point on the x axis.
-     * @param y3 - Position of the point on the y axis.
-     * @param via1 - The first point this edge passes through.
-     * @param via2 - The second point this edge passes through.
-     *
-     * @returns The distance between the line segment and the point.
-     */
-    _getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2) {
-        // x3,y3 is the point
-        let minDistance = 1e9;
-        let lastX = x1;
-        let lastY = y1;
-        const vec = [0, 0, 0, 0];
-        for (let i = 1; i < 10; i++) {
-            const t = 0.1 * i;
-            vec[0] = Math.pow(1 - t, 3);
-            vec[1] = 3 * t * Math.pow(1 - t, 2);
-            vec[2] = 3 * Math.pow(t, 2) * (1 - t);
-            vec[3] = Math.pow(t, 3);
-            const x = vec[0] * x1 + vec[1] * via1.x + vec[2] * via2.x + vec[3] * x2;
-            const y = vec[0] * y1 + vec[1] * via1.y + vec[2] * via2.y + vec[3] * y2;
-            if (i > 0) {
-                const distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
-                minDistance = distance < minDistance ? distance : minDistance;
-            }
-            lastX = x;
-            lastY = y;
-        }
-        return minDistance;
-    }
+    return minDistance;
+  }
 }
 
 /**
  * A Cubic Bezier Edge. Bezier curves are used to model smooth gradual curves in paths between nodes.
  */
 class CubicBezierEdge extends CubicBezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-        super(options, body, labelModule);
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param body - The body of the network.
+   * @param labelModule - Label module.
+   */
+  constructor(options, body, labelModule) {
+    super(options, body, labelModule);
+  }
+  /** @inheritDoc */
+  _line(ctx, values, viaNodes) {
+    // get the coordinates of the support points.
+    const via1 = viaNodes[0];
+    const via2 = viaNodes[1];
+    this._bezierCurve(ctx, values, via1, via2);
+  }
+  /**
+   * Compute the additional points the edge passes through.
+   *
+   * @returns Cartesian coordinates of the points the edge passes through.
+   */
+  _getViaCoordinates() {
+    const dx = this.from.x - this.to.x;
+    const dy = this.from.y - this.to.y;
+    let x1;
+    let y1;
+    let x2;
+    let y2;
+    const roundness = this.options.smooth.roundness;
+    // horizontal if x > y or if direction is forced or if direction is horizontal
+    if (
+      (Math.abs(dx) > Math.abs(dy) ||
+        this.options.smooth.forceDirection === true ||
+        this.options.smooth.forceDirection === "horizontal") &&
+      this.options.smooth.forceDirection !== "vertical"
+    ) {
+      y1 = this.from.y;
+      y2 = this.to.y;
+      x1 = this.from.x - roundness * dx;
+      x2 = this.to.x + roundness * dx;
+    } else {
+      y1 = this.from.y - roundness * dy;
+      y2 = this.to.y + roundness * dy;
+      x1 = this.from.x;
+      x2 = this.to.x;
     }
-    /** @inheritdoc */
-    _line(ctx, values, viaNodes) {
-        // get the coordinates of the support points.
-        const via1 = viaNodes[0];
-        const via2 = viaNodes[1];
-        this._bezierCurve(ctx, values, via1, via2);
-    }
-    /**
-     * Compute the additional points the edge passes through.
-     *
-     * @returns Cartesian coordinates of the points the edge passes through.
-     */
-    _getViaCoordinates() {
-        const dx = this.from.x - this.to.x;
-        const dy = this.from.y - this.to.y;
-        let x1;
-        let y1;
-        let x2;
-        let y2;
-        const roundness = this.options.smooth.roundness;
-        // horizontal if x > y or if direction is forced or if direction is horizontal
-        if ((Math.abs(dx) > Math.abs(dy) ||
-            this.options.smooth.forceDirection === true ||
-            this.options.smooth.forceDirection === "horizontal") &&
-            this.options.smooth.forceDirection !== "vertical") {
-            y1 = this.from.y;
-            y2 = this.to.y;
-            x1 = this.from.x - roundness * dx;
-            x2 = this.to.x + roundness * dx;
-        }
-        else {
-            y1 = this.from.y - roundness * dy;
-            y2 = this.to.y + roundness * dy;
-            x1 = this.from.x;
-            x2 = this.to.x;
-        }
-        return [
-            { x: x1, y: y1 },
-            { x: x2, y: y2 }
-        ];
-    }
-    /** @inheritdoc */
-    getViaNode() {
-        return this._getViaCoordinates();
-    }
-    /** @inheritdoc */
-    _findBorderPosition(nearNode, ctx) {
-        return this._findBorderPositionBezier(nearNode, ctx);
-    }
-    /** @inheritdoc */
-    _getDistanceToEdge(x1, y1, x2, y2, x3, y3, [via1, via2] = this._getViaCoordinates()) {
-        // x3,y3 is the point
-        return this._getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2);
-    }
-    /** @inheritdoc */
-    getPoint(position, [via1, via2] = this._getViaCoordinates()) {
-        const t = position;
-        const vec = [
-            Math.pow(1 - t, 3),
-            3 * t * Math.pow(1 - t, 2),
-            3 * Math.pow(t, 2) * (1 - t),
-            Math.pow(t, 3)
-        ];
-        const x = vec[0] * this.fromPoint.x +
-            vec[1] * via1.x +
-            vec[2] * via2.x +
-            vec[3] * this.toPoint.x;
-        const y = vec[0] * this.fromPoint.y +
-            vec[1] * via1.y +
-            vec[2] * via2.y +
-            vec[3] * this.toPoint.y;
-        return { x: x, y: y };
-    }
+    return [
+      { x: x1, y: y1 },
+      { x: x2, y: y2 },
+    ];
+  }
+  /** @inheritDoc */
+  getViaNode() {
+    return this._getViaCoordinates();
+  }
+  /** @inheritDoc */
+  _findBorderPosition(nearNode, ctx) {
+    return this._findBorderPositionBezier(nearNode, ctx);
+  }
+  /** @inheritDoc */
+  _getDistanceToEdge(
+    x1,
+    y1,
+    x2,
+    y2,
+    x3,
+    y3,
+    [via1, via2] = this._getViaCoordinates()
+  ) {
+    // x3,y3 is the point
+    return this._getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2);
+  }
+  /** @inheritDoc */
+  getPoint(position, [via1, via2] = this._getViaCoordinates()) {
+    const t = position;
+    const vec = [
+      Math.pow(1 - t, 3),
+      3 * t * Math.pow(1 - t, 2),
+      3 * Math.pow(t, 2) * (1 - t),
+      Math.pow(t, 3),
+    ];
+    const x =
+      vec[0] * this.fromPoint.x +
+      vec[1] * via1.x +
+      vec[2] * via2.x +
+      vec[3] * this.toPoint.x;
+    const y =
+      vec[0] * this.fromPoint.y +
+      vec[1] * via1.y +
+      vec[2] * via2.y +
+      vec[3] * this.toPoint.y;
+    return { x: x, y: y };
+  }
 }
 
 /**
  * A Straight Edge.
  */
 class StraightEdge extends EdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-        super(options, body, labelModule);
+  /**
+   * Create a new instance.
+   *
+   * @param options - The options object of given edge.
+   * @param body - The body of the network.
+   * @param labelModule - Label module.
+   */
+  constructor(options, body, labelModule) {
+    super(options, body, labelModule);
+  }
+  /** @inheritDoc */
+  _line(ctx, values) {
+    // draw a straight line
+    ctx.beginPath();
+    ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
+    ctx.lineTo(this.toPoint.x, this.toPoint.y);
+    // draw shadow if enabled
+    this.enableShadow(ctx, values);
+    ctx.stroke();
+    this.disableShadow(ctx, values);
+  }
+  /** @inheritDoc */
+  getViaNode() {
+    return undefined;
+  }
+  /** @inheritDoc */
+  getPoint(position) {
+    return {
+      x: (1 - position) * this.fromPoint.x + position * this.toPoint.x,
+      y: (1 - position) * this.fromPoint.y + position * this.toPoint.y,
+    };
+  }
+  /** @inheritDoc */
+  _findBorderPosition(nearNode, ctx) {
+    let node1 = this.to;
+    let node2 = this.from;
+    if (nearNode.id === this.from.id) {
+      node1 = this.from;
+      node2 = this.to;
     }
-    /** @inheritdoc */
-    _line(ctx, values) {
-        // draw a straight line
-        ctx.beginPath();
-        ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
-        ctx.lineTo(this.toPoint.x, this.toPoint.y);
-        // draw shadow if enabled
-        this.enableShadow(ctx, values);
-        ctx.stroke();
-        this.disableShadow(ctx, values);
-    }
-    /** @inheritdoc */
-    getViaNode() {
-        return undefined;
-    }
-    /** @inheritdoc */
-    getPoint(position) {
-        return {
-            x: (1 - position) * this.fromPoint.x + position * this.toPoint.x,
-            y: (1 - position) * this.fromPoint.y + position * this.toPoint.y
-        };
-    }
-    /** @inheritdoc */
-    _findBorderPosition(nearNode, ctx) {
-        let node1 = this.to;
-        let node2 = this.from;
-        if (nearNode.id === this.from.id) {
-            node1 = this.from;
-            node2 = this.to;
-        }
-        const angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
-        const dx = node1.x - node2.x;
-        const dy = node1.y - node2.y;
-        const edgeSegmentLength = Math.sqrt(dx * dx + dy * dy);
-        const toBorderDist = nearNode.distanceToBorder(ctx, angle);
-        const toBorderPoint = (edgeSegmentLength - toBorderDist) / edgeSegmentLength;
-        return {
-            x: (1 - toBorderPoint) * node2.x + toBorderPoint * node1.x,
-            y: (1 - toBorderPoint) * node2.y + toBorderPoint * node1.y,
-            t: 0
-        };
-    }
-    /** @inheritdoc */
-    _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
-        // x3,y3 is the point
-        return this._getDistanceToLine(x1, y1, x2, y2, x3, y3);
-    }
+    const angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
+    const dx = node1.x - node2.x;
+    const dy = node1.y - node2.y;
+    const edgeSegmentLength = Math.sqrt(dx * dx + dy * dy);
+    const toBorderDist = nearNode.distanceToBorder(ctx, angle);
+    const toBorderPoint =
+      (edgeSegmentLength - toBorderDist) / edgeSegmentLength;
+    return {
+      x: (1 - toBorderPoint) * node2.x + toBorderPoint * node1.x,
+      y: (1 - toBorderPoint) * node2.y + toBorderPoint * node1.y,
+      t: 0,
+    };
+  }
+  /** @inheritDoc */
+  _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
+    // x3,y3 is the point
+    return this._getDistanceToLine(x1, y1, x2, y2, x3, y3);
+  }
 }
 
 /**
@@ -9505,11 +9501,11 @@ class StraightEdge extends EdgeBase {
  */
 class Edge {
   /**
-   * @param {Object} options        values specific to this edge, must contain at least 'from' and 'to'
-   * @param {Object} body           shared state from Network instance
+   * @param {object} options        values specific to this edge, must contain at least 'from' and 'to'
+   * @param {object} body           shared state from Network instance
    * @param {Network.Images} imagelist  A list with images. Only needed when the edge has image arrows.
-   * @param {Object} globalOptions  options from the EdgesHandler instance
-   * @param {Object} defaultOptions default options from the EdgeHandler instance. Value and reference are constant
+   * @param {object} globalOptions  options from the EdgesHandler instance
+   * @param {object} defaultOptions default options from the EdgeHandler instance. Value and reference are constant
    */
   constructor(options, body, imagelist, globalOptions, defaultOptions) {
     if (body === undefined) {
@@ -9537,20 +9533,24 @@ class Edge {
     this.baseFontSize = this.options.font.size;
 
     this.from = undefined; // a node
-    this.to   = undefined; // a node
+    this.to = undefined; // a node
 
     this.edgeType = undefined;
 
     this.connected = false;
 
-    this.labelModule = new Label(this.body, this.options, true /* It's an edge label */);
+    this.labelModule = new Label(
+      this.body,
+      this.options,
+      true /* It's an edge label */
+    );
     this.setOptions(options);
   }
 
-
   /**
    * Set or overwrite options for the edge
-   * @param {Object} options  an object with options
+   *
+   * @param {object} options  an object with options
    * @returns {undefined|boolean} undefined if no options, true if layout affecting data changed, false otherwise.
    */
   setOptions(options) {
@@ -9564,7 +9564,8 @@ class Edge {
         this.options.physics !== options.physics) ||
       (typeof options.hidden !== "undefined" &&
         (this.options.hidden || false) !== (options.hidden || false)) ||
-      (typeof options.from !== "undefined" && this.options.from !== options.from) ||
+      (typeof options.from !== "undefined" &&
+        this.options.from !== options.from) ||
       (typeof options.to !== "undefined" && this.options.to !== options.to);
 
     Edge.parseOptions(this.options, options, true, this.globalOptions);
@@ -9581,12 +9582,12 @@ class Edge {
     if (options.title !== undefined) {
       this.title = options.title;
     }
-    if (options.value !== undefined)  {
+    if (options.value !== undefined) {
       options.value = parseFloat(options.value);
     }
 
     const pile = [options, this.options, this.defaultOptions];
-    this.chooser = choosify('edge', pile);
+    this.chooser = choosify("edge", pile);
 
     // update label Module
     this.updateLabelModule(options);
@@ -9603,61 +9604,78 @@ class Edge {
     return affectsLayout;
   }
 
-
   /**
    *
-   * @param {Object} parentOptions
-   * @param {Object} newOptions
+   * @param {object} parentOptions
+   * @param {object} newOptions
    * @param {boolean} [allowDeletion=false]
-   * @param {Object} [globalOptions={}]
+   * @param {object} [globalOptions={}]
    * @param {boolean} [copyFromGlobals=false]
    */
-  static parseOptions(parentOptions, newOptions, allowDeletion = false, globalOptions = {}, copyFromGlobals = false) {
+  static parseOptions(
+    parentOptions,
+    newOptions,
+    allowDeletion = false,
+    globalOptions = {},
+    copyFromGlobals = false
+  ) {
     const fields = [
-      'endPointOffset',
-      'arrowStrikethrough',
-      'id',
-      'from',
-      'hidden',
-      'hoverWidth',
-      'labelHighlightBold',
-      'length',
-      'springConstant',
-      'line',
-      'opacity',
-      'physics',
-      'scaling',
-      'selectionWidth',
-      'selfReferenceSize',
-      'selfReference',
-      'to',
-      'title',
-      'value',
-      'width',
-      'font',
-      'chosen',
-      'widthConstraint'
+      "endPointOffset",
+      "arrowStrikethrough",
+      "id",
+      "from",
+      "hidden",
+      "hoverWidth",
+      "labelHighlightBold",
+      "length",
+      "line",
+      "springConstant",
+      "opacity",
+      "physics",
+      "scaling",
+      "selectionWidth",
+      "selfReferenceSize",
+      "selfReference",
+      "to",
+      "title",
+      "value",
+      "width",
+      "font",
+      "chosen",
+      "widthConstraint",
     ];
 
     // only deep extend the items in the field array. These do not have shorthand.
     selectiveDeepExtend(fields, parentOptions, newOptions, allowDeletion);
 
     // Only use endPointOffset values (from and to) if it's valid values
-    if (newOptions.endPointOffset !== undefined && newOptions.endPointOffset.from !== undefined) {
+    if (
+      newOptions.endPointOffset !== undefined &&
+      newOptions.endPointOffset.from !== undefined
+    ) {
       if (Number.isFinite(newOptions.endPointOffset.from)) {
         parentOptions.endPointOffset.from = newOptions.endPointOffset.from;
       } else {
-        parentOptions.endPointOffset.from = globalOptions.endPointOffset.from !== undefined ? globalOptions.endPointOffset.from : 0;
-        console.error('endPointOffset.from is not a valid number');
+        parentOptions.endPointOffset.from =
+          globalOptions.endPointOffset.from !== undefined
+            ? globalOptions.endPointOffset.from
+            : 0;
+        console.error("endPointOffset.from is not a valid number");
       }
     }
 
-    if (newOptions.endPointOffset !== undefined && newOptions.endPointOffset.to !== undefined) {
-      if (Number.isFinite(newOptions.endPointOffset.to)) { 
+    if (
+      newOptions.endPointOffset !== undefined &&
+      newOptions.endPointOffset.to !== undefined
+    ) {
+      if (Number.isFinite(newOptions.endPointOffset.to)) {
         parentOptions.endPointOffset.to = newOptions.endPointOffset.to;
       } else {
-        parentOptions.endPointOffset.to = globalOptions.endPointOffset.to !== undefined ? globalOptions.endPointOffset.to : 0;
-        console.error('endPointOffset.to is not a valid number');
+        parentOptions.endPointOffset.to =
+          globalOptions.endPointOffset.to !== undefined
+            ? globalOptions.endPointOffset.to
+            : 0;
+        console.error("endPointOffset.to is not a valid number");
       }
     }
 
@@ -9668,45 +9686,67 @@ class Edge {
       parentOptions.label = undefined;
     }
 
-    mergeOptions(parentOptions, newOptions, 'smooth', globalOptions);
-    mergeOptions(parentOptions, newOptions, 'shadow', globalOptions);
-    mergeOptions(parentOptions, newOptions, 'background', globalOptions);
+    mergeOptions(parentOptions, newOptions, "smooth", globalOptions);
+    mergeOptions(parentOptions, newOptions, "shadow", globalOptions);
+    mergeOptions(parentOptions, newOptions, "background", globalOptions);
 
     if (newOptions.dashes !== undefined && newOptions.dashes !== null) {
       parentOptions.dashes = newOptions.dashes;
-    }
-    else if (allowDeletion === true && newOptions.dashes === null) {
+    } else if (allowDeletion === true && newOptions.dashes === null) {
       parentOptions.dashes = Object.create(globalOptions.dashes); // this sets the pointer of the option back to the global option.
     }
 
     // set the scaling newOptions
     if (newOptions.scaling !== undefined && newOptions.scaling !== null) {
-      if (newOptions.scaling.min !== undefined) {parentOptions.scaling.min = newOptions.scaling.min;}
-      if (newOptions.scaling.max !== undefined) {parentOptions.scaling.max = newOptions.scaling.max;}
-      mergeOptions(parentOptions.scaling, newOptions.scaling, 'label', globalOptions.scaling);
-    }
-    else if (allowDeletion === true && newOptions.scaling === null) {
+      if (newOptions.scaling.min !== undefined) {
+        parentOptions.scaling.min = newOptions.scaling.min;
+      }
+      if (newOptions.scaling.max !== undefined) {
+        parentOptions.scaling.max = newOptions.scaling.max;
+      }
+      mergeOptions(
+        parentOptions.scaling,
+        newOptions.scaling,
+        "label",
+        globalOptions.scaling
+      );
+    } else if (allowDeletion === true && newOptions.scaling === null) {
       parentOptions.scaling = Object.create(globalOptions.scaling); // this sets the pointer of the option back to the global option.
     }
 
     // handle multiple input cases for arrows
     if (newOptions.arrows !== undefined && newOptions.arrows !== null) {
-      if (typeof newOptions.arrows === 'string') {
+      if (typeof newOptions.arrows === "string") {
         const arrows = newOptions.arrows.toLowerCase();
-        parentOptions.arrows.to.enabled     = arrows.indexOf("to")     != -1;
+        parentOptions.arrows.to.enabled = arrows.indexOf("to") != -1;
         parentOptions.arrows.middle.enabled = arrows.indexOf("middle") != -1;
-        parentOptions.arrows.from.enabled   = arrows.indexOf("from")   != -1;
+        parentOptions.arrows.from.enabled = arrows.indexOf("from") != -1;
+      } else if (typeof newOptions.arrows === "object") {
+        mergeOptions(
+          parentOptions.arrows,
+          newOptions.arrows,
+          "to",
+          globalOptions.arrows
+        );
+        mergeOptions(
+          parentOptions.arrows,
+          newOptions.arrows,
+          "middle",
+          globalOptions.arrows
+        );
+        mergeOptions(
+          parentOptions.arrows,
+          newOptions.arrows,
+          "from",
+          globalOptions.arrows
+        );
+      } else {
+        throw new Error(
+          "The arrow newOptions can only be an object or a string. Refer to the documentation. You used:" +
+            JSON.stringify(newOptions.arrows)
+        );
       }
-      else if (typeof newOptions.arrows === 'object') {
-        mergeOptions(parentOptions.arrows, newOptions.arrows, 'to',     globalOptions.arrows);
-        mergeOptions(parentOptions.arrows, newOptions.arrows, 'middle', globalOptions.arrows);
-        mergeOptions(parentOptions.arrows, newOptions.arrows, 'from',   globalOptions.arrows);
-      }
-      else {
-        throw new Error("The arrow newOptions can only be an object or a string. Refer to the documentation. You used:" + JSON.stringify(newOptions.arrows));
-      }
-    }
-    else if (allowDeletion === true && newOptions.arrows === null) {
+    } else if (allowDeletion === true && newOptions.arrows === null) {
       parentOptions.arrows = Object.create(globalOptions.arrows); // this sets the pointer of the option back to the global option.
     }
 
@@ -9714,14 +9754,14 @@ class Edge {
     if (newOptions.color !== undefined && newOptions.color !== null) {
       const fromColor = isString(newOptions.color)
         ? {
-          color: newOptions.color,
-          highlight: newOptions.color,
-          hover: newOptions.color,
-          inherit: false,
-          opacity: 1
-        }
+            color: newOptions.color,
+            highlight: newOptions.color,
+            hover: newOptions.color,
+            inherit: false,
+            opacity: 1,
+          }
         : newOptions.color;
-      const toColor   = parentOptions.color;
+      const toColor = parentOptions.color;
 
       // If passed, fill in values from default options - required in the case of no prototype bridging
       if (copyFromGlobals) {
@@ -9736,32 +9776,43 @@ class Edge {
       }
 
       if (isString(toColor)) {
-        toColor.color     = toColor;
+        toColor.color = toColor;
         toColor.highlight = toColor;
-        toColor.hover     = toColor;
-        toColor.inherit   = false;
+        toColor.hover = toColor;
+        toColor.inherit = false;
         if (fromColor.opacity === undefined) {
-          toColor.opacity = 1.0;  // set default
+          toColor.opacity = 1.0; // set default
         }
-      }
-      else {
+      } else {
         let colorsDefined = false;
-        if (fromColor.color     !== undefined) {toColor.color     = fromColor.color;     colorsDefined = true;}
-        if (fromColor.highlight !== undefined) {toColor.highlight = fromColor.highlight; colorsDefined = true;}
-        if (fromColor.hover     !== undefined) {toColor.hover     = fromColor.hover;     colorsDefined = true;}
-        if (fromColor.inherit   !== undefined) {toColor.inherit   = fromColor.inherit;}
-        if (fromColor.opacity   !== undefined) {toColor.opacity   = Math.min(1,Math.max(0,fromColor.opacity));}
+        if (fromColor.color !== undefined) {
+          toColor.color = fromColor.color;
+          colorsDefined = true;
+        }
+        if (fromColor.highlight !== undefined) {
+          toColor.highlight = fromColor.highlight;
+          colorsDefined = true;
+        }
+        if (fromColor.hover !== undefined) {
+          toColor.hover = fromColor.hover;
+          colorsDefined = true;
+        }
+        if (fromColor.inherit !== undefined) {
+          toColor.inherit = fromColor.inherit;
+        }
+        if (fromColor.opacity !== undefined) {
+          toColor.opacity = Math.min(1, Math.max(0, fromColor.opacity));
+        }
 
         if (colorsDefined === true) {
           toColor.inherit = false;
         } else {
           if (toColor.inherit === undefined) {
-            toColor.inherit = 'from';  // Set default
+            toColor.inherit = "from"; // Set default
           }
         }
       }
-    }
-    else if (allowDeletion === true && newOptions.color === null) {
+    } else if (allowDeletion === true && newOptions.color === null) {
       parentOptions.color = bridgeObject(globalOptions.color); // set the object back to the global options
     }
 
@@ -9769,22 +9820,28 @@ class Edge {
       parentOptions.font = bridgeObject(globalOptions.font); // set the object back to the global options
     }
 
-    if(Object.prototype.hasOwnProperty.call(newOptions, "selfReferenceSize")){
-      console.log('The selfReferenceSize property has been deprecated. Please use selfReference property instead. The selfReference can be set like thise selfReference:{size:30, angle:Math.PI / 4}');
+    if (Object.prototype.hasOwnProperty.call(newOptions, "selfReferenceSize")) {
+      console.warn(
+        "The selfReferenceSize property has been deprecated. Please use selfReference property instead. The selfReference can be set like thise selfReference:{size:30, angle:Math.PI / 4}"
+      );
       parentOptions.selfReference.size = newOptions.selfReferenceSize;
     }
-  
   }
-
 
   /**
    *
    * @returns {ArrowOptions}
    */
   getFormattingValues() {
-    const toArrow = (this.options.arrows.to === true) || (this.options.arrows.to.enabled === true);
-    const fromArrow = (this.options.arrows.from === true) || (this.options.arrows.from.enabled === true);
-    const middleArrow = (this.options.arrows.middle === true) || (this.options.arrows.middle.enabled === true);
+    const toArrow =
+      this.options.arrows.to === true ||
+      this.options.arrows.to.enabled === true;
+    const fromArrow =
+      this.options.arrows.from === true ||
+      this.options.arrows.from.enabled === true;
+    const middleArrow =
+      this.options.arrows.middle === true ||
+      this.options.arrows.middle.enabled === true;
     const inheritsColor = this.options.color.inherit;
     const values = {
       toArrow: toArrow,
@@ -9806,7 +9863,7 @@ class Edge {
       fromArrowImageWidth: this.options.arrows.from.imageWidth,
       fromArrowImageHeight: this.options.arrows.from.imageHeight,
       arrowStrikethrough: this.options.arrowStrikethrough,
-      color: (inheritsColor? undefined : this.options.color.color),
+      color: inheritsColor ? undefined : this.options.color.color,
       inheritsColor: inheritsColor,
       opacity: this.options.color.opacity,
       hidden: this.options.hidden,
@@ -9822,15 +9879,15 @@ class Edge {
       background: this.options.background.enabled,
       backgroundColor: this.options.background.color,
       backgroundSize: this.options.background.size,
-      backgroundDashes: this.options.background.dashes
+      backgroundDashes: this.options.background.dashes,
     };
     if (this.selected || this.hover) {
       if (this.chooser === true) {
         if (this.selected) {
           const selectedWidth = this.options.selectionWidth;
-          if (typeof selectedWidth === 'function') {
+          if (typeof selectedWidth === "function") {
             values.width = selectedWidth(values.width);
-          } else if (typeof selectedWidth === 'number') {
+          } else if (typeof selectedWidth === "number") {
             values.width += selectedWidth;
           }
           values.width = Math.max(values.width, 0.3 / this.body.view.scale);
@@ -9838,25 +9895,27 @@ class Edge {
           values.shadow = this.options.shadow.enabled;
         } else if (this.hover) {
           const hoverWidth = this.options.hoverWidth;
-          if (typeof hoverWidth === 'function') {
+          if (typeof hoverWidth === "function") {
             values.width = hoverWidth(values.width);
-          } else if (typeof hoverWidth === 'number') {
+          } else if (typeof hoverWidth === "number") {
             values.width += hoverWidth;
           }
           values.width = Math.max(values.width, 0.3 / this.body.view.scale);
           values.color = this.options.color.hover;
           values.shadow = this.options.shadow.enabled;
         }
-      } else if (typeof this.chooser === 'function') {
+      } else if (typeof this.chooser === "function") {
         this.chooser(values, this.options.id, this.selected, this.hover);
         if (values.color !== undefined) {
           values.inheritsColor = false;
         }
         if (values.shadow === false) {
-          if ((values.shadowColor !== this.options.shadow.color) ||
-              (values.shadowSize !== this.options.shadow.size) ||
-              (values.shadowX !== this.options.shadow.x) ||
-              (values.shadowY !== this.options.shadow.y)) {
+          if (
+            values.shadowColor !== this.options.shadow.color ||
+            values.shadowSize !== this.options.shadow.size ||
+            values.shadowX !== this.options.shadow.x ||
+            values.shadowY !== this.options.shadow.y
+          ) {
             values.shadow = true;
           }
         }
@@ -9871,14 +9930,14 @@ class Edge {
   /**
    * update the options in the label module
    *
-   * @param {Object} options
+   * @param {object} options
    */
   updateLabelModule(options) {
     const pile = [
       options,
       this.options,
-      this.globalOptions,  // Currently set global edge options
-      this.defaultOptions
+      this.globalOptions, // Currently set global edge options
+      this.defaultOptions,
     ];
 
     this.labelModule.update(this.options, pile);
@@ -9890,6 +9949,7 @@ class Edge {
 
   /**
    * update the edge type, set the options
+   *
    * @returns {boolean}
    */
   updateEdgeType() {
@@ -9897,18 +9957,19 @@ class Edge {
     let dataChanged = false;
     let changeInType = true;
     if (this.edgeType !== undefined) {
-      if ((((this.edgeType instanceof BezierEdgeDynamic) &&
-            (smooth.enabled === true) &&
-            (smooth.type === 'dynamic'))) ||
-          (((this.edgeType instanceof CubicBezierEdge) &&
-            (smooth.enabled === true) &&
-            (smooth.type === 'cubicBezier'))) ||
-          (((this.edgeType instanceof BezierEdgeStatic) &&
-            (smooth.enabled === true) &&
-            (smooth.type !== 'dynamic') &&
-            (smooth.type !== 'cubicBezier'))) ||
-          (((this.edgeType instanceof StraightEdge) &&
-            (smooth.type.enabled === false)))) {
+      if (
+        (this.edgeType instanceof BezierEdgeDynamic &&
+          smooth.enabled === true &&
+          smooth.type === "dynamic") ||
+        (this.edgeType instanceof CubicBezierEdge &&
+          smooth.enabled === true &&
+          smooth.type === "cubicBezier") ||
+        (this.edgeType instanceof BezierEdgeStatic &&
+          smooth.enabled === true &&
+          smooth.type !== "dynamic" &&
+          smooth.type !== "cubicBezier") ||
+        (this.edgeType instanceof StraightEdge && smooth.type.enabled === false)
+      ) {
         changeInType = false;
       }
       if (changeInType === true) {
@@ -9917,18 +9978,35 @@ class Edge {
     }
     if (changeInType === true) {
       if (smooth.enabled === true) {
-        if (smooth.type === 'dynamic') {
+        if (smooth.type === "dynamic") {
           dataChanged = true;
-          this.edgeType = new BezierEdgeDynamic(this.options, this.body, this.labelModule);
-        } else if (smooth.type === 'cubicBezier') {
-          this.edgeType = new CubicBezierEdge(this.options, this.body, this.labelModule);
+          this.edgeType = new BezierEdgeDynamic(
+            this.options,
+            this.body,
+            this.labelModule
+          );
+        } else if (smooth.type === "cubicBezier") {
+          this.edgeType = new CubicBezierEdge(
+            this.options,
+            this.body,
+            this.labelModule
+          );
         } else {
-          this.edgeType = new BezierEdgeStatic(this.options, this.body, this.labelModule);
+          this.edgeType = new BezierEdgeStatic(
+            this.options,
+            this.body,
+            this.labelModule
+          );
         }
       } else {
-        this.edgeType = new StraightEdge(this.options, this.body, this.labelModule);
+        this.edgeType = new StraightEdge(
+          this.options,
+          this.body,
+          this.labelModule
+        );
       }
-    } else { // if nothing changes, we just set the options.
+    } else {
+      // if nothing changes, we just set the options.
       this.edgeType.setOptions(this.options);
     }
     return dataChanged;
@@ -9942,13 +10020,12 @@ class Edge {
 
     this.from = this.body.nodes[this.fromId] || undefined;
     this.to = this.body.nodes[this.toId] || undefined;
-    this.connected = (this.from !== undefined && this.to !== undefined);
+    this.connected = this.from !== undefined && this.to !== undefined;
 
     if (this.connected === true) {
       this.from.attachEdge(this);
       this.to.attachEdge(this);
-    }
-    else {
+    } else {
       if (this.from) {
         this.from.detachEdge(this);
       }
@@ -9959,7 +10036,6 @@ class Edge {
 
     this.edgeType.connect();
   }
-
 
   /**
    * Disconnect an edge from its nodes
@@ -9977,53 +10053,59 @@ class Edge {
     this.connected = false;
   }
 
-
   /**
    * get the title of this edge.
-   * @return {string} title    The title of the edge, or undefined when no title
+   *
+   * @returns {string} title    The title of the edge, or undefined when no title
    *                           has been set.
    */
   getTitle() {
     return this.title;
   }
 
-
   /**
    * check if this node is selecte
-   * @return {boolean} selected   True if node is selected, else false
+   *
+   * @returns {boolean} selected   True if node is selected, else false
    */
   isSelected() {
     return this.selected;
   }
 
-
   /**
    * Retrieve the value of the edge. Can be undefined
-   * @return {number} value
+   *
+   * @returns {number} value
    */
   getValue() {
     return this.options.value;
   }
 
-
   /**
    * Adjust the value range of the edge. The edge will adjust it's width
    * based on its value.
+   *
    * @param {number} min
    * @param {number} max
    * @param {number} total
    */
   setValueRange(min, max, total) {
     if (this.options.value !== undefined) {
-      const scale = this.options.scaling.customScalingFunction(min, max, total, this.options.value);
+      const scale = this.options.scaling.customScalingFunction(
+        min,
+        max,
+        total,
+        this.options.value
+      );
       const widthDiff = this.options.scaling.max - this.options.scaling.min;
       if (this.options.scaling.label.enabled === true) {
-        const fontDiff = this.options.scaling.label.max - this.options.scaling.label.min;
-        this.options.font.size = this.options.scaling.label.min + scale * fontDiff;
+        const fontDiff =
+          this.options.scaling.label.max - this.options.scaling.label.min;
+        this.options.font.size =
+          this.options.scaling.label.min + scale * fontDiff;
       }
       this.options.width = this.options.scaling.min + scale * widthDiff;
-    }
-    else {
+    } else {
       this.options.width = this.baseWidth;
       this.options.font.size = this.baseFontSize;
     }
@@ -10037,23 +10119,26 @@ class Edge {
    * @private
    */
   _setInteractionWidths() {
-    if (typeof this.options.hoverWidth === 'function') {
+    if (typeof this.options.hoverWidth === "function") {
       this.edgeType.hoverWidth = this.options.hoverWidth(this.options.width);
     } else {
       this.edgeType.hoverWidth = this.options.hoverWidth + this.options.width;
     }
-    if (typeof this.options.selectionWidth === 'function') {
-      this.edgeType.selectionWidth = this.options.selectionWidth(this.options.width);
+    if (typeof this.options.selectionWidth === "function") {
+      this.edgeType.selectionWidth = this.options.selectionWidth(
+        this.options.width
+      );
     } else {
-      this.edgeType.selectionWidth = this.options.selectionWidth + this.options.width;
+      this.edgeType.selectionWidth =
+        this.options.selectionWidth + this.options.width;
     }
   }
-
 
   /**
    * Redraw a edge
    * Draw this edge in the given canvas
    * The 2d context of a HTML canvas can be retrieved by canvas.getContext("2d");
+   *
    * @param {CanvasRenderingContext2D}   ctx
    */
   draw(ctx) {
@@ -10064,16 +10149,17 @@ class Edge {
 
     // get the via node from the edge type
     const viaNode = this.edgeType.getViaNode();
-    
+
     // draw line and label
     this.edgeType.drawLine(ctx, values, this.selected, this.hover, viaNode);
     this.drawLabel(ctx, viaNode);
   }
 
-    /**
+  /**
    * Redraw arrows
    * Draw this arrows in the given canvas
    * The 2d context of a HTML canvas can be retrieved by canvas.getContext("2d");
+   *
    * @param {CanvasRenderingContext2D}   ctx
    */
   drawArrows(ctx) {
@@ -10155,17 +10241,34 @@ class Edge {
         arrowData.middle.imageHeight = values.middleArrowImageHeight;
       }
     }
-    
+
     if (values.fromArrow) {
-      this.edgeType.drawArrowHead(ctx, values, this.selected, this.hover, arrowData.from);
+      this.edgeType.drawArrowHead(
+        ctx,
+        values,
+        this.selected,
+        this.hover,
+        arrowData.from
+      );
     }
     if (values.middleArrow) {
-      this.edgeType.drawArrowHead(ctx, values, this.selected, this.hover, arrowData.middle);
+      this.edgeType.drawArrowHead(
+        ctx,
+        values,
+        this.selected,
+        this.hover,
+        arrowData.middle
+      );
     }
     if (values.toArrow) {
-      this.edgeType.drawArrowHead(ctx, values, this.selected, this.hover, arrowData.to);
+      this.edgeType.drawArrowHead(
+        ctx,
+        values,
+        this.selected,
+        this.hover,
+        arrowData.to
+      );
     }
-    
   }
 
   /**
@@ -10198,7 +10301,7 @@ class Edge {
         // draw the label
         this.labelModule.draw(ctx, point.x, point.y, this.selected, this.hover);
 
-/*
+        /*
         // Useful debug code: draw a border around the label
         // This should **not** be enabled in production!
         var size = this.labelModule.getSize();; // ;; intentional so lint catches it
@@ -10208,8 +10311,7 @@ class Edge {
 */
 
         ctx.restore();
-      }
-      else {
+      } else {
         // Ignore the orientations.
         this.labelModule.pointToSelf = true;
 
@@ -10227,12 +10329,11 @@ class Edge {
           this.options.selfReference.size,
           this.options.selfReference.angle
         );
-        
+
         this.labelModule.draw(ctx, point.x, point.y, this.selected, this.hover);
       }
     }
   }
-
 
   /**
    * Determine all visual elements of this edge instance, in which the given
@@ -10247,27 +10348,27 @@ class Edge {
     if (this.labelModule.visible()) {
       const rotationPoint = this._getRotation();
       if (pointInRect(this.labelModule.getSize(), point, rotationPoint)) {
-        ret.push({edgeId:this.id, labelId:0});
+        ret.push({ edgeId: this.id, labelId: 0 });
       }
     }
 
     const obj = {
       left: point.x,
-      top: point.y
+      top: point.y,
     };
 
     if (this.isOverlappingWith(obj)) {
-      ret.push({edgeId:this.id});
+      ret.push({ edgeId: this.id });
     }
 
     return ret;
   }
 
-
   /**
    * Check if this object is overlapping with the provided object
-   * @param {Object} obj   an object with parameters left, top
-   * @return {boolean}     True if location is located on the edge
+   *
+   * @param {object} obj   an object with parameters left, top
+   * @returns {boolean}     True if location is located on the edge
    */
   isOverlappingWith(obj) {
     if (this.connected) {
@@ -10279,17 +10380,22 @@ class Edge {
       const xObj = obj.left;
       const yObj = obj.top;
 
-      const dist = this.edgeType.getDistanceToEdge(xFrom, yFrom, xTo, yTo, xObj, yObj);
+      const dist = this.edgeType.getDistanceToEdge(
+        xFrom,
+        yFrom,
+        xTo,
+        yTo,
+        xObj,
+        yObj
+      );
 
-      return (dist < distMax);
-    }
-    else {
-      return false
+      return dist < distMax;
+    } else {
+      return false;
     }
   }
 
-
-  /** 
+  /**
    * Determine the rotation point, if any.
    *
    * @param {CanvasRenderingContext2D} [ctx] if passed, do a recalculation of the label size
@@ -10301,26 +10407,32 @@ class Edge {
     const point = this.edgeType.getPoint(0.5, viaNode);
 
     if (ctx !== undefined) {
-      this.labelModule.calculateLabelSize(ctx, this.selected, this.hover, point.x, point.y);
+      this.labelModule.calculateLabelSize(
+        ctx,
+        this.selected,
+        this.hover,
+        point.x,
+        point.y
+      );
     }
 
     const ret = {
       x: point.x,
       y: this.labelModule.size.yLine,
-      angle: 0
+      angle: 0,
     };
 
     if (!this.labelModule.visible()) {
-      return ret;  // Don't even bother doing the atan2, there's nothing to draw
+      return ret; // Don't even bother doing the atan2, there's nothing to draw
     }
 
     if (this.options.font.align === "horizontal") {
-      return ret;  // No need to calculate angle
+      return ret; // No need to calculate angle
     }
 
     const dy = this.from.y - this.to.y;
     const dx = this.from.x - this.to.x;
-    let angle = Math.atan2(dy, dx);  // radians
+    let angle = Math.atan2(dy, dx); // radians
 
     // rotate so that label is readable
     if ((angle < -1 && dx < 0) || (angle > 0 && dx < 0)) {
@@ -10331,21 +10443,21 @@ class Edge {
     return ret;
   }
 
-
   /**
    * Get a point on a circle
+   *
    * @param {number} x
    * @param {number} y
    * @param {number} radius
-   * @param {number} angle 
-   * @return {Object} point
+   * @param {number} angle
+   * @returns {object} point
    * @private
    */
   _pointOnCircle(x, y, radius, angle) {
     return {
       x: x + radius * Math.cos(angle),
-      y: y - radius * Math.sin(angle)
-    }
+      y: y - radius * Math.sin(angle),
+    };
   }
 
   /**
@@ -10362,15 +10474,14 @@ class Edge {
     this.selected = false;
   }
 
-
   /**
    * cleans all required things on delete
+   *
    * @returns {*}
    */
   cleanup() {
     return this.edgeType.cleanup();
   }
-
 
   /**
    * Remove edge from the list and perform necessary cleanup.
@@ -10381,14 +10492,16 @@ class Edge {
     delete this.body.edges[this.id];
   }
 
-
   /**
    * Check if both connecting nodes exist
+   *
    * @returns {boolean}
    */
   endPointsValid() {
-    return this.body.nodes[this.fromId] !== undefined
-        && this.body.nodes[this.toId]   !== undefined;
+    return (
+      this.body.nodes[this.fromId] !== undefined &&
+      this.body.nodes[this.toId] !== undefined
+    );
   }
 }
 
@@ -10397,7 +10510,7 @@ class Edge {
  */
 class EdgesHandler {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Array.<Image>} images
    * @param {Array.<Group>} groups
    */
@@ -10410,56 +10523,62 @@ class EdgesHandler {
     this.body.functions.createEdge = this.create.bind(this);
 
     this.edgesListeners = {
-      add:    (event, params) => {this.add(params.items);},
-      update: (event, params) => {this.update(params.items);},
-      remove: (event, params) => {this.remove(params.items);}
+      add: (event, params) => {
+        this.add(params.items);
+      },
+      update: (event, params) => {
+        this.update(params.items);
+      },
+      remove: (event, params) => {
+        this.remove(params.items);
+      },
     };
 
     this.options = {};
     this.defaultOptions = {
       arrows: {
-        to:     {enabled: false, scaleFactor:1, type: 'arrow'},// boolean / {arrowScaleFactor:1} / {enabled: false, arrowScaleFactor:1}
-        middle: {enabled: false, scaleFactor:1, type: 'arrow'},
-        from:   {enabled: false, scaleFactor:1, type: 'arrow'}
+        to: { enabled: false, scaleFactor: 1, type: "arrow" }, // boolean / {arrowScaleFactor:1} / {enabled: false, arrowScaleFactor:1}
+        middle: { enabled: false, scaleFactor: 1, type: "arrow" },
+        from: { enabled: false, scaleFactor: 1, type: "arrow" },
       },
       endPointOffset: {
-        from: 0, 
-        to: 0
+        from: 0,
+        to: 0,
       },
       arrowStrikethrough: true,
       color: {
-        color:'#848484',
-        highlight:'#848484',
-        hover: '#848484',
-        inherit: 'from',
-        opacity:1.0
+        color: "#848484",
+        highlight: "#848484",
+        hover: "#848484",
+        inherit: "from",
+        opacity: 1.0,
       },
       dashes: false,
       font: {
-        color: '#343434',
+        color: "#343434",
         size: 14, // px
-        face: 'arial',
-        background: 'none',
+        face: "arial",
+        background: "none",
         strokeWidth: 2, // px
-        strokeColor: '#ffffff',
-        align:'horizontal',
+        strokeColor: "#ffffff",
+        align: "horizontal",
         multi: false,
         vadjust: 0,
         bold: {
-          mod: 'bold'
+          mod: "bold",
         },
         boldital: {
-          mod: 'bold italic'
+          mod: "bold italic",
         },
         ital: {
-          mod: 'italic'
+          mod: "italic",
         },
         mono: {
-          mod: '',
+          mod: "",
           size: 15, // px
-          face: 'courier new',
-          vadjust: 2
-        }
+          face: "courier new",
+          vadjust: 2,
+        },
       },
       hidden: false,
       hoverWidth: 1.5,
@@ -10467,7 +10586,7 @@ class EdgesHandler {
       labelHighlightBold: true,
       length: undefined,
       physics: true,
-      scaling:{
+      scaling: {
         min: 1,
         max: 15,
         label: {
@@ -10475,46 +10594,45 @@ class EdgesHandler {
           min: 14,
           max: 30,
           maxVisible: 30,
-          drawThreshold: 5
+          drawThreshold: 5,
         },
-        customScalingFunction: function (min,max,total,value) {
+        customScalingFunction: function (min, max, total, value) {
           if (max === min) {
             return 0.5;
-          }
-          else {
+          } else {
             const scale = 1 / (max - min);
-            return Math.max(0,(value - min)*scale);
+            return Math.max(0, (value - min) * scale);
           }
-        }
+        },
       },
       selectionWidth: 1.5,
-      selfReference: { 
+      selfReference: {
         size: 20,
         angle: Math.PI / 4,
-        renderBehindTheNode: true
+        renderBehindTheNode: true,
       },
-      shadow:{
+      shadow: {
         enabled: false,
-        color: 'rgba(0,0,0,0.5)',
-        size:10,
-        x:5,
-        y:5
+        color: "rgba(0,0,0,0.5)",
+        size: 10,
+        x: 5,
+        y: 5,
       },
-      background:{
+      background: {
         enabled: false,
-        color: 'rgba(111,111,111,1)',
-        size:10,
-        dashes: false
+        color: "rgba(111,111,111,1)",
+        size: 10,
+        dashes: false,
       },
       smooth: {
         enabled: true,
         type: "dynamic",
-        forceDirection:'none',
-        roundness: 0.5
+        forceDirection: "none",
+        roundness: 0.5,
       },
-      title:undefined,
+      title: undefined,
       width: 1,
-      value: undefined
+      value: undefined,
     };
 
     deepExtend(this.options, this.defaultOptions);
@@ -10528,8 +10646,8 @@ class EdgesHandler {
   bindEventListeners() {
     // this allows external modules to force all dynamic curves to turn static.
     this.body.emitter.on("_forceDisableDynamicCurves", (type, emit = true) => {
-      if (type === 'dynamic') {
-        type = 'continuous';
+      if (type === "dynamic") {
+        type = "continuous";
       }
       let dataChanged = false;
       for (const edgeId in this.body.edges) {
@@ -10542,12 +10660,14 @@ class EdgesHandler {
           if (edgeData != null) {
             const smoothOptions = edgeData.smooth;
             if (smoothOptions !== undefined) {
-              if (smoothOptions.enabled === true && smoothOptions.type === 'dynamic') {
+              if (
+                smoothOptions.enabled === true &&
+                smoothOptions.type === "dynamic"
+              ) {
                 if (type === undefined) {
-                  edge.setOptions({smooth: false});
-                }
-                else {
-                  edge.setOptions({smooth: {type: type}});
+                  edge.setOptions({ smooth: false });
+                } else {
+                  edge.setOptions({ smooth: { type: type } });
                 }
                 dataChanged = true;
               }
@@ -10574,11 +10694,10 @@ class EdgesHandler {
 
     // refresh the edges. Used when reverting from hierarchical layout
     this.body.emitter.on("refreshEdges", this.refresh.bind(this));
-    this.body.emitter.on("refresh",      this.refresh.bind(this));
-    this.body.emitter.on("destroy",      () => {
+    this.body.emitter.on("refresh", this.refresh.bind(this));
+    this.body.emitter.on("destroy", () => {
       forEach(this.edgesListeners, (callback, event) => {
-        if (this.body.data.edges)
-          this.body.data.edges.off(event, callback);
+        if (this.body.data.edges) this.body.data.edges.off(event, callback);
       });
       delete this.body.functions.createEdge;
       delete this.edgesListeners.add;
@@ -10586,12 +10705,11 @@ class EdgesHandler {
       delete this.edgesListeners.remove;
       delete this.edgesListeners;
     });
-
   }
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
@@ -10603,7 +10721,8 @@ class EdgesHandler {
       if (options.smooth !== undefined) {
         for (const edgeId in this.body.edges) {
           if (Object.prototype.hasOwnProperty.call(this.body.edges, edgeId)) {
-            dataChanged = this.body.edges[edgeId].updateEdgeType() || dataChanged;
+            dataChanged =
+              this.body.edges[edgeId].updateEdgeType() || dataChanged;
           }
         }
       }
@@ -10618,40 +10737,43 @@ class EdgesHandler {
       }
 
       // update the state of the variables if needed
-      if (options.hidden !== undefined || options.physics !== undefined  || dataChanged === true) {
-        this.body.emitter.emit('_dataChanged');
+      if (
+        options.hidden !== undefined ||
+        options.physics !== undefined ||
+        dataChanged === true
+      ) {
+        this.body.emitter.emit("_dataChanged");
       }
     }
   }
 
-
   /**
    * Load edges by reading the data table
+   *
    * @param {Array | DataSet | DataView} edges    The data containing the edges.
-   * @param {boolean} [doNotEmit=false]
+   * @param {boolean} [doNotEmit=false] - Suppress data changed event.
    * @private
    */
   setData(edges, doNotEmit = false) {
     const oldEdgesData = this.body.data.edges;
 
-    if (edges instanceof DataSet || edges instanceof DataView) {
+    if (isDataViewLike("id", edges)) {
       this.body.data.edges = edges;
-    }
-    else if (Array.isArray(edges)) {
+    } else if (Array.isArray(edges)) {
       this.body.data.edges = new DataSet();
       this.body.data.edges.add(edges);
-    }
-    else if (!edges) {
+    } else if (!edges) {
       this.body.data.edges = new DataSet();
-    }
-    else {
-      throw new TypeError('Array or DataSet expected');
+    } else {
+      throw new TypeError("Array or DataSet expected");
     }
 
     // TODO: is this null or undefined or false?
     if (oldEdgesData) {
       // unsubscribe from old dataset
-      forEach(this.edgesListeners, (callback, event) => {oldEdgesData.off(event, callback);});
+      forEach(this.edgesListeners, (callback, event) => {
+        oldEdgesData.off(event, callback);
+      });
     }
 
     // remove drawn edges
@@ -10660,22 +10782,24 @@ class EdgesHandler {
     // TODO: is this null or undefined or false?
     if (this.body.data.edges) {
       // subscribe to new dataset
-      forEach(this.edgesListeners, (callback, event) =>  {this.body.data.edges.on(event, callback);});
+      forEach(this.edgesListeners, (callback, event) => {
+        this.body.data.edges.on(event, callback);
+      });
 
       // draw all new nodes
       const ids = this.body.data.edges.getIds();
       this.add(ids, true);
     }
 
-    this.body.emitter.emit('_adjustEdgesForHierarchicalLayout');
+    this.body.emitter.emit("_adjustEdgesForHierarchicalLayout");
     if (doNotEmit === false) {
       this.body.emitter.emit("_dataChanged");
     }
   }
 
-
   /**
    * Add edges
+   *
    * @param {number[] | string[]} ids
    * @param {boolean} [doNotEmit=false]
    * @private
@@ -10692,21 +10816,20 @@ class EdgesHandler {
         oldEdge.disconnect();
       }
 
-      const data = edgesData.get(id, {"showInternalIds" : true});
+      const data = edgesData.get(id, { showInternalIds: true });
       edges[id] = this.create(data);
     }
 
-    this.body.emitter.emit('_adjustEdgesForHierarchicalLayout');
+    this.body.emitter.emit("_adjustEdgesForHierarchicalLayout");
 
     if (doNotEmit === false) {
       this.body.emitter.emit("_dataChanged");
     }
   }
 
-
-
   /**
    * Update existing edges, or create them when not yet existing
+   *
    * @param {number[] | string[]} ids
    * @private
    */
@@ -10723,8 +10846,7 @@ class EdgesHandler {
         edge.disconnect();
         dataChanged = edge.setOptions(data) || dataChanged; // if a support node is added, data can be changed.
         edge.connect();
-      }
-      else {
+      } else {
         // create edge
         this.body.edges[id] = this.create(data);
         dataChanged = true;
@@ -10732,23 +10854,22 @@ class EdgesHandler {
     }
 
     if (dataChanged === true) {
-      this.body.emitter.emit('_adjustEdgesForHierarchicalLayout');
+      this.body.emitter.emit("_adjustEdgesForHierarchicalLayout");
       this.body.emitter.emit("_dataChanged");
-    }
-    else {
+    } else {
       this.body.emitter.emit("_dataUpdated");
     }
   }
 
-
   /**
    * Remove existing edges. Non existing ids will be ignored
+   *
    * @param {number[] | string[]} ids
    * @param {boolean} [emit=true]
    * @private
    */
   remove(ids, emit = true) {
-    if (ids.length === 0) return;  // early out
+    if (ids.length === 0) return; // early out
 
     const edges = this.body.edges;
     forEach(ids, (id) => {
@@ -10777,7 +10898,7 @@ class EdgesHandler {
 
   /**
    *
-   * @param {Object} properties
+   * @param {object} properties
    * @returns {Edge}
    */
   create(properties) {
@@ -10792,6 +10913,7 @@ class EdgesHandler {
 
   /**
    * Reconnect all edges
+   *
    * @private
    */
   reconnectEdges() {
@@ -10824,8 +10946,12 @@ class EdgesHandler {
     const nodeList = [];
     if (this.body.edges[edgeId] !== undefined) {
       const edge = this.body.edges[edgeId];
-      if (edge.fromId !== undefined) {nodeList.push(edge.fromId);}
-      if (edge.toId !== undefined)   {nodeList.push(edge.toId);}
+      if (edge.fromId !== undefined) {
+        nodeList.push(edge.fromId);
+      }
+      if (edge.toId !== undefined) {
+        nodeList.push(edge.toId);
+      }
     }
     return nodeList;
   }
@@ -10841,10 +10967,10 @@ class EdgesHandler {
 
   /**
    * Scan for missing nodes and remove corresponding edges, if any.
+   *
    * @private
    */
   _removeInvalidEdges() {
-    
     const edgesToDelete = [];
 
     forEach(this.body.edges, (edge, id) => {
@@ -10852,8 +10978,10 @@ class EdgesHandler {
       const fromNode = this.body.nodes[edge.fromId];
 
       // Skip clustering edges here, let the Clustering module handle those
-      if ((toNode   !== undefined && toNode.isCluster   === true)
-       || (fromNode !== undefined && fromNode.isCluster === true)) {
+      if (
+        (toNode !== undefined && toNode.isCluster === true) ||
+        (fromNode !== undefined && fromNode.isCluster === true)
+      ) {
         return;
       }
 
@@ -10867,26 +10995,27 @@ class EdgesHandler {
 
   /**
    * add all edges from dataset that are not in the cached state
+   *
    * @private
-   */ 
+   */
   _addMissingEdges() {
-     const edgesData = this.body.data.edges;
-     if (edgesData === undefined || edgesData === null) {
-       return;  // No edges DataSet yet; can happen on startup 
-     }
+    const edgesData = this.body.data.edges;
+    if (edgesData === undefined || edgesData === null) {
+      return; // No edges DataSet yet; can happen on startup
+    }
 
-     const edges = this.body.edges;
-     const addIds = [];
+    const edges = this.body.edges;
+    const addIds = [];
 
-     edgesData.forEach((edgeData, edgeId) => {
-         const edge = edges[edgeId];
-         if(edge===undefined) {
-           addIds.push(edgeId);
-         }
-     });
-     
-     this.add(addIds,true);
-   }  
+    edgesData.forEach((edgeData, edgeId) => {
+      const edge = edges[edgeId];
+      if (edge === undefined) {
+        addIds.push(edgeId);
+      }
+    });
+
+    this.add(addIds, true);
+  }
 }
 
 /**
@@ -10894,9 +11023,9 @@ class EdgesHandler {
  */
 class BarnesHutSolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     this.body = body;
@@ -10911,14 +11040,15 @@ class BarnesHutSolver {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
     this.thetaInversed = 1 / this.options.theta;
 
     // if 1 then min distance = 0.5, if 0.5 then min distance = 0.5 + 0.5*node.shape.radius
-    this.overlapAvoidanceFactor = 1 - Math.max(0, Math.min(1, this.options.avoidOverlap));
+    this.overlapAvoidanceFactor =
+      1 - Math.max(0, Math.min(1, this.options.avoidOverlap));
   }
 
   /**
@@ -10928,7 +11058,10 @@ class BarnesHutSolver {
    * @private
    */
   solve() {
-    if (this.options.gravitationalConstant !== 0 && this.physicsBody.physicsNodeIndices.length > 0) {
+    if (
+      this.options.gravitationalConstant !== 0 &&
+      this.physicsBody.physicsNodeIndices.length > 0
+    ) {
       let node;
       const nodes = this.body.nodes;
       const nodeIndices = this.physicsBody.physicsNodeIndices;
@@ -10951,9 +11084,8 @@ class BarnesHutSolver {
     }
   }
 
-
   /**
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @param {Node} node
    * @private
    */
@@ -10964,12 +11096,11 @@ class BarnesHutSolver {
     this._getForceContribution(parentBranch.children.SE, node);
   }
 
-
   /**
    * This function traverses the barnesHutTree. It checks when it can approximate distant nodes with their center of mass.
    * If a region contains a single node, we check if it is not itself, then we apply the force.
    *
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @param {Node} node
    * @private
    */
@@ -10986,21 +11117,20 @@ class BarnesHutSolver {
       // calcSize = 1/s --> d * 1/s > 1/theta = passed
       if (distance * parentBranch.calcSize > this.thetaInversed) {
         this._calculateForces(distance, dx, dy, node, parentBranch);
-      }
-      else {
+      } else {
         // Did not pass the condition, go into children if available
         if (parentBranch.childrenCount === 4) {
           this._getForceContributions(parentBranch, node);
-        }
-        else { // parentBranch must have only one node, if it was empty we wouldnt be here
-          if (parentBranch.children.data.id != node.id) { // if it is not self
+        } else {
+          // parentBranch must have only one node, if it was empty we wouldnt be here
+          if (parentBranch.children.data.id != node.id) {
+            // if it is not self
             this._calculateForces(distance, dx, dy, node, parentBranch);
           }
         }
       }
     }
   }
-
 
   /**
    * Calculate the forces based on the distance.
@@ -11009,7 +11139,7 @@ class BarnesHutSolver {
    * @param {number} dx
    * @param {number} dy
    * @param {Node} node
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @private
    */
   _calculateForces(distance, dx, dy, node, parentBranch) {
@@ -11019,19 +11149,25 @@ class BarnesHutSolver {
     }
 
     if (this.overlapAvoidanceFactor < 1 && node.shape.radius) {
-      distance = Math.max(0.1 + (this.overlapAvoidanceFactor * node.shape.radius), distance - node.shape.radius);
+      distance = Math.max(
+        0.1 + this.overlapAvoidanceFactor * node.shape.radius,
+        distance - node.shape.radius
+      );
     }
 
     // the dividing by the distance cubed instead of squared allows us to get the fx and fy components without sines and cosines
     // it is shorthand for gravityforce with distance squared and fx = dx/distance * gravityForce
-    const gravityForce = this.options.gravitationalConstant * parentBranch.mass * node.options.mass / Math.pow(distance,3);
+    const gravityForce =
+      (this.options.gravitationalConstant *
+        parentBranch.mass *
+        node.options.mass) /
+      Math.pow(distance, 3);
     const fx = dx * gravityForce;
     const fy = dy * gravityForce;
 
     this.physicsBody.forces[node.id].x += fx;
     this.physicsBody.forces[node.id].y += fy;
   }
-
 
   /**
    * This function constructs the barnesHut tree recursively. It creates the root, splits it and starts placing the nodes.
@@ -11081,28 +11217,30 @@ class BarnesHutSolver {
       maxX -= 0.5 * sizeDiff;
     } // xSize < ySize
 
-
     const minimumTreeSize = 1e-5;
     const rootSize = Math.max(minimumTreeSize, Math.abs(maxX - minX));
     const halfRootSize = 0.5 * rootSize;
-    const centerX = 0.5 * (minX + maxX), centerY = 0.5 * (minY + maxY);
+    const centerX = 0.5 * (minX + maxX),
+      centerY = 0.5 * (minY + maxY);
 
     // construct the barnesHutTree
     const barnesHutTree = {
       root: {
-        centerOfMass: {x: 0, y: 0},
+        centerOfMass: { x: 0, y: 0 },
         mass: 0,
         range: {
-          minX: centerX - halfRootSize, maxX: centerX + halfRootSize,
-          minY: centerY - halfRootSize, maxY: centerY + halfRootSize
+          minX: centerX - halfRootSize,
+          maxX: centerX + halfRootSize,
+          minY: centerY - halfRootSize,
+          maxY: centerY + halfRootSize,
         },
         size: rootSize,
         calcSize: 1 / rootSize,
-        children: {data: null},
+        children: { data: null },
         maxWidth: 0,
         level: 0,
-        childrenCount: 4
-      }
+        childrenCount: 4,
+      },
     };
     this._splitBranch(barnesHutTree.root);
 
@@ -11115,14 +11253,13 @@ class BarnesHutSolver {
     }
 
     // make global
-    return barnesHutTree
+    return barnesHutTree;
   }
-
 
   /**
    * this updates the mass of a branch. this is increased by adding a node.
    *
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @param {Node} node
    * @private
    */
@@ -11131,23 +11268,27 @@ class BarnesHutSolver {
     const totalMass = parentBranch.mass + node.options.mass;
     const totalMassInv = 1 / totalMass;
 
-    centerOfMass.x = centerOfMass.x * parentBranch.mass + node.x * node.options.mass;
+    centerOfMass.x =
+      centerOfMass.x * parentBranch.mass + node.x * node.options.mass;
     centerOfMass.x *= totalMassInv;
 
-    centerOfMass.y = centerOfMass.y * parentBranch.mass + node.y * node.options.mass;
+    centerOfMass.y =
+      centerOfMass.y * parentBranch.mass + node.y * node.options.mass;
     centerOfMass.y *= totalMassInv;
 
     parentBranch.mass = totalMass;
-    const biggestSize = Math.max(Math.max(node.height, node.radius), node.width);
-    parentBranch.maxWidth = (parentBranch.maxWidth < biggestSize) ? biggestSize : parentBranch.maxWidth;
-
+    const biggestSize = Math.max(
+      Math.max(node.height, node.radius),
+      node.width
+    );
+    parentBranch.maxWidth =
+      parentBranch.maxWidth < biggestSize ? biggestSize : parentBranch.maxWidth;
   }
-
 
   /**
    * determine in which branch the node will be placed.
    *
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @param {Node} node
    * @param {boolean} skipMassUpdate
    * @private
@@ -11160,19 +11301,18 @@ class BarnesHutSolver {
 
     const range = parentBranch.children.NW.range;
     let region;
-    if (range.maxX > node.x) { // in NW or SW
+    if (range.maxX > node.x) {
+      // in NW or SW
       if (range.maxY > node.y) {
         region = "NW";
-      }
-      else {
+      } else {
         region = "SW";
       }
-    }
-    else { // in NE or SE
+    } else {
+      // in NE or SE
       if (range.maxY > node.y) {
         region = "NE";
-      }
-      else {
+      } else {
         region = "SE";
       }
     }
@@ -11180,11 +11320,10 @@ class BarnesHutSolver {
     this._placeInRegion(parentBranch, node, region);
   }
 
-
   /**
    * actually place the node in a region (or branch)
    *
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @param {Node} node
    * @param {'NW'| 'NE' | 'SW' | 'SE'} region
    * @private
@@ -11199,13 +11338,15 @@ class BarnesHutSolver {
         this._updateBranchMass(children, node);
         break;
       case 1: // convert into children
-              // if there are two nodes exactly overlapping (on init, on opening of cluster etc.)
-              // we move one node a little bit and we do not put it in the tree.
-        if (children.children.data.x === node.x && children.children.data.y === node.y) {
+        // if there are two nodes exactly overlapping (on init, on opening of cluster etc.)
+        // we move one node a little bit and we do not put it in the tree.
+        if (
+          children.children.data.x === node.x &&
+          children.children.data.y === node.y
+        ) {
           node.x += this._rng();
           node.y += this._rng();
-        }
-        else {
+        } else {
           this._splitBranch(children);
           this._placeInTree(children, node);
         }
@@ -11216,12 +11357,11 @@ class BarnesHutSolver {
     }
   }
 
-
   /**
    * this function splits a branch into 4 sub branches. If the branch contained a node, we place it in the subbranch
    * after the split is complete.
    *
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @private
    */
   _splitBranch(parentBranch) {
@@ -11245,13 +11385,12 @@ class BarnesHutSolver {
     }
   }
 
-
   /**
    * This function subdivides the region into four new segments.
    * Specifically, this inserts a single new segment.
    * It fills the children section of the parentBranch
    *
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @param {'NW'| 'NE' | 'SW' | 'SE'} region
    * @private
    */
@@ -11285,23 +11424,20 @@ class BarnesHutSolver {
         break;
     }
 
-
     parentBranch.children[region] = {
-      centerOfMass: {x: 0, y: 0},
+      centerOfMass: { x: 0, y: 0 },
       mass: 0,
-      range: {minX: minX, maxX: maxX, minY: minY, maxY: maxY},
+      range: { minX: minX, maxX: maxX, minY: minY, maxY: maxY },
       size: 0.5 * parentBranch.size,
       calcSize: 2 * parentBranch.calcSize,
-      children: {data: null},
+      children: { data: null },
       maxWidth: 0,
       level: parentBranch.level + 1,
-      childrenCount: 0
+      childrenCount: 0,
     };
   }
 
-
   //---------------------------  DEBUGGING BELOW  ---------------------------//
-
 
   /**
    * This function is for debugging purposed, it draws the tree.
@@ -11312,18 +11448,16 @@ class BarnesHutSolver {
    */
   _debug(ctx, color) {
     if (this.barnesHutTree !== undefined) {
-
       ctx.lineWidth = 1;
 
       this._drawBranch(this.barnesHutTree.root, ctx, color);
     }
   }
 
-
   /**
    * This function is for debugging purposes. It draws the branches recursively.
    *
-   * @param {Object} branch
+   * @param {object} branch
    * @param {CanvasRenderingContext2D} ctx
    * @param {string} color
    * @private
@@ -11374,9 +11508,9 @@ class BarnesHutSolver {
  */
 class RepulsionSolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     this._rng = Alea("REPULSION SOLVER");
@@ -11388,7 +11522,7 @@ class RepulsionSolver {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
@@ -11411,7 +11545,7 @@ class RepulsionSolver {
     const nodeDistance = this.options.nodeDistance;
 
     // approximation constants
-    const a = (-2 / 3) / nodeDistance;
+    const a = -2 / 3 / nodeDistance;
     const b = 4 / 3;
 
     // we loop from i over all but the last entree in the array
@@ -11434,8 +11568,7 @@ class RepulsionSolver {
         if (distance < 2 * nodeDistance) {
           if (distance < 0.5 * nodeDistance) {
             repulsingForce = 1.0;
-          }
-          else {
+          } else {
             repulsingForce = a * distance + b; // linear approx of  1 / (1 + Math.exp((distance / nodeDistance - 1) * steepness))
           }
           repulsingForce = repulsingForce / distance;
@@ -11458,9 +11591,9 @@ class RepulsionSolver {
  */
 class HierarchicalRepulsionSolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     this.body = body;
@@ -11470,7 +11603,7 @@ class HierarchicalRepulsionSolver {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
@@ -11543,9 +11676,9 @@ class HierarchicalRepulsionSolver {
  */
 class SpringSolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     this.body = body;
@@ -11555,7 +11688,7 @@ class SpringSolver {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
@@ -11577,29 +11710,57 @@ class SpringSolver {
       edge = edges[edgeIndices[i]];
       if (edge.connected === true && edge.toId !== edge.fromId) {
         // only calculate forces if nodes are in the same sector
-        if (this.body.nodes[edge.toId] !== undefined && this.body.nodes[edge.fromId] !== undefined) {
+        if (
+          this.body.nodes[edge.toId] !== undefined &&
+          this.body.nodes[edge.fromId] !== undefined
+        ) {
           if (edge.edgeType.via !== undefined) {
-            edgeLength = edge.options.length === undefined ? this.options.springLength : edge.options.length;
-            edgeSpringConstant = edge.options.springConstant === undefined ? this.options.springConstant : edge.options.springConstant;
+            edgeLength =
+              edge.options.length === undefined
+                ? this.options.springLength
+                : edge.options.length;
+            edgeSpringConstant =
+              edge.options.springConstant === undefined
+                ? this.options.springConstant
+                : edge.options.springConstant;
             node1 = edge.to;
             node2 = edge.edgeType.via;
             node3 = edge.from;
 
-            this._calculateSpringForce(node1, node2, 0.5 * edgeLength, edgeSpringConstant);
-            this._calculateSpringForce(node2, node3, 0.5 * edgeLength, edgeSpringConstant);
-          }
-          else {
+            this._calculateSpringForce(
+              node1,
+              node2,
+              0.5 * edgeLength,
+              edgeSpringConstant
+            );
+            this._calculateSpringForce(
+              node2,
+              node3,
+              0.5 * edgeLength,
+              edgeSpringConstant
+            );
+          } else {
             // the * 1.5 is here so the edge looks as large as a smooth edge. It does not initially because the smooth edges use
             // the support nodes which exert a repulsive force on the to and from nodes, making the edge appear larger.
-            edgeLength = edge.options.length === undefined ? this.options.springLength * 1.5: edge.options.length;
-            edgeSpringConstant = edge.options.springConstant === undefined ? this.options.springConstant : edge.options.springConstant;
-            this._calculateSpringForce(edge.from, edge.to, edgeLength, edgeSpringConstant);
+            edgeLength =
+              edge.options.length === undefined
+                ? this.options.springLength * 1.5
+                : edge.options.length;
+            edgeSpringConstant =
+              edge.options.springConstant === undefined
+                ? this.options.springConstant
+                : edge.options.springConstant;
+            this._calculateSpringForce(
+              edge.from,
+              edge.to,
+              edgeLength,
+              edgeSpringConstant
+            );
           }
         }
       }
     }
   }
-
 
   /**
    * This is the code actually performing the calculation for the function above.
@@ -11610,12 +11771,13 @@ class SpringSolver {
    * @private
    */
   _calculateSpringForce(node1, node2, edgeLength, edgeSpringConstant) {
-    const dx = (node1.x - node2.x);
-    const dy = (node1.y - node2.y);
-    const distance = Math.max(Math.sqrt(dx * dx + dy * dy),0.01);
+    const dx = node1.x - node2.x;
+    const dy = node1.y - node2.y;
+    const distance = Math.max(Math.sqrt(dx * dx + dy * dy), 0.01);
 
     // the 1/distance is so the fx and fy can be calculated without sine or cosine.
-    const springForce = edgeSpringConstant * (edgeLength - distance) / distance;
+    const springForce =
+      (edgeSpringConstant * (edgeLength - distance)) / distance;
 
     const fx = dx * springForce;
     const fy = dy * springForce;
@@ -11638,9 +11800,9 @@ class SpringSolver {
  */
 class HierarchicalSpringSolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     this.body = body;
@@ -11650,7 +11812,7 @@ class HierarchicalSpringSolver {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
@@ -11678,20 +11840,23 @@ class HierarchicalSpringSolver {
       forces[nodeId].springFy = 0;
     }
 
-
     // forces caused by the edges, modelled as springs
     for (let i = 0; i < edgeIndices.length; i++) {
       edge = edges[edgeIndices[i]];
       if (edge.connected === true) {
-        edgeLength = edge.options.length === undefined ? this.options.springLength : edge.options.length;
+        edgeLength =
+          edge.options.length === undefined
+            ? this.options.springLength
+            : edge.options.length;
 
-        dx = (edge.from.x - edge.to.x);
-        dy = (edge.from.y - edge.to.y);
+        dx = edge.from.x - edge.to.x;
+        dy = edge.from.y - edge.to.y;
         distance = Math.sqrt(dx * dx + dy * dy);
         distance = distance === 0 ? 0.01 : distance;
 
         // the 1/distance is so the fx and fy can be calculated without sine or cosine.
-        springForce = this.options.springConstant * (edgeLength - distance) / distance;
+        springForce =
+          (this.options.springConstant * (edgeLength - distance)) / distance;
 
         fx = dx * springForce;
         fy = dy * springForce;
@@ -11705,8 +11870,7 @@ class HierarchicalSpringSolver {
             forces[edge.fromId].springFx += fx;
             forces[edge.fromId].springFy += fy;
           }
-        }
-        else {
+        } else {
           if (forces[edge.toId] !== undefined) {
             forces[edge.toId].x -= factor * fx;
             forces[edge.toId].y -= factor * fy;
@@ -11724,8 +11888,14 @@ class HierarchicalSpringSolver {
     let springFx, springFy;
     for (let i = 0; i < nodeIndices.length; i++) {
       const nodeId = nodeIndices[i];
-      springFx = Math.min(springForce,Math.max(-springForce,forces[nodeId].springFx));
-      springFy = Math.min(springForce,Math.max(-springForce,forces[nodeId].springFy));
+      springFx = Math.min(
+        springForce,
+        Math.max(-springForce, forces[nodeId].springFx)
+      );
+      springFy = Math.min(
+        springForce,
+        Math.max(-springForce, forces[nodeId].springFy)
+      );
 
       forces[nodeId].x += springFx;
       forces[nodeId].y += springFy;
@@ -11755,9 +11925,9 @@ class HierarchicalSpringSolver {
  */
 class CentralGravitySolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     this.body = body;
@@ -11767,7 +11937,7 @@ class CentralGravitySolver {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     this.options = options;
@@ -11795,6 +11965,7 @@ class CentralGravitySolver {
 
   /**
    * Calculate the forces based on the distance.
+   *
    * @param {number} distance
    * @param {number} dx
    * @param {number} dy
@@ -11803,20 +11974,21 @@ class CentralGravitySolver {
    * @private
    */
   _calculateForces(distance, dx, dy, forces, node) {
-    const gravityForce = (distance === 0) ? 0 : (this.options.centralGravity / distance);
+    const gravityForce =
+      distance === 0 ? 0 : this.options.centralGravity / distance;
     forces[node.id].x = dx * gravityForce;
     forces[node.id].y = dy * gravityForce;
   }
 }
 
 /**
- * @extends BarnesHutSolver
+ * @augments BarnesHutSolver
  */
 class ForceAtlas2BasedRepulsionSolver extends BarnesHutSolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     super(body, physicsBody, options);
@@ -11831,7 +12003,7 @@ class ForceAtlas2BasedRepulsionSolver extends BarnesHutSolver {
    * @param {number} dx
    * @param {number} dy
    * @param {Node} node
-   * @param {Object} parentBranch
+   * @param {object} parentBranch
    * @private
    */
   _calculateForces(distance, dx, dy, node, parentBranch) {
@@ -11841,13 +12013,21 @@ class ForceAtlas2BasedRepulsionSolver extends BarnesHutSolver {
     }
 
     if (this.overlapAvoidanceFactor < 1 && node.shape.radius) {
-      distance = Math.max(0.1 + (this.overlapAvoidanceFactor * node.shape.radius), distance - node.shape.radius);
+      distance = Math.max(
+        0.1 + this.overlapAvoidanceFactor * node.shape.radius,
+        distance - node.shape.radius
+      );
     }
 
-    const degree = (node.edges.length + 1);
+    const degree = node.edges.length + 1;
     // the dividing by the distance cubed instead of squared allows us to get the fx and fy components without sines and cosines
     // it is shorthand for gravityforce with distance squared and fx = dx/distance * gravityForce
-    const gravityForce = this.options.gravitationalConstant * parentBranch.mass * node.options.mass * degree / Math.pow(distance,2);
+    const gravityForce =
+      (this.options.gravitationalConstant *
+        parentBranch.mass *
+        node.options.mass *
+        degree) /
+      Math.pow(distance, 2);
     const fx = dx * gravityForce;
     const fy = dy * gravityForce;
 
@@ -11857,18 +12037,17 @@ class ForceAtlas2BasedRepulsionSolver extends BarnesHutSolver {
 }
 
 /**
- * @extends CentralGravitySolver
+ * @augments CentralGravitySolver
  */
 class ForceAtlas2BasedCentralGravitySolver extends CentralGravitySolver {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {{physicsNodeIndices: Array, physicsEdgeIndices: Array, forces: {}, velocities: {}}} physicsBody
-   * @param {Object} options
+   * @param {object} options
    */
   constructor(body, physicsBody, options) {
     super(body, physicsBody, options);
   }
-
 
   /**
    * Calculate the forces based on the distance.
@@ -11882,8 +12061,9 @@ class ForceAtlas2BasedCentralGravitySolver extends CentralGravitySolver {
    */
   _calculateForces(distance, dx, dy, forces, node) {
     if (distance > 0) {
-      const degree = (node.edges.length + 1);
-      const gravityForce = this.options.centralGravity * degree * node.options.mass;
+      const degree = node.edges.length + 1;
+      const gravityForce =
+        this.options.centralGravity * degree * node.options.mass;
       forces[node.id].x = dx * gravityForce;
       forces[node.id].y = dy * gravityForce;
     }
@@ -11895,11 +12075,16 @@ class ForceAtlas2BasedCentralGravitySolver extends CentralGravitySolver {
  */
 class PhysicsEngine {
   /**
-   * @param {Object} body
+   * @param {object} body
    */
   constructor(body) {
     this.body = body;
-    this.physicsBody = {physicsNodeIndices:[], physicsEdgeIndices:[], forces: {}, velocities: {}};
+    this.physicsBody = {
+      physicsNodeIndices: [],
+      physicsEdgeIndices: [],
+      forces: {},
+      velocities: {},
+    };
 
     this.physicsEnabled = true;
     this.simulationInterval = 1000 / 60;
@@ -11931,7 +12116,7 @@ class PhysicsEngine {
         springLength: 95,
         springConstant: 0.04,
         damping: 0.09,
-        avoidOverlap: 0
+        avoidOverlap: 0,
       },
       forceAtlas2Based: {
         theta: 0.5,
@@ -11940,7 +12125,7 @@ class PhysicsEngine {
         springConstant: 0.08,
         springLength: 100,
         damping: 0.4,
-        avoidOverlap: 0
+        avoidOverlap: 0,
       },
       repulsion: {
         centralGravity: 0.2,
@@ -11948,28 +12133,28 @@ class PhysicsEngine {
         springConstant: 0.05,
         nodeDistance: 100,
         damping: 0.09,
-        avoidOverlap: 0
+        avoidOverlap: 0,
       },
       hierarchicalRepulsion: {
         centralGravity: 0.0,
         springLength: 100,
         springConstant: 0.01,
         nodeDistance: 120,
-        damping: 0.09
+        damping: 0.09,
       },
       maxVelocity: 50,
-      minVelocity: 0.75,    // px/s
-      solver: 'barnesHut',
+      minVelocity: 0.75, // px/s
+      solver: "barnesHut",
       stabilization: {
         enabled: true,
-        iterations: 1000,   // maximum number of iteration to stabilize
+        iterations: 1000, // maximum number of iteration to stabilize
         updateInterval: 50,
         onlyDynamicEdges: false,
-        fit: true
+        fit: true,
       },
       timestep: 0.5,
       adaptiveTimestep: true,
-      wind: { x: 0, y: 0 }
+      wind: { x: 0, y: 0 },
     };
     Object.assign(this.options, this.defaultOptions);
     this.timestep = 0.5;
@@ -11982,23 +12167,35 @@ class PhysicsEngine {
    * Binds event listeners
    */
   bindEventListeners() {
-    this.body.emitter.on('initPhysics',     () => {this.initPhysics();});
-    this.body.emitter.on('_layoutFailed',   () => {this.layoutFailed = true;});
-    this.body.emitter.on('resetPhysics',    () => {this.stopSimulation(); this.ready = false;});
-    this.body.emitter.on('disablePhysics',  () => {this.physicsEnabled = false; this.stopSimulation();});
-    this.body.emitter.on('restorePhysics',  () => {
+    this.body.emitter.on("initPhysics", () => {
+      this.initPhysics();
+    });
+    this.body.emitter.on("_layoutFailed", () => {
+      this.layoutFailed = true;
+    });
+    this.body.emitter.on("resetPhysics", () => {
+      this.stopSimulation();
+      this.ready = false;
+    });
+    this.body.emitter.on("disablePhysics", () => {
+      this.physicsEnabled = false;
+      this.stopSimulation();
+    });
+    this.body.emitter.on("restorePhysics", () => {
       this.setOptions(this.options);
       if (this.ready === true) {
         this.startSimulation();
       }
     });
-    this.body.emitter.on('startSimulation', () => {
+    this.body.emitter.on("startSimulation", () => {
       if (this.ready === true) {
         this.startSimulation();
       }
     });
-    this.body.emitter.on('stopSimulation',  () => {this.stopSimulation();});
-    this.body.emitter.on('destroy',         () => {
+    this.body.emitter.on("stopSimulation", () => {
+      this.stopSimulation();
+    });
+    this.body.emitter.on("destroy", () => {
       this.stopSimulation(false);
       this.body.emitter.off();
     });
@@ -12011,10 +12208,10 @@ class PhysicsEngine {
     // this.body.emitter.on("afterDrawing", (ctx) => {this._drawForces(ctx);});
   }
 
-
   /**
    * set the physics options
-   * @param {Object} options
+   *
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
@@ -12022,16 +12219,14 @@ class PhysicsEngine {
         this.options.enabled = false;
         this.physicsEnabled = false;
         this.stopSimulation();
-      }
-      else if (options === true) {
+      } else if (options === true) {
         this.options.enabled = true;
         this.physicsEnabled = true;
         this.startSimulation();
-      }
-      else {
+      } else {
         this.physicsEnabled = true;
-        selectiveNotDeepExtend(['stabilization'], this.options, options);
-        mergeOptions(this.options, options, 'stabilization');
+        selectiveNotDeepExtend(["stabilization"], this.options, options);
+        mergeOptions(this.options, options, "stabilization");
 
         if (options.enabled === undefined) {
           this.options.enabled = true;
@@ -12044,10 +12239,10 @@ class PhysicsEngine {
 
         const wind = this.options.wind;
         if (wind) {
-          if (typeof wind.x !== 'number' || Number.isNaN(wind.x)) {
+          if (typeof wind.x !== "number" || Number.isNaN(wind.x)) {
             wind.x = 0;
           }
-          if (typeof wind.y !== 'number' || Number.isNaN(wind.y)) {
+          if (typeof wind.y !== "number" || Number.isNaN(wind.y)) {
             wind.y = 0;
           }
         }
@@ -12059,40 +12254,72 @@ class PhysicsEngine {
     this.init();
   }
 
-
   /**
    * configure the engine.
    */
   init() {
     let options;
-    if (this.options.solver === 'forceAtlas2Based') {
+    if (this.options.solver === "forceAtlas2Based") {
       options = this.options.forceAtlas2Based;
-      this.nodesSolver = new ForceAtlas2BasedRepulsionSolver(this.body, this.physicsBody, options);
+      this.nodesSolver = new ForceAtlas2BasedRepulsionSolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
       this.edgesSolver = new SpringSolver(this.body, this.physicsBody, options);
-      this.gravitySolver = new ForceAtlas2BasedCentralGravitySolver(this.body, this.physicsBody, options);
-    }
-    else if (this.options.solver === 'repulsion') {
+      this.gravitySolver = new ForceAtlas2BasedCentralGravitySolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
+    } else if (this.options.solver === "repulsion") {
       options = this.options.repulsion;
-      this.nodesSolver = new RepulsionSolver(this.body, this.physicsBody, options);
+      this.nodesSolver = new RepulsionSolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
       this.edgesSolver = new SpringSolver(this.body, this.physicsBody, options);
-      this.gravitySolver = new CentralGravitySolver(this.body, this.physicsBody, options);
-    }
-    else if (this.options.solver === 'hierarchicalRepulsion') {
+      this.gravitySolver = new CentralGravitySolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
+    } else if (this.options.solver === "hierarchicalRepulsion") {
       options = this.options.hierarchicalRepulsion;
-      this.nodesSolver = new HierarchicalRepulsionSolver(this.body, this.physicsBody, options);
-      this.edgesSolver = new HierarchicalSpringSolver(this.body, this.physicsBody, options);
-      this.gravitySolver = new CentralGravitySolver(this.body, this.physicsBody, options);
-    }
-    else { // barnesHut
+      this.nodesSolver = new HierarchicalRepulsionSolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
+      this.edgesSolver = new HierarchicalSpringSolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
+      this.gravitySolver = new CentralGravitySolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
+    } else {
+      // barnesHut
       options = this.options.barnesHut;
-      this.nodesSolver = new BarnesHutSolver(this.body, this.physicsBody, options);
+      this.nodesSolver = new BarnesHutSolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
       this.edgesSolver = new SpringSolver(this.body, this.physicsBody, options);
-      this.gravitySolver = new CentralGravitySolver(this.body, this.physicsBody, options);
+      this.gravitySolver = new CentralGravitySolver(
+        this.body,
+        this.physicsBody,
+        options
+      );
     }
 
     this.modelOptions = options;
   }
-
 
   /**
    * initialize the engine
@@ -12101,17 +12328,15 @@ class PhysicsEngine {
     if (this.physicsEnabled === true && this.options.enabled === true) {
       if (this.options.stabilization.enabled === true) {
         this.stabilize();
-      }
-      else {
+      } else {
         this.stabilized = false;
         this.ready = true;
-        this.body.emitter.emit('fit', {}, this.layoutFailed); // if the layout failed, we use the approximation for the zoom
+        this.body.emitter.emit("fit", {}, this.layoutFailed); // if the layout failed, we use the approximation for the zoom
         this.startSimulation();
       }
-    }
-    else {
+    } else {
       this.ready = true;
-      this.body.emitter.emit('fit');
+      this.body.emitter.emit("fit");
     }
   }
 
@@ -12129,18 +12354,17 @@ class PhysicsEngine {
       this.body.emitter.emit("_resizeNodes");
       if (this.viewFunction === undefined) {
         this.viewFunction = this.simulationStep.bind(this);
-        this.body.emitter.on('initRedraw', this.viewFunction);
-        this.body.emitter.emit('_startRendering');
+        this.body.emitter.on("initRedraw", this.viewFunction);
+        this.body.emitter.emit("_startRendering");
       }
-    }
-    else {
-      this.body.emitter.emit('_redraw');
+    } else {
+      this.body.emitter.emit("_redraw");
     }
   }
 
-
   /**
    * Stop the simulation, force stabilization.
+   *
    * @param {boolean} [emit=true]
    */
   stopSimulation(emit = true) {
@@ -12149,14 +12373,13 @@ class PhysicsEngine {
       this._emitStabilized();
     }
     if (this.viewFunction !== undefined) {
-      this.body.emitter.off('initRedraw', this.viewFunction);
+      this.body.emitter.off("initRedraw", this.viewFunction);
       this.viewFunction = undefined;
       if (emit === true) {
-        this.body.emitter.emit('_stopRendering');
+        this.body.emitter.emit("_stopRendering");
       }
     }
   }
-
 
   /**
    * The viewFunction inserts this step into each render loop. It calls the physics tick and handles the cleanup at stabilized.
@@ -12169,7 +12392,11 @@ class PhysicsEngine {
     const physicsTime = Date.now() - startTime;
 
     // run double speed if it is a little graph
-    if ((physicsTime < 0.4 * this.simulationInterval || this.runDoubleSpeed === true) && this.stabilized === false) {
+    if (
+      (physicsTime < 0.4 * this.simulationInterval ||
+        this.runDoubleSpeed === true) &&
+      this.stabilized === false
+    ) {
       this.physicsTick();
 
       // this makes sure there is no jitter. The decision is taken once to run it at double speed.
@@ -12181,7 +12408,6 @@ class PhysicsEngine {
     }
   }
 
-
   /**
    * trigger the stabilized event.
    *
@@ -12189,18 +12415,23 @@ class PhysicsEngine {
    * @private
    */
   _emitStabilized(amountOfIterations = this.stabilizationIterations) {
-    if (this.stabilizationIterations > 1 || this.startedStabilization === true) {
+    if (
+      this.stabilizationIterations > 1 ||
+      this.startedStabilization === true
+    ) {
       setTimeout(() => {
-        this.body.emitter.emit('stabilized', {iterations: amountOfIterations});
+        this.body.emitter.emit("stabilized", {
+          iterations: amountOfIterations,
+        });
         this.startedStabilization = false;
         this.stabilizationIterations = 0;
       }, 0);
     }
   }
 
-
   /**
    * Calculate the forces for one physics iteration and move the nodes.
+   *
    * @private
    */
   physicsStep() {
@@ -12210,36 +12441,33 @@ class PhysicsEngine {
     this.moveNodes();
   }
 
-
   /**
    * Make dynamic adjustments to the timestep, based on current state.
    *
    * Helper function for physicsTick().
+   *
    * @private
    */
   adjustTimeStep() {
-    const factor = 1.2;  // Factor for increasing the timestep on success.
+    const factor = 1.2; // Factor for increasing the timestep on success.
 
     // we compare the two steps. if it is acceptable we double the step.
     if (this._evaluateStepQuality() === true) {
       this.timestep = factor * this.timestep;
-    }
-    else {
+    } else {
       // if not, we decrease the step to a minimum of the options timestep.
       // if the decreased timestep is smaller than the options step, we do not reset the counter
       // we assume that the options timestep is stable enough.
-      if (this.timestep/factor < this.options.timestep) {
+      if (this.timestep / factor < this.options.timestep) {
         this.timestep = this.options.timestep;
-      }
-      else {
+      } else {
         // if the timestep was larger than 2 times the option one we check the adaptivity again to ensure
         // that large instabilities do not form.
         this.adaptiveCounter = -1; // check again next iteration
-        this.timestep = Math.max(this.options.timestep, this.timestep/factor);
+        this.timestep = Math.max(this.options.timestep, this.timestep / factor);
       }
     }
   }
-
 
   /**
    * A single simulation step (or 'tick') in the physics simulation
@@ -12247,19 +12475,22 @@ class PhysicsEngine {
    * @private
    */
   physicsTick() {
-    this._startStabilizing();  // this ensures that there is no start event when the network is already stable.
+    this._startStabilizing(); // this ensures that there is no start event when the network is already stable.
     if (this.stabilized === true) return;
 
     // adaptivity means the timestep adapts to the situation, only applicable for stabilization
-    if (this.adaptiveTimestep === true && this.adaptiveTimestepEnabled === true) {
+    if (
+      this.adaptiveTimestep === true &&
+      this.adaptiveTimestepEnabled === true
+    ) {
       // timestep remains stable for "interval" iterations.
-      const doAdaptive = (this.adaptiveCounter % this.adaptiveInterval === 0);
+      const doAdaptive = this.adaptiveCounter % this.adaptiveInterval === 0;
 
       if (doAdaptive) {
         // first the big step and revert.
         this.timestep = 2 * this.timestep;
         this.physicsStep();
-        this.revert();  // saves the reference state
+        this.revert(); // saves the reference state
 
         // now the normal step. Since this is the last step, it is the more stable one and we will take this.
         this.timestep = 0.5 * this.timestep;
@@ -12269,14 +12500,12 @@ class PhysicsEngine {
         this.physicsStep();
 
         this.adjustTimeStep();
-      }
-      else {
-        this.physicsStep();  // normal step, keeping timestep constant
+      } else {
+        this.physicsStep(); // normal step, keeping timestep constant
       }
 
       this.adaptiveCounter += 1;
-    }
-    else {
+    } else {
       // case for the static timestep, we reset it to the one in options and take a normal step.
       this.timestep = this.options.timestep;
       this.physicsStep();
@@ -12285,7 +12514,6 @@ class PhysicsEngine {
     if (this.stabilized === true) this.revert();
     this.stabilizationIterations++;
   }
-
 
   /**
    * Nodes and edges can have the physics toggles on or off. A collection of indices is created here so we can skip the check all the time.
@@ -12320,11 +12548,11 @@ class PhysicsEngine {
     // get the velocity and the forces vector
     for (let i = 0; i < this.physicsBody.physicsNodeIndices.length; i++) {
       const nodeId = this.physicsBody.physicsNodeIndices[i];
-      this.physicsBody.forces[nodeId] = {x:0,y:0};
+      this.physicsBody.forces[nodeId] = { x: 0, y: 0 };
 
       // forces can be reset because they are recalculated. Velocities have to persist.
       if (this.physicsBody.velocities[nodeId] === undefined) {
-        this.physicsBody.velocities[nodeId] = {x:0,y:0};
+        this.physicsBody.velocities[nodeId] = { x: 0, y: 0 };
       }
     }
 
@@ -12335,7 +12563,6 @@ class PhysicsEngine {
       }
     }
   }
-
 
   /**
    * Revert the simulation one step. This is done so after stabilization, every new start of the simulation will also say stabilized.
@@ -12351,15 +12578,14 @@ class PhysicsEngine {
       if (nodes[nodeId] !== undefined) {
         if (nodes[nodeId].options.physics === true) {
           this.referenceState[nodeId] = {
-            positions: {x:nodes[nodeId].x, y:nodes[nodeId].y}
+            positions: { x: nodes[nodeId].x, y: nodes[nodeId].y },
           };
           velocities[nodeId].x = this.previousStates[nodeId].vx;
           velocities[nodeId].y = this.previousStates[nodeId].vy;
           nodes[nodeId].x = this.previousStates[nodeId].x;
           nodes[nodeId].y = this.previousStates[nodeId].y;
         }
-      }
-      else {
+      } else {
         delete this.previousStates[nodeId];
       }
     }
@@ -12378,11 +12604,14 @@ class PhysicsEngine {
     const posThreshold = 0.3;
 
     for (const nodeId in this.referenceState) {
-      if (Object.prototype.hasOwnProperty.call(this.referenceState, nodeId) && nodes[nodeId] !== undefined) {
+      if (
+        Object.prototype.hasOwnProperty.call(this.referenceState, nodeId) &&
+        nodes[nodeId] !== undefined
+      ) {
         dx = nodes[nodeId].x - reference[nodeId].positions.x;
         dy = nodes[nodeId].y - reference[nodeId].positions.y;
 
-        dpos = Math.sqrt(Math.pow(dx,2) + Math.pow(dy,2));
+        dpos = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2));
 
         if (dpos > posThreshold) {
           return false;
@@ -12412,10 +12641,10 @@ class PhysicsEngine {
     }
 
     // evaluating the stabilized and adaptiveTimestepEnabled conditions
-    this.adaptiveTimestepEnabled = (averageNodeVelocity/nodeIndices.length) < velocityAdaptiveThreshold;
+    this.adaptiveTimestepEnabled =
+      averageNodeVelocity / nodeIndices.length < velocityAdaptiveThreshold;
     this.stabilized = maxNodeVelocity < this.options.minVelocity;
   }
-
 
   /**
    * Calculate new velocity for a coordinate direction
@@ -12426,21 +12655,20 @@ class PhysicsEngine {
    * @returns {number} new velocity for current coordinate
    * @private
    */
-  calculateComponentVelocity(v,f, m) {
-    const df = this.modelOptions.damping * v;   // damping force
-    const a  = (f - df) / m;    // acceleration
+  calculateComponentVelocity(v, f, m) {
+    const df = this.modelOptions.damping * v; // damping force
+    const a = (f - df) / m; // acceleration
 
     v += a * this.timestep;
 
     // Put a limit on the velocities if it is really high
     const maxV = this.options.maxVelocity || 1e9;
     if (Math.abs(v) > maxV) {
-      v = ((v > 0) ? maxV: -maxV);
+      v = v > 0 ? maxV : -maxV;
     }
 
     return v;
   }
-
 
   /**
    * Perform the actual step
@@ -12461,30 +12689,42 @@ class PhysicsEngine {
     const velocity = this.physicsBody.velocities[nodeId];
 
     // store the state so we can revert
-    this.previousStates[nodeId] = {x:node.x, y:node.y, vx:velocity.x, vy:velocity.y};
+    this.previousStates[nodeId] = {
+      x: node.x,
+      y: node.y,
+      vx: velocity.x,
+      vy: velocity.y,
+    };
 
     if (node.options.fixed.x === false) {
-      velocity.x = this.calculateComponentVelocity(velocity.x, force.x, node.options.mass);
+      velocity.x = this.calculateComponentVelocity(
+        velocity.x,
+        force.x,
+        node.options.mass
+      );
       node.x += velocity.x * this.timestep;
-    }
-    else {
+    } else {
       force.x = 0;
       velocity.x = 0;
     }
 
     if (node.options.fixed.y === false) {
-      velocity.y = this.calculateComponentVelocity(velocity.y, force.y, node.options.mass);
+      velocity.y = this.calculateComponentVelocity(
+        velocity.y,
+        force.y,
+        node.options.mass
+      );
       node.y += velocity.y * this.timestep;
-    }
-    else {
+    } else {
       force.y = 0;
       velocity.y = 0;
     }
 
-    const totalVelocity = Math.sqrt(Math.pow(velocity.x,2) + Math.pow(velocity.y,2));
+    const totalVelocity = Math.sqrt(
+      Math.pow(velocity.x, 2) + Math.pow(velocity.y, 2)
+    );
     return totalVelocity;
   }
-
 
   /**
    * When initializing and stabilizing, we can freeze nodes with a predefined position.
@@ -12498,14 +12738,13 @@ class PhysicsEngine {
       if (Object.prototype.hasOwnProperty.call(nodes, id)) {
         if (nodes[id].x && nodes[id].y) {
           const fixed = nodes[id].options.fixed;
-          this.freezeCache[id] = {x:fixed.x, y:fixed.y};
+          this.freezeCache[id] = { x: fixed.x, y: fixed.y };
           fixed.x = true;
           fixed.y = true;
         }
       }
     }
   }
-
 
   /**
    * Unfreezes the nodes that have been frozen by _freezeDefinedNodes.
@@ -12531,9 +12770,12 @@ class PhysicsEngine {
    * @param {number} [iterations=this.options.stabilization.iterations]
    */
   stabilize(iterations = this.options.stabilization.iterations) {
-    if (typeof iterations !== 'number') {
+    if (typeof iterations !== "number") {
       iterations = this.options.stabilization.iterations;
-      console.log('The stabilize method needs a numeric amount of iterations. Switching to default: ', iterations);
+      console.error(
+        "The stabilize method needs a numeric amount of iterations. Switching to default: ",
+        iterations
+      );
     }
 
     if (this.physicsBody.physicsNodeIndices.length === 0) {
@@ -12542,16 +12784,16 @@ class PhysicsEngine {
     }
 
     // enable adaptive timesteps
-    this.adaptiveTimestep =  this.options.adaptiveTimestep;
+    this.adaptiveTimestep = this.options.adaptiveTimestep;
 
     // this sets the width of all nodes initially which could be required for the avoidOverlap
     this.body.emitter.emit("_resizeNodes");
 
-    this.stopSimulation();   // stop the render loop
+    this.stopSimulation(); // stop the render loop
     this.stabilized = false;
 
     // block redraw requests
-    this.body.emitter.emit('_blockRedraw');
+    this.body.emitter.emit("_blockRedraw");
     this.targetIterations = iterations;
 
     // start the stabilization
@@ -12560,9 +12802,8 @@ class PhysicsEngine {
     }
     this.stabilizationIterations = 0;
 
-    setTimeout(() => this._stabilizationBatch(),0);
+    setTimeout(() => this._stabilizationBatch(), 0);
   }
-
 
   /**
    * If not already stabilizing, start it and emit a start event.
@@ -12573,28 +12814,30 @@ class PhysicsEngine {
   _startStabilizing() {
     if (this.startedStabilization === true) return false;
 
-    this.body.emitter.emit('startStabilizing');
+    this.body.emitter.emit("startStabilizing");
     this.startedStabilization = true;
     return true;
   }
 
-
   /**
    * One batch of stabilization
+   *
    * @private
    */
   _stabilizationBatch() {
-    const running = () => (this.stabilized === false && this.stabilizationIterations < this.targetIterations);
+    const running = () =>
+      this.stabilized === false &&
+      this.stabilizationIterations < this.targetIterations;
 
     const sendProgress = () => {
-      this.body.emitter.emit('stabilizationProgress', {
+      this.body.emitter.emit("stabilizationProgress", {
         iterations: this.stabilizationIterations,
-        total: this.targetIterations
+        total: this.targetIterations,
       });
     };
 
     if (this._startStabilizing()) {
-      sendProgress();  // Ensure that there is at least one start event.
+      sendProgress(); // Ensure that there is at least one start event.
     }
 
     let count = 0;
@@ -12606,44 +12849,40 @@ class PhysicsEngine {
     sendProgress();
 
     if (running()) {
-      setTimeout(this._stabilizationBatch.bind(this),0);
-    }
-    else {
+      setTimeout(this._stabilizationBatch.bind(this), 0);
+    } else {
       this._finalizeStabilization();
     }
   }
 
-
   /**
    * Wrap up the stabilization, fit and emit the events.
+   *
    * @private
    */
   _finalizeStabilization() {
-    this.body.emitter.emit('_allowRedraw');
+    this.body.emitter.emit("_allowRedraw");
     if (this.options.stabilization.fit === true) {
-      this.body.emitter.emit('fit');
+      this.body.emitter.emit("fit");
     }
 
     if (this.options.stabilization.onlyDynamicEdges === true) {
       this._restoreFrozenNodes();
     }
 
-    this.body.emitter.emit('stabilizationIterationsDone');
-    this.body.emitter.emit('_requestRedraw');
+    this.body.emitter.emit("stabilizationIterationsDone");
+    this.body.emitter.emit("_requestRedraw");
 
     if (this.stabilized === true) {
       this._emitStabilized();
-    }
-    else {
+    } else {
       this.startSimulation();
     }
 
     this.ready = true;
   }
 
-
   //---------------------------  DEBUGGING BELOW  ---------------------------//
-
 
   /**
    * Debug function that display arrows for the forces currently active in the network.
@@ -12660,30 +12899,38 @@ class PhysicsEngine {
       const force = this.physicsBody.forces[index];
       const factor = 20;
       const colorFactor = 0.03;
-      const forceSize = Math.sqrt(Math.pow(force.x,2) + Math.pow(force.x,2));
+      const forceSize = Math.sqrt(Math.pow(force.x, 2) + Math.pow(force.x, 2));
 
-      const size = Math.min(Math.max(5,forceSize),15);
-      const arrowSize = 3*size;
+      const size = Math.min(Math.max(5, forceSize), 15);
+      const arrowSize = 3 * size;
 
-      const color = HSVToHex((180 - Math.min(1,Math.max(0,colorFactor*forceSize))*180) / 360,1,1);
+      const color = HSVToHex(
+        (180 - Math.min(1, Math.max(0, colorFactor * forceSize)) * 180) / 360,
+        1,
+        1
+      );
 
       const point = {
-        x: node.x + factor*force.x,
-        y: node.y + factor*force.y
+        x: node.x + factor * force.x,
+        y: node.y + factor * force.y,
       };
 
       ctx.lineWidth = size;
       ctx.strokeStyle = color;
       ctx.beginPath();
-      ctx.moveTo(node.x,node.y);
+      ctx.moveTo(node.x, node.y);
       ctx.lineTo(point.x, point.y);
       ctx.stroke();
 
       const angle = Math.atan2(force.y, force.x);
       ctx.fillStyle = color;
-      EndPoints.draw(ctx, {type: 'arrow', point: point, angle: angle, length: arrowSize});
+      EndPoints.draw(ctx, {
+        type: "arrow",
+        point: point,
+        angle: angle,
+        length: arrowSize,
+      });
       ctx.fill();
-
     }
   }
 }
@@ -12706,7 +12953,11 @@ class NetworkUtil {
    * @static
    */
   static getRange(allNodes, specificNodes = []) {
-    let minY = 1e9, maxY = -1e9, minX = 1e9, maxX = -1e9, node;
+    let minY = 1e9,
+      maxY = -1e9,
+      minX = 1e9,
+      maxX = -1e9,
+      node;
     if (specificNodes.length > 0) {
       for (let i = 0; i < specificNodes.length; i++) {
         node = allNodes[specificNodes[i]];
@@ -12726,9 +12977,9 @@ class NetworkUtil {
     }
 
     if (minX === 1e9 && maxX === -1e9 && minY === 1e9 && maxY === -1e9) {
-      minY = 0, maxY = 0, minX = 0, maxX = 0;
+      (minY = 0), (maxY = 0), (minX = 0), (maxX = 0);
     }
-    return {minX: minX, maxX: maxX, minY: minY, maxY: maxY};
+    return { minX: minX, maxX: maxX, minY: minY, maxY: maxY };
   }
 
   /**
@@ -12740,7 +12991,11 @@ class NetworkUtil {
    * @static
    */
   static getRangeCore(allNodes, specificNodes = []) {
-    let minY = 1e9, maxY = -1e9, minX = 1e9, maxX = -1e9, node;
+    let minY = 1e9,
+      maxY = -1e9,
+      minX = 1e9,
+      maxX = -1e9,
+      node;
     if (specificNodes.length > 0) {
       for (let i = 0; i < specificNodes.length; i++) {
         node = allNodes[specificNodes[i]];
@@ -12760,11 +13015,10 @@ class NetworkUtil {
     }
 
     if (minX === 1e9 && maxX === -1e9 && minY === 1e9 && maxY === -1e9) {
-      minY = 0, maxY = 0, minX = 0, maxX = 0;
+      (minY = 0), (maxY = 0), (minX = 0), (maxX = 0);
     }
-    return {minX: minX, maxX: maxX, minY: minY, maxY: maxY};
+    return { minX: minX, maxX: maxX, minY: minY, maxY: maxY };
   }
-
 
   /**
    * @param {object} range = {minX: minX, maxX: maxX, minY: minY, maxY: maxY};
@@ -12772,13 +13026,15 @@ class NetworkUtil {
    * @static
    */
   static findCenter(range) {
-    return {x: (0.5 * (range.maxX + range.minX)),
-      y: (0.5 * (range.maxY + range.minY))};
+    return {
+      x: 0.5 * (range.maxX + range.minX),
+      y: 0.5 * (range.maxY + range.minY),
+    };
   }
-
 
   /**
    * This returns a clone of the options or options of the edge or node to be used for construction of new edges or check functions for new nodes.
+   *
    * @param {vis.Item} item
    * @param {'node'|undefined} type
    * @returns {{}}
@@ -12786,43 +13042,47 @@ class NetworkUtil {
    */
   static cloneOptions(item, type) {
     const clonedOptions = {};
-    if (type === undefined || type === 'node') {
+    if (type === undefined || type === "node") {
       deepExtend(clonedOptions, item.options, true);
       clonedOptions.x = item.x;
       clonedOptions.y = item.y;
       clonedOptions.amountOfConnections = item.edges.length;
-    }
-    else {
+    } else {
       deepExtend(clonedOptions, item.options, true);
     }
     return clonedOptions;
   }
-
 }
 
 /**
  * A Cluster is a special Node that allows a group of Nodes positioned closely together
  * to be represented by a single Cluster Node.
  *
- * @extends Node
+ * @augments Node
  */
 class Cluster extends Node {
   /**
-   * @param {Object} options
-   * @param {Object} body
+   * @param {object} options
+   * @param {object} body
    * @param {Array.<HTMLImageElement>}imagelist
    * @param {Array} grouplist
-   * @param {Object} globalOptions
-   * @param {Object} defaultOptions     Global default options for nodes
+   * @param {object} globalOptions
+   * @param {object} defaultOptions     Global default options for nodes
    */
-  constructor(options, body, imagelist, grouplist, globalOptions, defaultOptions) {
+  constructor(
+    options,
+    body,
+    imagelist,
+    grouplist,
+    globalOptions,
+    defaultOptions
+  ) {
     super(options, body, imagelist, grouplist, globalOptions, defaultOptions);
 
     this.isCluster = true;
     this.containedNodes = {};
     this.containedEdges = {};
   }
-
 
   /**
    * Transfer child cluster data to current and disconnect the child cluster.
@@ -12834,10 +13094,12 @@ class Cluster extends Node {
   _openChildCluster(childClusterId) {
     const childCluster = this.body.nodes[childClusterId];
     if (this.containedNodes[childClusterId] === undefined) {
-      throw new Error('node with id: ' + childClusterId + ' not in current cluster');
+      throw new Error(
+        "node with id: " + childClusterId + " not in current cluster"
+      );
     }
     if (!childCluster.isCluster) {
-      throw new Error('node with id: ' + childClusterId + ' is not a cluster');
+      throw new Error("node with id: " + childClusterId + " is not a cluster");
     }
 
     // Disconnect child cluster from current cluster
@@ -12862,7 +13124,9 @@ class Cluster extends Node {
       forEach(this.edges, (parentClusterEdge) => {
         // Assumption: a clustered edge can only be present in a single clustering edge
         // Not tested here
-        const index = parentClusterEdge.clusteringEdgeReplacingIds.indexOf(clusterEdge.id);
+        const index = parentClusterEdge.clusteringEdgeReplacingIds.indexOf(
+          clusterEdge.id
+        );
         if (index === -1) return;
 
         forEach(clusterEdge.clusteringEdgeReplacingIds, (srcId) => {
@@ -12932,7 +13196,7 @@ Member `network.clustering` contains the following items:
 Due to nesting of clusters, these members can contain cluster nodes and edges as well.
 
 The important thing to note here, is that the clustered nodes and edges also
-appear in the members of the cluster nodes. For data update, it is therefore 
+appear in the members of the cluster nodes. For data update, it is therefore
 important to scan these lists as well as the cluster nodes.
 
 
@@ -12943,7 +13207,7 @@ A cluster node has the following extra fields:
 - `isCluster : true` - indication that this is a cluster node
 - `containedNodes`   - hash of nodes contained in this cluster
 - `containedEdges`   - same for edges
-- `edges`            - array of cluster edges for this node 
+- `edges`            - array of cluster edges for this node
 
 
 **NOTE:**
@@ -12978,30 +13242,32 @@ member:
  */
 class ClusterEngine {
   /**
-   * @param {Object} body
+   * @param {object} body
    */
   constructor(body) {
     this.body = body;
-    this.clusteredNodes = {};  // key: node id, value: { clusterId: <id of cluster>, node: <node instance>}
-    this.clusteredEdges = {};  // key: edge id, value: restore information for given edge
+    this.clusteredNodes = {}; // key: node id, value: { clusterId: <id of cluster>, node: <node instance>}
+    this.clusteredEdges = {}; // key: edge id, value: restore information for given edge
 
     this.options = {};
     this.defaultOptions = {};
     Object.assign(this.options, this.defaultOptions);
 
-    this.body.emitter.on('_resetData', () => {this.clusteredNodes = {}; this.clusteredEdges = {};});
+    this.body.emitter.on("_resetData", () => {
+      this.clusteredNodes = {};
+      this.clusteredEdges = {};
+    });
   }
 
   /**
-  *
-  * @param {number} hubsize
-  * @param {Object} options
-  */
+   *
+   * @param {number} hubsize
+   * @param {object} options
+   */
   clusterByHubsize(hubsize, options) {
     if (hubsize === undefined) {
       hubsize = this._getHubSize();
-    }
-    else if (typeof(hubsize) === "object") {
+    } else if (typeof hubsize === "object") {
       options = this._checkOptions(hubsize);
       hubsize = this._getHubSize();
     }
@@ -13015,20 +13281,24 @@ class ClusterEngine {
     }
 
     for (let i = 0; i < nodesToCluster.length; i++) {
-      this.clusterByConnection(nodesToCluster[i],options,true);
+      this.clusterByConnection(nodesToCluster[i], options, true);
     }
 
-    this.body.emitter.emit('_dataChanged');
+    this.body.emitter.emit("_dataChanged");
   }
-
 
   /**
    * loop over all nodes, check if they adhere to the condition and cluster if needed.
-   * @param {Object} options
+   *
+   * @param {object} options
    * @param {boolean} [refreshData=true]
    */
   cluster(options = {}, refreshData = true) {
-    if (options.joinCondition === undefined) {throw new Error("Cannot call clusterByNodeData without a joinCondition function in the options.");}
+    if (options.joinCondition === undefined) {
+      throw new Error(
+        "Cannot call clusterByNodeData without a joinCondition function in the options."
+      );
+    }
 
     // check if the options object is fine, append if needed
     options = this._checkOptions(options);
@@ -13053,11 +13323,11 @@ class ClusterEngine {
     this._cluster(childNodesObj, childEdgesObj, options, refreshData);
   }
 
-
   /**
    * Cluster all nodes in the network that have only X edges
+   *
    * @param {number} edgeCount
-   * @param {Object} options
+   * @param {object} options
    * @param {boolean} [refreshData=true]
    */
   clusterByEdgeCount(edgeCount, options, refreshData = true) {
@@ -13088,8 +13358,11 @@ class ClusterEngine {
 
         // this node qualifies, we collect its neighbours to start the clustering process.
         if (relevantEdgeCount === edgeCount) {
-          const checkJoinCondition = function(node) {
-            if (options.joinCondition === undefined || options.joinCondition === null) {
+          const checkJoinCondition = function (node) {
+            if (
+              options.joinCondition === undefined ||
+              options.joinCondition === null
+            ) {
               return true;
             }
 
@@ -13115,12 +13388,17 @@ class ClusterEngine {
           }
 
           // add to the cluster queue
-          if (Object.keys(childNodesObj).length > 0 && Object.keys(childEdgesObj).length > 0 && gatheringSuccessful === true) {
+          if (
+            Object.keys(childNodesObj).length > 0 &&
+            Object.keys(childEdgesObj).length > 0 &&
+            gatheringSuccessful === true
+          ) {
             /**
              * Search for cluster data that contains any of the node id's
-             * @returns {Boolean} true if no joinCondition, otherwise return value of joinCondition
+             *
+             * @returns {boolean} true if no joinCondition, otherwise return value of joinCondition
              */
-            const findClusterData = function() {
+            const findClusterData = function () {
               for (let n = 0; n < clusters.length; ++n) {
                 // Search for a cluster containing any of the node id's
                 for (const m in childNodesObj) {
@@ -13132,7 +13410,6 @@ class ClusterEngine {
 
               return undefined;
             };
-
 
             // If any of the found nodes is part of a cluster found in this method,
             // add the current values to that cluster
@@ -13153,7 +13430,7 @@ class ClusterEngine {
               }
             } else {
               // Create a new cluster group
-              clusters.push({nodes: childNodesObj, edges: childEdgesObj});
+              clusters.push({ nodes: childNodesObj, edges: childEdgesObj });
             }
           }
         }
@@ -13165,51 +13442,61 @@ class ClusterEngine {
     }
 
     if (refreshData === true) {
-      this.body.emitter.emit('_dataChanged');
+      this.body.emitter.emit("_dataChanged");
     }
   }
 
   /**
    * Cluster all nodes in the network that have only 1 edge
-   * @param {Object} options
+   *
+   * @param {object} options
    * @param {boolean} [refreshData=true]
    */
   clusterOutliers(options, refreshData = true) {
-    this.clusterByEdgeCount(1,options,refreshData);
+    this.clusterByEdgeCount(1, options, refreshData);
   }
 
   /**
    * Cluster all nodes in the network that have only 2 edge
-   * @param {Object} options
+   *
+   * @param {object} options
    * @param {boolean} [refreshData=true]
    */
   clusterBridges(options, refreshData = true) {
-    this.clusterByEdgeCount(2,options,refreshData);
+    this.clusterByEdgeCount(2, options, refreshData);
   }
 
-
-
   /**
-  * suck all connected nodes of a node into the node.
-  * @param {Node.id} nodeId
-  * @param {Object} options
-  * @param {boolean} [refreshData=true]
-  */
+   * suck all connected nodes of a node into the node.
+   *
+   * @param {Node.id} nodeId
+   * @param {object} options
+   * @param {boolean} [refreshData=true]
+   */
   clusterByConnection(nodeId, options, refreshData = true) {
     // kill conditions
-    if (nodeId === undefined)             {throw new Error("No nodeId supplied to clusterByConnection!");}
-    if (this.body.nodes[nodeId] === undefined) {throw new Error("The nodeId given to clusterByConnection does not exist!");}
+    if (nodeId === undefined) {
+      throw new Error("No nodeId supplied to clusterByConnection!");
+    }
+    if (this.body.nodes[nodeId] === undefined) {
+      throw new Error(
+        "The nodeId given to clusterByConnection does not exist!"
+      );
+    }
 
     const node = this.body.nodes[nodeId];
     options = this._checkOptions(options, node);
-    if (options.clusterNodeProperties.x === undefined) {options.clusterNodeProperties.x = node.x;}
-    if (options.clusterNodeProperties.y === undefined) {options.clusterNodeProperties.y = node.y;}
+    if (options.clusterNodeProperties.x === undefined) {
+      options.clusterNodeProperties.x = node.x;
+    }
+    if (options.clusterNodeProperties.y === undefined) {
+      options.clusterNodeProperties.y = node.y;
+    }
     if (options.clusterNodeProperties.fixed === undefined) {
       options.clusterNodeProperties.fixed = {};
       options.clusterNodeProperties.fixed.x = node.options.fixed.x;
       options.clusterNodeProperties.fixed.y = node.options.fixed.y;
     }
-
 
     const childNodesObj = {};
     const childEdgesObj = {};
@@ -13229,34 +13516,43 @@ class ClusterEngine {
             if (options.joinCondition === undefined) {
               childEdgesObj[edge.id] = edge;
               childNodesObj[childNodeId] = this.body.nodes[childNodeId];
-            }
-            else {
+            } else {
               // clone the options and insert some additional parameters that could be interesting.
-              const childClonedOptions = NetworkUtil.cloneOptions(this.body.nodes[childNodeId]);
-              if (options.joinCondition(parentClonedOptions, childClonedOptions) === true) {
+              const childClonedOptions = NetworkUtil.cloneOptions(
+                this.body.nodes[childNodeId]
+              );
+              if (
+                options.joinCondition(
+                  parentClonedOptions,
+                  childClonedOptions
+                ) === true
+              ) {
                 childEdgesObj[edge.id] = edge;
                 childNodesObj[childNodeId] = this.body.nodes[childNodeId];
               }
             }
-          }
-          else {
+          } else {
             // swallow the edge if it is self-referencing.
             childEdgesObj[edge.id] = edge;
           }
         }
       }
     }
-    const childNodeIDs = Object.keys(childNodesObj).map(function(childNode){
+    const childNodeIDs = Object.keys(childNodesObj).map(function (childNode) {
       return childNodesObj[childNode].id;
     });
 
     for (const childNodeKey in childNodesObj) {
-      if (!Object.prototype.hasOwnProperty.call(childNodesObj, childNodeKey)) continue;
+      if (!Object.prototype.hasOwnProperty.call(childNodesObj, childNodeKey))
+        continue;
 
       const childNode = childNodesObj[childNodeKey];
-      for (let y=0; y < childNode.edges.length; y++){
+      for (let y = 0; y < childNode.edges.length; y++) {
         const childEdge = childNode.edges[y];
-        if (childNodeIDs.indexOf(this._getConnectedId(childEdge,childNode.id)) > -1){
+        if (
+          childNodeIDs.indexOf(this._getConnectedId(childEdge, childNode.id)) >
+          -1
+        ) {
           childEdgesObj[childEdge.id] = childEdge;
         }
       }
@@ -13264,18 +13560,22 @@ class ClusterEngine {
     this._cluster(childNodesObj, childEdgesObj, options, refreshData);
   }
 
-
   /**
-  * This function creates the edges that will be attached to the cluster
-  * It looks for edges that are connected to the nodes from the "outside' of the cluster.
-  *
-  * @param {{Node.id: vis.Node}} childNodesObj
-  * @param {{vis.Edge.id: vis.Edge}} childEdgesObj
-  * @param {Object} clusterNodeProperties
-  * @param {Object} clusterEdgeProperties
-  * @private
-  */
-  _createClusterEdges (childNodesObj, childEdgesObj, clusterNodeProperties, clusterEdgeProperties) {
+   * This function creates the edges that will be attached to the cluster
+   * It looks for edges that are connected to the nodes from the "outside' of the cluster.
+   *
+   * @param {{Node.id: vis.Node}} childNodesObj
+   * @param {{vis.Edge.id: vis.Edge}} childEdgesObj
+   * @param {object} clusterNodeProperties
+   * @param {object} clusterEdgeProperties
+   * @private
+   */
+  _createClusterEdges(
+    childNodesObj,
+    childEdgesObj,
+    clusterNodeProperties,
+    clusterEdgeProperties
+  ) {
     let edge, childNodeId, childNode, toId, fromId, otherNodeId;
 
     // loop over all child nodes and their edges to find edges going out of the cluster
@@ -13294,15 +13594,14 @@ class ClusterEngine {
           // self-referencing edges will be added to the "hidden" list
           if (edge.toId == edge.fromId) {
             childEdgesObj[edge.id] = edge;
-          }
-          else {
+          } else {
             // set up the from and to.
-            if (edge.toId == childNodeId) { // this is a double equals because ints and strings can be interchanged here.
+            if (edge.toId == childNodeId) {
+              // this is a double equals because ints and strings can be interchanged here.
               toId = clusterNodeProperties.id;
               fromId = edge.fromId;
               otherNodeId = fromId;
-            }
-            else {
+            } else {
               toId = edge.toId;
               fromId = clusterNodeProperties.id;
               otherNodeId = toId;
@@ -13311,12 +13610,11 @@ class ClusterEngine {
 
           // Only edges from the cluster outwards are being replaced.
           if (childNodesObj[otherNodeId] === undefined) {
-            createEdges.push({edge: edge, fromId: fromId, toId: toId});
+            createEdges.push({ edge: edge, fromId: fromId, toId: toId });
           }
         }
       }
     }
-
 
     //
     // Here we actually create the replacement edges.
@@ -13330,18 +13628,23 @@ class ClusterEngine {
 
     /**
      * Find a cluster edge which matches the given created edge.
+     *
      * @param {vis.Edge} createdEdge
      * @returns {vis.Edge}
      */
-    const getNewEdge = function(createdEdge) {
+    const getNewEdge = function (createdEdge) {
       for (let j = 0; j < newEdges.length; j++) {
         const newEdge = newEdges[j];
 
         // We replace both to and from edges with a single cluster edge
-        const matchToDirection   = (createdEdge.fromId === newEdge.fromId && createdEdge.toId === newEdge.toId);
-        const matchFromDirection = (createdEdge.fromId === newEdge.toId && createdEdge.toId === newEdge.fromId);
+        const matchToDirection =
+          createdEdge.fromId === newEdge.fromId &&
+          createdEdge.toId === newEdge.toId;
+        const matchFromDirection =
+          createdEdge.fromId === newEdge.toId &&
+          createdEdge.toId === newEdge.fromId;
 
-        if (matchToDirection || matchFromDirection ) {
+        if (matchToDirection || matchFromDirection) {
           return newEdge;
         }
       }
@@ -13349,11 +13652,10 @@ class ClusterEngine {
       return null;
     };
 
-
     for (let j = 0; j < createEdges.length; j++) {
       const createdEdge = createEdges[j];
-      const edge        = createdEdge.edge;
-      let newEdge     = getNewEdge(createdEdge);
+      const edge = createdEdge.edge;
+      let newEdge = getNewEdge(createdEdge);
 
       if (newEdge === null) {
         // Create a clustered edge for this connection
@@ -13361,7 +13663,8 @@ class ClusterEngine {
           createdEdge.fromId,
           createdEdge.toId,
           edge,
-          clusterEdgeProperties);
+          clusterEdgeProperties
+        );
 
         newEdges.push(newEdge);
       } else {
@@ -13373,32 +13676,37 @@ class ClusterEngine {
 
       // hide the replaced edge
       this._backupEdgeOptions(edge);
-      edge.setOptions({physics:false});
+      edge.setOptions({ physics: false });
     }
   }
 
   /**
-  * This function checks the options that can be supplied to the different cluster functions
-  * for certain fields and inserts defaults if needed
-  * @param {Object} options
-  * @returns {*}
-  * @private
-  */
+   * This function checks the options that can be supplied to the different cluster functions
+   * for certain fields and inserts defaults if needed
+   *
+   * @param {object} options
+   * @returns {*}
+   * @private
+   */
   _checkOptions(options = {}) {
-    if (options.clusterEdgeProperties === undefined)    {options.clusterEdgeProperties = {};}
-    if (options.clusterNodeProperties === undefined)    {options.clusterNodeProperties = {};}
+    if (options.clusterEdgeProperties === undefined) {
+      options.clusterEdgeProperties = {};
+    }
+    if (options.clusterNodeProperties === undefined) {
+      options.clusterNodeProperties = {};
+    }
 
     return options;
   }
 
   /**
-  *
-  * @param {Object}    childNodesObj         | object with node objects, id as keys, same as childNodes except it also contains a source node
-  * @param {Object}    childEdgesObj         | object with edge objects, id as keys
-  * @param {Array}     options               | object with {clusterNodeProperties, clusterEdgeProperties, processProperties}
-  * @param {boolean}   refreshData | when true, do not wrap up
-  * @private
-  */
+   *
+   * @param {object}    childNodesObj         | object with node objects, id as keys, same as childNodes except it also contains a source node
+   * @param {object}    childEdgesObj         | object with edge objects, id as keys
+   * @param {Array}     options               | object with {clusterNodeProperties, clusterEdgeProperties, processProperties}
+   * @param {boolean}   refreshData | when true, do not wrap up
+   * @private
+   */
   _cluster(childNodesObj, childEdgesObj, options, refreshData = true) {
     // Remove nodes which are already clustered
     const tmpNodesToRemove = [];
@@ -13415,12 +13723,19 @@ class ClusterEngine {
     }
 
     // kill condition: no nodes don't bother
-    if (Object.keys(childNodesObj).length == 0) {return;}
+    if (Object.keys(childNodesObj).length == 0) {
+      return;
+    }
 
     // allow clusters of 1 if options allow
-    if (Object.keys(childNodesObj).length == 1 && options.clusterNodeProperties.allowSingleNodeCluster != true) {return;}
+    if (
+      Object.keys(childNodesObj).length == 1 &&
+      options.clusterNodeProperties.allowSingleNodeCluster != true
+    ) {
+      return;
+    }
 
-    let clusterNodeProperties = deepExtend({},options.clusterNodeProperties);
+    let clusterNodeProperties = deepExtend({}, options.clusterNodeProperties);
 
     // construct the clusterNodeProperties
     if (options.processProperties !== undefined) {
@@ -13439,26 +13754,36 @@ class ClusterEngine {
         if (Object.prototype.hasOwnProperty.call(childEdgesObj, edgeId)) {
           // these cluster edges will be removed on creation of the cluster.
           if (edgeId.substr(0, 12) !== "clusterEdge:") {
-            const clonedOptions = NetworkUtil.cloneOptions(childEdgesObj[edgeId], 'edge');
+            const clonedOptions = NetworkUtil.cloneOptions(
+              childEdgesObj[edgeId],
+              "edge"
+            );
             childEdgesOptions.push(clonedOptions);
           }
         }
       }
 
-      clusterNodeProperties = options.processProperties(clusterNodeProperties, childNodesOptions, childEdgesOptions);
+      clusterNodeProperties = options.processProperties(
+        clusterNodeProperties,
+        childNodesOptions,
+        childEdgesOptions
+      );
       if (!clusterNodeProperties) {
-        throw new Error("The processProperties function does not return properties!");
+        throw new Error(
+          "The processProperties function does not return properties!"
+        );
       }
     }
 
     // check if we have an unique id;
-    if (clusterNodeProperties.id === undefined) {clusterNodeProperties.id = 'cluster:' + v4();}
+    if (clusterNodeProperties.id === undefined) {
+      clusterNodeProperties.id = "cluster:" + v4();
+    }
     const clusterId = clusterNodeProperties.id;
 
     if (clusterNodeProperties.label === undefined) {
-      clusterNodeProperties.label = 'cluster';
+      clusterNodeProperties.label = "cluster";
     }
-
 
     // give the clusterNode a position if it does not have one.
     let pos = undefined;
@@ -13467,7 +13792,9 @@ class ClusterEngine {
       clusterNodeProperties.x = pos.x;
     }
     if (clusterNodeProperties.y === undefined) {
-      if (pos === undefined) {pos = this._getClusterPosition(childNodesObj);}
+      if (pos === undefined) {
+        pos = this._getClusterPosition(childNodesObj);
+      }
       clusterNodeProperties.y = pos.y;
     }
 
@@ -13476,7 +13803,10 @@ class ClusterEngine {
 
     // create the cluster Node
     // Note that allowSingleNodeCluster, if present, is stored in the options as well
-    const clusterNode = this.body.functions.createNode(clusterNodeProperties, Cluster);
+    const clusterNode = this.body.functions.createNode(
+      clusterNodeProperties,
+      Cluster
+    );
     clusterNode.containedNodes = childNodesObj;
     clusterNode.containedEdges = childEdgesObj;
     // cache a copy from the cluster edge properties if we have to reconnect others later on
@@ -13485,14 +13815,19 @@ class ClusterEngine {
     // finally put the cluster node into global
     this.body.nodes[clusterNodeProperties.id] = clusterNode;
 
-    this._clusterEdges(childNodesObj, childEdgesObj, clusterNodeProperties, options.clusterEdgeProperties);
+    this._clusterEdges(
+      childNodesObj,
+      childEdgesObj,
+      clusterNodeProperties,
+      options.clusterEdgeProperties
+    );
 
     // set ID to undefined so no duplicates arise
     clusterNodeProperties.id = undefined;
 
     // wrap up
     if (refreshData === true) {
-      this.body.emitter.emit('_dataChanged');
+      this.body.emitter.emit("_dataChanged");
     }
   }
 
@@ -13503,7 +13838,7 @@ class ClusterEngine {
    */
   _backupEdgeOptions(edge) {
     if (this.clusteredEdges[edge.id] === undefined) {
-      this.clusteredEdges[edge.id] = {physics: edge.options.physics};
+      this.clusteredEdges[edge.id] = { physics: edge.options.physics };
     }
   }
 
@@ -13515,33 +13850,33 @@ class ClusterEngine {
   _restoreEdge(edge) {
     const originalOptions = this.clusteredEdges[edge.id];
     if (originalOptions !== undefined) {
-      edge.setOptions({physics: originalOptions.physics});
+      edge.setOptions({ physics: originalOptions.physics });
       delete this.clusteredEdges[edge.id];
     }
   }
 
-
   /**
-  * Check if a node is a cluster.
-  * @param {Node.id} nodeId
-  * @returns {*}
-  */
+   * Check if a node is a cluster.
+   *
+   * @param {Node.id} nodeId
+   * @returns {*}
+   */
   isCluster(nodeId) {
     if (this.body.nodes[nodeId] !== undefined) {
       return this.body.nodes[nodeId].isCluster === true;
-    }
-    else {
-      console.log("Node does not exist.");
+    } else {
+      console.error("Node does not exist.");
       return false;
     }
   }
 
   /**
-  * get the position of the cluster node based on what's inside
-  * @param {object} childNodesObj    | object with node objects, id as keys
-  * @returns {{x: number, y: number}}
-  * @private
-  */
+   * get the position of the cluster node based on what's inside
+   *
+   * @param {object} childNodesObj    | object with node objects, id as keys
+   * @returns {{x: number, y: number}}
+   * @private
+   */
   _getClusterPosition(childNodesObj) {
     const childKeys = Object.keys(childNodesObj);
     let minX = childNodesObj[childKeys[0]].x;
@@ -13557,15 +13892,14 @@ class ClusterEngine {
       maxY = node.y > maxY ? node.y : maxY;
     }
 
-    return {x: 0.5*(minX + maxX), y: 0.5*(minY + maxY)};
+    return { x: 0.5 * (minX + maxX), y: 0.5 * (minY + maxY) };
   }
-
-
 
   /**
    * Open a cluster by calling this function.
+   *
    * @param {vis.Edge.id}  clusterNodeId | the ID of the cluster node
-   * @param {Object} options
+   * @param {object} options
    * @param {boolean} refreshData | wrap up afterwards if not true
    */
   openCluster(clusterNodeId, options, refreshData = true) {
@@ -13577,11 +13911,15 @@ class ClusterEngine {
     const clusterNode = this.body.nodes[clusterNodeId];
 
     if (clusterNode === undefined) {
-      throw new Error("The clusterNodeId supplied to openCluster does not exist.");
+      throw new Error(
+        "The clusterNodeId supplied to openCluster does not exist."
+      );
     }
-    if (clusterNode.isCluster !== true
-     || clusterNode.containedNodes === undefined
-     || clusterNode.containedEdges === undefined) {
+    if (
+      clusterNode.isCluster !== true ||
+      clusterNode.containedNodes === undefined ||
+      clusterNode.containedEdges === undefined
+    ) {
       throw new Error("The node:" + clusterNodeId + " is not a valid cluster.");
     }
 
@@ -13591,7 +13929,7 @@ class ClusterEngine {
     if (parentIndex >= 0) {
       // Current cluster is clustered; transfer contained nodes and edges to parent
       const parentClusterNodeId = stack[parentIndex];
-      const parentClusterNode   = this.body.nodes[parentClusterNodeId];
+      const parentClusterNode = this.body.nodes[parentClusterNodeId];
 
       // clustering.clusteredNodes and clustering.clusteredEdges remain unchanged
       parentClusterNode._openChildCluster(clusterNodeId);
@@ -13599,24 +13937,28 @@ class ClusterEngine {
       // All components of child cluster node have been transferred. It can die now.
       delete this.body.nodes[clusterNodeId];
       if (refreshData === true) {
-        this.body.emitter.emit('_dataChanged');
+        this.body.emitter.emit("_dataChanged");
       }
 
       return;
     }
 
-    // main body 
+    // main body
     const containedNodes = clusterNode.containedNodes;
     const containedEdges = clusterNode.containedEdges;
 
     // allow the user to position the nodes after release.
-    if (options !== undefined && options.releaseFunction !== undefined && typeof options.releaseFunction === 'function') {
+    if (
+      options !== undefined &&
+      options.releaseFunction !== undefined &&
+      typeof options.releaseFunction === "function"
+    ) {
       const positions = {};
-      const clusterPosition = {x:clusterNode.x, y:clusterNode.y};
+      const clusterPosition = { x: clusterNode.x, y: clusterNode.y };
       for (const nodeId in containedNodes) {
         if (Object.prototype.hasOwnProperty.call(containedNodes, nodeId)) {
           const containedNode = this.body.nodes[nodeId];
-          positions[nodeId] = {x: containedNode.x, y: containedNode.y};
+          positions[nodeId] = { x: containedNode.x, y: containedNode.y };
         }
       }
       const newPositions = options.releaseFunction(clusterPosition, positions);
@@ -13625,18 +13967,27 @@ class ClusterEngine {
         if (Object.prototype.hasOwnProperty.call(containedNodes, nodeId)) {
           const containedNode = this.body.nodes[nodeId];
           if (newPositions[nodeId] !== undefined) {
-            containedNode.x = (newPositions[nodeId].x === undefined ? clusterNode.x : newPositions[nodeId].x);
-            containedNode.y = (newPositions[nodeId].y === undefined ? clusterNode.y : newPositions[nodeId].y);
+            containedNode.x =
+              newPositions[nodeId].x === undefined
+                ? clusterNode.x
+                : newPositions[nodeId].x;
+            containedNode.y =
+              newPositions[nodeId].y === undefined
+                ? clusterNode.y
+                : newPositions[nodeId].y;
           }
         }
       }
-    }
-    else {
+    } else {
       // copy the position from the cluster
-      forEach(containedNodes, function(containedNode) {
+      forEach(containedNodes, function (containedNode) {
         // inherit position
-        if (containedNode.options.fixed.x === false) {containedNode.x = clusterNode.x;}
-        if (containedNode.options.fixed.y === false) {containedNode.y = clusterNode.y;}
+        if (containedNode.options.fixed.x === false) {
+          containedNode.x = clusterNode.x;
+        }
+        if (containedNode.options.fixed.y === false) {
+          containedNode.y = clusterNode.y;
+        }
       });
     }
 
@@ -13649,7 +14000,7 @@ class ClusterEngine {
         containedNode.vx = clusterNode.vx;
         containedNode.vy = clusterNode.vy;
 
-        containedNode.setOptions({physics:true});
+        containedNode.setOptions({ physics: true });
 
         delete this.clusteredNodes[nodeId];
       }
@@ -13663,14 +14014,14 @@ class ClusterEngine {
 
     // actually handling the deleting.
     for (let i = 0; i < edgesToBeDeleted.length; i++) {
-      const edge         = edgesToBeDeleted[i];
-      const otherNodeId  = this._getConnectedId(edge, clusterNodeId);
-      const otherNode    = this.clusteredNodes[otherNodeId];
+      const edge = edgesToBeDeleted[i];
+      const otherNodeId = this._getConnectedId(edge, clusterNodeId);
+      const otherNode = this.clusteredNodes[otherNodeId];
 
       for (let j = 0; j < edge.clusteringEdgeReplacingIds.length; j++) {
         const transferId = edge.clusteringEdgeReplacingIds[j];
         const transferEdge = this.body.edges[transferId];
-        if (transferEdge === undefined) continue; 
+        if (transferEdge === undefined) continue;
 
         // if the other node is in another cluster, we transfer ownership of this edge to the other cluster
         if (otherNode !== undefined) {
@@ -13686,8 +14037,7 @@ class ClusterEngine {
           let toId = transferEdge.toId;
           if (transferEdge.toId == otherNodeId) {
             toId = otherNode.clusterId;
-          }
-          else {
+          } else {
             fromId = otherNode.clusterId;
           }
 
@@ -13697,8 +14047,8 @@ class ClusterEngine {
             toId,
             transferEdge,
             otherCluster.clusterEdgeProperties,
-            {hidden: false, physics: true});
-
+            { hidden: false, physics: true }
+          );
         } else {
           this._restoreEdge(transferEdge);
         }
@@ -13718,7 +14068,7 @@ class ClusterEngine {
     delete this.body.nodes[clusterNodeId];
 
     if (refreshData === true) {
-      this.body.emitter.emit('_dataChanged');
+      this.body.emitter.emit("_dataChanged");
     }
   }
 
@@ -13742,13 +14092,13 @@ class ClusterEngine {
   }
 
   /**
-  * Get the stack clusterId's that a certain node resides in. cluster A -> cluster B -> cluster C -> node
-  *
-  * If a node can't be found in the chain, return an empty array.
-  *
-  * @param {string|number} nodeId
-  * @returns {Array}
-  */
+   * Get the stack clusterId's that a certain node resides in. cluster A -> cluster B -> cluster C -> node
+   *
+   * If a node can't be found in the chain, return an empty array.
+   *
+   * @param {string|number} nodeId
+   * @returns {Array}
+   */
   findNode(nodeId) {
     const stack = [];
     const max = 100;
@@ -13773,48 +14123,69 @@ class ClusterEngine {
   }
 
   /**
-  * Using a clustered nodeId, update with the new options
-  * @param {Node.id} clusteredNodeId
-  * @param {object} newOptions
-  */
+   * Using a clustered nodeId, update with the new options
+   *
+   * @param {Node.id} clusteredNodeId
+   * @param {object} newOptions
+   */
   updateClusteredNode(clusteredNodeId, newOptions) {
-    if (clusteredNodeId === undefined) {throw new Error("No clusteredNodeId supplied to updateClusteredNode.");}
-    if (newOptions === undefined) {throw new Error("No newOptions supplied to updateClusteredNode.");}
-    if (this.body.nodes[clusteredNodeId] === undefined)   {throw new Error("The clusteredNodeId supplied to updateClusteredNode does not exist.");}
+    if (clusteredNodeId === undefined) {
+      throw new Error("No clusteredNodeId supplied to updateClusteredNode.");
+    }
+    if (newOptions === undefined) {
+      throw new Error("No newOptions supplied to updateClusteredNode.");
+    }
+    if (this.body.nodes[clusteredNodeId] === undefined) {
+      throw new Error(
+        "The clusteredNodeId supplied to updateClusteredNode does not exist."
+      );
+    }
 
     this.body.nodes[clusteredNodeId].setOptions(newOptions);
-    this.body.emitter.emit('_dataChanged');
+    this.body.emitter.emit("_dataChanged");
   }
 
   /**
-  * Using a base edgeId, update all related clustered edges with the new options
-  * @param {vis.Edge.id} startEdgeId
-  * @param {object} newOptions
-  */
+   * Using a base edgeId, update all related clustered edges with the new options
+   *
+   * @param {vis.Edge.id} startEdgeId
+   * @param {object} newOptions
+   */
   updateEdge(startEdgeId, newOptions) {
-    if (startEdgeId === undefined) {throw new Error("No startEdgeId supplied to updateEdge.");}
-    if (newOptions === undefined) {throw new Error("No newOptions supplied to updateEdge.");}
-    if (this.body.edges[startEdgeId] === undefined)   {throw new Error("The startEdgeId supplied to updateEdge does not exist.");}
+    if (startEdgeId === undefined) {
+      throw new Error("No startEdgeId supplied to updateEdge.");
+    }
+    if (newOptions === undefined) {
+      throw new Error("No newOptions supplied to updateEdge.");
+    }
+    if (this.body.edges[startEdgeId] === undefined) {
+      throw new Error("The startEdgeId supplied to updateEdge does not exist.");
+    }
 
     const allEdgeIds = this.getClusteredEdges(startEdgeId);
     for (let i = 0; i < allEdgeIds.length; i++) {
       const edge = this.body.edges[allEdgeIds[i]];
       edge.setOptions(newOptions);
     }
-    this.body.emitter.emit('_dataChanged');
+    this.body.emitter.emit("_dataChanged");
   }
 
   /**
-  * Get a stack of clusterEdgeId's (+base edgeid) that a base edge is the same as. cluster edge C -> cluster edge B -> cluster edge A -> base edge(edgeId)
-  * @param {vis.Edge.id} edgeId
-  * @returns {Array.<vis.Edge.id>}
-  */
+   * Get a stack of clusterEdgeId's (+base edgeid) that a base edge is the same as. cluster edge C -> cluster edge B -> cluster edge A -> base edge(edgeId)
+   *
+   * @param {vis.Edge.id} edgeId
+   * @returns {Array.<vis.Edge.id>}
+   */
   getClusteredEdges(edgeId) {
     const stack = [];
     const max = 100;
     let counter = 0;
 
-    while (edgeId !== undefined && this.body.edges[edgeId] !== undefined && counter < max) {
+    while (
+      edgeId !== undefined &&
+      this.body.edges[edgeId] !== undefined &&
+      counter < max
+    ) {
       stack.push(this.body.edges[edgeId].id);
       edgeId = this.body.edges[edgeId].edgeReplacedById;
       counter++;
@@ -13824,17 +14195,17 @@ class ClusterEngine {
   }
 
   /**
-  * Get the base edge id of clusterEdgeId. cluster edge (clusteredEdgeId) -> cluster edge B -> cluster edge C -> base edge
-  * @param {vis.Edge.id} clusteredEdgeId
-  * @returns {vis.Edge.id} baseEdgeId
-  *
-  * TODO: deprecate in 5.0.0. Method getBaseEdges() is the correct one to use.
-  */
+   * Get the base edge id of clusterEdgeId. cluster edge (clusteredEdgeId) -> cluster edge B -> cluster edge C -> base edge
+   *
+   * @param {vis.Edge.id} clusteredEdgeId
+   * @returns {vis.Edge.id} baseEdgeId
+   *
+   * TODO: deprecate in 5.0.0. Method getBaseEdges() is the correct one to use.
+   */
   getBaseEdge(clusteredEdgeId) {
     // Just kludge this by returning the first base edge id found
     return this.getBaseEdges(clusteredEdgeId)[0];
   }
-
 
   /**
    * Get all regular edges for this clustered edge id.
@@ -13844,14 +14215,14 @@ class ClusterEngine {
    */
   getBaseEdges(clusteredEdgeId) {
     const IdsToHandle = [clusteredEdgeId];
-    const doneIds     = [];
-    const foundIds    = [];
-    const max     = 100;
+    const doneIds = [];
+    const foundIds = [];
+    const max = 100;
     let counter = 0;
 
     while (IdsToHandle.length > 0 && counter < max) {
       const nextId = IdsToHandle.pop();
-      if (nextId === undefined) continue;     // Paranoia here and onwards
+      if (nextId === undefined) continue; // Paranoia here and onwards
       const nextEdge = this.body.edges[nextId];
       if (nextEdge === undefined) continue;
       counter++;
@@ -13867,7 +14238,10 @@ class ClusterEngine {
 
           // Don't add if already handled
           // TODO: never triggers; find a test-case which does
-          if (IdsToHandle.indexOf(replacingIds) !== -1 || doneIds.indexOf(replacingIds) !== -1) {
+          if (
+            IdsToHandle.indexOf(replacingIds) !== -1 ||
+            doneIds.indexOf(replacingIds) !== -1
+          ) {
             continue;
           }
 
@@ -13881,33 +14255,31 @@ class ClusterEngine {
     return foundIds;
   }
 
-
   /**
-  * Get the Id the node is connected to
-  * @param {vis.Edge} edge
-  * @param {Node.id} nodeId
-  * @returns {*}
-  * @private
-  */
+   * Get the Id the node is connected to
+   *
+   * @param {vis.Edge} edge
+   * @param {Node.id} nodeId
+   * @returns {*}
+   * @private
+   */
   _getConnectedId(edge, nodeId) {
     if (edge.toId != nodeId) {
       return edge.toId;
-    }
-    else if (edge.fromId != nodeId) {
+    } else if (edge.fromId != nodeId) {
       return edge.fromId;
-    }
-    else {
+    } else {
       return edge.fromId;
     }
   }
 
   /**
-  * We determine how many connections denote an important hub.
-  * We take the mean + 2*std as the important hub size. (Assuming a normal distribution of data, ~2.2%)
-  *
-  * @returns {number}
-  * @private
-  */
+   * We determine how many connections denote an important hub.
+   * We take the mean + 2*std as the important hub size. (Assuming a normal distribution of data, ~2.2%)
+   *
+   * @returns {number}
+   * @private
+   */
   _getHubSize() {
     let average = 0;
     let averageSquared = 0;
@@ -13920,16 +14292,16 @@ class ClusterEngine {
         largestHub = node.edges.length;
       }
       average += node.edges.length;
-      averageSquared += Math.pow(node.edges.length,2);
+      averageSquared += Math.pow(node.edges.length, 2);
       hubCounter += 1;
     }
     average = average / hubCounter;
     averageSquared = averageSquared / hubCounter;
 
-    const variance = averageSquared - Math.pow(average,2);
+    const variance = averageSquared - Math.pow(average, 2);
     const standardDeviation = Math.sqrt(variance);
 
-    let hubThreshold = Math.floor(average + 2*standardDeviation);
+    let hubThreshold = Math.floor(average + 2 * standardDeviation);
 
     // always have at least one to cluster
     if (hubThreshold > largestHub) {
@@ -13939,28 +14311,33 @@ class ClusterEngine {
     return hubThreshold;
   }
 
-
   /**
    * Create an edge for the cluster representation.
    *
    * @param {Node.id} fromId
    * @param {Node.id} toId
    * @param {vis.Edge} baseEdge
-   * @param {Object} clusterEdgeProperties
-   * @param {Object} extraOptions
+   * @param {object} clusterEdgeProperties
+   * @param {object} extraOptions
    * @returns {Edge} newly created clustered edge
    * @private
    */
-  _createClusteredEdge(fromId, toId, baseEdge, clusterEdgeProperties, extraOptions) {
+  _createClusteredEdge(
+    fromId,
+    toId,
+    baseEdge,
+    clusterEdgeProperties,
+    extraOptions
+  ) {
     // copy the options of the edge we will replace
-    const clonedOptions = NetworkUtil.cloneOptions(baseEdge, 'edge');
+    const clonedOptions = NetworkUtil.cloneOptions(baseEdge, "edge");
     // make sure the properties of clusterEdges are superimposed on it
     deepExtend(clonedOptions, clusterEdgeProperties);
 
     // set up the edge
     clonedOptions.from = fromId;
-    clonedOptions.to   = toId;
-    clonedOptions.id   = 'clusterEdge:' + v4();
+    clonedOptions.to = toId;
+    clonedOptions.id = "clusterEdge:" + v4();
 
     // apply the edge specific options to it if specified
     if (extraOptions !== undefined) {
@@ -13977,14 +14354,13 @@ class ClusterEngine {
     return newEdge;
   }
 
-
   /**
    * Add the passed child nodes and edges to the given cluster node.
    *
-   * @param {Object|Node} childNodes  hash of nodes or single node to add in cluster
-   * @param {Object|Edge} childEdges  hash of edges or single edge to take into account when clustering
+   * @param {object | Node} childNodes  hash of nodes or single node to add in cluster
+   * @param {object | Edge} childEdges  hash of edges or single edge to take into account when clustering
    * @param {Node} clusterNode  cluster node to add nodes and edges to
-   * @param {Object} [clusterEdgeProperties]
+   * @param {object} [clusterEdgeProperties]
    * @private
    */
   _clusterEdges(childNodes, childEdges, clusterNode, clusterEdgeProperties) {
@@ -14013,7 +14389,12 @@ class ClusterEngine {
 
     // create the new edges that will connect to the cluster.
     // All self-referencing edges will be added to childEdges here.
-    this._createClusterEdges(childNodes, childEdges, clusterNode, clusterEdgeProperties);
+    this._createClusterEdges(
+      childNodes,
+      childEdges,
+      clusterNode,
+      clusterEdgeProperties
+    );
 
     // disable the childEdges
     for (const edgeId in childEdges) {
@@ -14023,7 +14404,7 @@ class ClusterEngine {
           // cache the options before changing
           this._backupEdgeOptions(edge);
           // disable physics and hide the edge
-          edge.setOptions({physics:false});
+          edge.setOptions({ physics: false });
         }
       }
     }
@@ -14031,12 +14412,14 @@ class ClusterEngine {
     // disable the childNodes
     for (const nodeId in childNodes) {
       if (Object.prototype.hasOwnProperty.call(childNodes, nodeId)) {
-        this.clusteredNodes[nodeId] = {clusterId:clusterNode.id, node: this.body.nodes[nodeId]};
-        this.body.nodes[nodeId].setOptions({physics:false});
+        this.clusteredNodes[nodeId] = {
+          clusterId: clusterNode.id,
+          node: this.body.nodes[nodeId],
+        };
+        this.body.nodes[nodeId].setOptions({ physics: false });
       }
     }
   }
-
 
   /**
    * Determine in which cluster given nodeId resides.
@@ -14061,14 +14444,13 @@ class ClusterEngine {
     return this.body.nodes[clusterId];
   }
 
-
   /**
    * Internal helper function for conditionally removing items in array
    *
    * Done like this because Array.filter() is not fully supported by all IE's.
    *
    * @param {Array} arr
-   * @param {function} callback
+   * @param {Function} callback
    * @returns {Array}
    * @private
    */
@@ -14083,7 +14465,6 @@ class ClusterEngine {
 
     return ret;
   }
-
 
   /**
    * Scan all edges for changes in clustering and adjust this if necessary.
@@ -14112,14 +14493,14 @@ class ClusterEngine {
       });
     };
 
-
     //
     // Remove deleted regular nodes from clustering
     //
 
     // Determine the deleted nodes
     for (nodeId in this.clusteredNodes) {
-      if (!Object.prototype.hasOwnProperty.call(this.clusteredNodes, nodeId)) continue;
+      if (!Object.prototype.hasOwnProperty.call(this.clusteredNodes, nodeId))
+        continue;
       const node = this.body.nodes[nodeId];
 
       if (node === undefined) {
@@ -14128,7 +14509,7 @@ class ClusterEngine {
     }
 
     // Remove nodes from cluster nodes
-    eachClusterNode(function(clusterNode) {
+    eachClusterNode(function (clusterNode) {
       for (let n = 0; n < deletedNodeIds.length; n++) {
         delete clusterNode.containedNodes[deletedNodeIds[n]];
       }
@@ -14138,7 +14519,6 @@ class ClusterEngine {
     for (let n = 0; n < deletedNodeIds.length; n++) {
       delete this.clusteredNodes[deletedNodeIds[n]];
     }
-
 
     //
     // Remove deleted edges from clustering
@@ -14152,10 +14532,10 @@ class ClusterEngine {
       }
     });
 
-    // Cluster nodes can also contain edges which are not clustered, 
+    // Cluster nodes can also contain edges which are not clustered,
     // i.e. nodes 1-2 within cluster with an edge in between.
     // So the cluster nodes also need to be scanned for invalid edges
-    eachClusterNode(function(clusterNode) {
+    eachClusterNode(function (clusterNode) {
       forEach(clusterNode.containedEdges, (edge, edgeId) => {
         if (!edge.endPointsValid() && !deletedEdgeIds[edgeId]) {
           deletedEdgeIds[edgeId] = edgeId;
@@ -14173,14 +14553,14 @@ class ClusterEngine {
         let numValid = 0;
 
         forEach(replacedIds, (containedEdgeId) => {
-          const containedEdge   = this.body.edges[containedEdgeId];
+          const containedEdge = this.body.edges[containedEdgeId];
 
           if (containedEdge !== undefined && containedEdge.endPointsValid()) {
             numValid += 1;
           }
         });
 
-        isValid = (numValid > 0);
+        isValid = numValid > 0;
       }
 
       if (!edge.endPointsValid() || !isValid) {
@@ -14195,20 +14575,24 @@ class ClusterEngine {
 
         forEach(clusterNode.edges, (edge, m) => {
           if (edge.id === deletedEdgeId) {
-            clusterNode.edges[m] = null;  // Don't want to directly delete here, because in the loop
+            clusterNode.edges[m] = null; // Don't want to directly delete here, because in the loop
             return;
           }
 
-          edge.clusteringEdgeReplacingIds = this._filter(edge.clusteringEdgeReplacingIds, function(id) {
-            return !deletedEdgeIds[id];
-          });
+          edge.clusteringEdgeReplacingIds = this._filter(
+            edge.clusteringEdgeReplacingIds,
+            function (id) {
+              return !deletedEdgeIds[id];
+            }
+          );
         });
 
         // Clean up the nulls
-        clusterNode.edges = this._filter(clusterNode.edges, function(item) {return item !== null});
+        clusterNode.edges = this._filter(clusterNode.edges, function (item) {
+          return item !== null;
+        });
       });
     });
-
 
     // Remove from cluster list
     forEach(deletedEdgeIds, (edgeId) => {
@@ -14222,7 +14606,6 @@ class ClusterEngine {
       delete this.body.edges[edgeId];
     });
 
-
     //
     // Check changed cluster state of edges
     //
@@ -14232,9 +14615,10 @@ class ClusterEngine {
     forEach(ids, (edgeId) => {
       const edge = this.body.edges[edgeId];
 
-      const shouldBeClustered = this._isClusteredNode(edge.fromId) || this._isClusteredNode(edge.toId);
+      const shouldBeClustered =
+        this._isClusteredNode(edge.fromId) || this._isClusteredNode(edge.toId);
       if (shouldBeClustered === this._isClusteredEdge(edge.id)) {
-        return;  // all is well
+        return; // all is well
       }
 
       if (shouldBeClustered) {
@@ -14249,20 +14633,19 @@ class ClusterEngine {
           this._clusterEdges(this.body.nodes[edge.toId], edge, clusterTo);
         }
 
-				// TODO: check that it works for both edges clustered
+        // TODO: check that it works for both edges clustered
         //       (This might be paranoia)
       } else {
         delete this._clusterEdges[edgeId];
         this._restoreEdge(edge);
         // This should not be happening, the state should
         // be properly updated at this point.
-        // 
+        //
         // If it *is* reached during normal operation, then we have to implement
         // undo clustering for this edge here.
         // throw new Error('remove edge from clustering not implemented!')
       }
     });
-
 
     // Clusters may be nested to any level. Keep on opening until nothing to open
     let changed = false;
@@ -14271,9 +14654,9 @@ class ClusterEngine {
       const clustersToOpen = [];
 
       // Determine the id's of clusters that need opening
-      eachClusterNode(function(clusterNode) {
+      eachClusterNode(function (clusterNode) {
         const numNodes = Object.keys(clusterNode.containedNodes).length;
-        const allowSingle = (clusterNode.options.allowSingleNodeCluster === true);
+        const allowSingle = clusterNode.options.allowSingleNodeCluster === true;
         if ((allowSingle && numNodes < 1) || (!allowSingle && numNodes < 2)) {
           clustersToOpen.push(clusterNode.id);
         }
@@ -14281,10 +14664,14 @@ class ClusterEngine {
 
       // Open them
       for (let n = 0; n < clustersToOpen.length; ++n) {
-        this.openCluster(clustersToOpen[n], {}, false /* Don't refresh, we're in an refresh/update already */);
+        this.openCluster(
+          clustersToOpen[n],
+          {},
+          false /* Don't refresh, we're in an refresh/update already */
+        );
       }
 
-      continueLoop = (clustersToOpen.length > 0);
+      continueLoop = clustersToOpen.length > 0;
       changed = changed || continueLoop;
     }
 
@@ -14293,28 +14680,26 @@ class ClusterEngine {
     }
   }
 
-
- /**
-  * Determine if node with given id is part of a cluster.
-  *
-  * @param {Node.id} nodeId
-  * @return {boolean} true if part of a cluster.
-  */
+  /**
+   * Determine if node with given id is part of a cluster.
+   *
+   * @param {Node.id} nodeId
+   * @returns {boolean} true if part of a cluster.
+   */
   _isClusteredNode(nodeId) {
     return this.clusteredNodes[nodeId] !== undefined;
   }
 
-
- /**
-  * Determine if edge with given id is not visible due to clustering.
-  *
-  * An edge is considered clustered if:
-  * - it is directly replaced by a clustering edge
-  * - any of its connecting nodes is in a cluster
-  *
-  * @param {vis.Edge.id} edgeId
-  * @return {boolean} true if part of a cluster.
-  */
+  /**
+   * Determine if edge with given id is not visible due to clustering.
+   *
+   * An edge is considered clustered if:
+   * - it is directly replaced by a clustering edge
+   * - any of its connecting nodes is in a cluster
+   *
+   * @param {vis.Edge.id} edgeId
+   * @returns {boolean} true if part of a cluster.
+   */
   _isClusteredEdge(edgeId) {
     return this.clusteredEdges[edgeId] !== undefined;
   }
@@ -14327,15 +14712,15 @@ class ClusterEngine {
  *
  * NOTES:
  *
- * * On node.js, when calling this directly outside of this class, `window` is not defined.
+ * On node.js, when calling this directly outside of this class, `window` is not defined.
  *   This happens even if jsdom is used.
- * * For node.js + jsdom, `window` is available at the moment the constructor is called.
+ * For node.js + jsdom, `window` is available at the moment the constructor is called.
  *   For this reason, the called is placed within the constructor.
- * * Even then, `window.requestAnimationFrame()` is not defined, so it still needs to be added.
- * * During unit testing, it happens that the window object is reset during execution, causing
+ * Even then, `window.requestAnimationFrame()` is not defined, so it still needs to be added.
+ * During unit testing, it happens that the window object is reset during execution, causing
  *   a runtime error due to missing `requestAnimationFrame()`. This needs to be compensated for,
  *   see `_requestNextFrame()`.
- * * Since this is a global object, it may affect other modules besides `Network`. With normal
+ * Since this is a global object, it may affect other modules besides `Network`. With normal
  *   usage, this does not cause any problems. During unit testing, errors may occur. These have
  *   been compensated for, see comment block in _requestNextFrame().
  *
@@ -14345,21 +14730,21 @@ function _initRequestAnimationFrame() {
   let func;
 
   if (window !== undefined) {
-    func = window.requestAnimationFrame
-        || window.mozRequestAnimationFrame
-        || window.webkitRequestAnimationFrame
-        || window.msRequestAnimationFrame;
+    func =
+      window.requestAnimationFrame ||
+      window.mozRequestAnimationFrame ||
+      window.webkitRequestAnimationFrame ||
+      window.msRequestAnimationFrame;
   }
 
   if (func === undefined) {
     // window or method not present, setting mock requestAnimationFrame
-    window.requestAnimationFrame =
-     function(callback) {
-       //console.log("Called mock requestAnimationFrame");
-       callback();
-     };
+    window.requestAnimationFrame = function (callback) {
+      //console.log("Called mock requestAnimationFrame");
+      callback();
+    };
   } else {
-     window.requestAnimationFrame = func;
+    window.requestAnimationFrame = func;
   }
 }
 
@@ -14368,7 +14753,7 @@ function _initRequestAnimationFrame() {
  */
 class CanvasRenderer {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Canvas} canvas
    */
   constructor(body, canvas) {
@@ -14401,24 +14786,35 @@ class CanvasRenderer {
    * Binds event listeners
    */
   bindEventListeners() {
-    this.body.emitter.on("dragStart", () => { this.dragging = true; });
-    this.body.emitter.on("dragEnd", () => { this.dragging = false; });
+    this.body.emitter.on("dragStart", () => {
+      this.dragging = true;
+    });
+    this.body.emitter.on("dragEnd", () => {
+      this.dragging = false;
+    });
     this.body.emitter.on("zoom", () => {
       this.zooming = true;
       window.clearTimeout(this.zoomTimeoutId);
-      this.zoomTimeoutId = window.setTimeout(() => { 
+      this.zoomTimeoutId = window.setTimeout(() => {
         this.zooming = false;
         this._requestRedraw.bind(this)();
-      }, 250); 
+      }, 250);
     });
-    this.body.emitter.on("_resizeNodes", () => { this._resizeNodes(); });
+    this.body.emitter.on("_resizeNodes", () => {
+      this._resizeNodes();
+    });
     this.body.emitter.on("_redraw", () => {
       if (this.renderingActive === false) {
         this._redraw();
       }
     });
-    this.body.emitter.on("_blockRedraw", () => {this.allowRedraw = false;});
-    this.body.emitter.on("_allowRedraw", () => {this.allowRedraw = true; this.redrawRequested = false;});
+    this.body.emitter.on("_blockRedraw", () => {
+      this.allowRedraw = false;
+    });
+    this.body.emitter.on("_allowRedraw", () => {
+      this.allowRedraw = true;
+      this.redrawRequested = false;
+    });
     this.body.emitter.on("_requestRedraw", this._requestRedraw.bind(this));
     this.body.emitter.on("_startRendering", () => {
       this.renderRequests += 1;
@@ -14430,45 +14826,41 @@ class CanvasRenderer {
       this.renderingActive = this.renderRequests > 0;
       this.renderTimer = undefined;
     });
-    this.body.emitter.on('destroy',  () => {
+    this.body.emitter.on("destroy", () => {
       this.renderRequests = 0;
       this.allowRedraw = false;
       this.renderingActive = false;
       if (this.requiresTimeout === true) {
         clearTimeout(this.renderTimer);
-      }
-      else {
+      } else {
         window.cancelAnimationFrame(this.renderTimer);
       }
       this.body.emitter.off();
     });
-
-
   }
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
-      const fields = ['hideEdgesOnDrag', 'hideEdgesOnZoom', 'hideNodesOnDrag'];
-      selectiveDeepExtend(fields,this.options, options);
+      const fields = ["hideEdgesOnDrag", "hideEdgesOnZoom", "hideNodesOnDrag"];
+      selectiveDeepExtend(fields, this.options, options);
     }
   }
-
 
   /**
    * Prepare the drawing of the next frame.
    *
    * Calls the callback when the next frame can or will be drawn.
    *
-   * @param {function} callback
+   * @param {Function} callback
    * @param {number} delay - timeout case only, wait this number of milliseconds
-   * @returns {function|undefined}
+   * @returns {Function | undefined}
    * @private
    */
-  _requestNextFrame(callback, delay) { 
+  _requestNextFrame(callback, delay) {
     // During unit testing, it happens that the mock window object is reset while
     // the next frame is still pending. Then, either 'window' is not present, or
     // 'requestAnimationFrame()' is not present because it is not defined on the
@@ -14480,12 +14872,12 @@ class CanvasRenderer {
     // This is not something that will happen in normal operation, but we still need
     // to take it into account.
     //
-    if (typeof window === 'undefined') return;  // Doing `if (window === undefined)` does not work here!
+    if (typeof window === "undefined") return; // Doing `if (window === undefined)` does not work here!
 
     let timer;
 
-    const myWindow = window;  // Grab a reference to reduce the possibility that 'window' is reset
-                            // while running this method.
+    const myWindow = window; // Grab a reference to reduce the possibility that 'window' is reset
+    // while running this method.
 
     if (this.requiresTimeout === true) {
       // wait given number of milliseconds and perform the animation step function
@@ -14506,7 +14898,10 @@ class CanvasRenderer {
   _startRendering() {
     if (this.renderingActive === true) {
       if (this.renderTimer === undefined) {
-        this.renderTimer = this._requestNextFrame(this._renderStep.bind(this), this.simulationInterval);
+        this.renderTimer = this._requestNextFrame(
+          this._renderStep.bind(this),
+          this.simulationInterval
+        );
       }
     }
   }
@@ -14539,23 +14934,31 @@ class CanvasRenderer {
    * chart will be resized too.
    */
   redraw() {
-    this.body.emitter.emit('setSize');
+    this.body.emitter.emit("setSize");
     this._redraw();
   }
 
   /**
    * Redraw the network with the current data
+   *
    * @private
    */
   _requestRedraw() {
-    if (this.redrawRequested !== true && this.renderingActive === false && this.allowRedraw === true) {
+    if (
+      this.redrawRequested !== true &&
+      this.renderingActive === false &&
+      this.allowRedraw === true
+    ) {
       this.redrawRequested = true;
-      this._requestNextFrame(() => {this._redraw(false);}, 0);
+      this._requestNextFrame(() => {
+        this._redraw(false);
+      }, 0);
     }
   }
 
   /**
    * Redraw the network with the current data
+   *
    * @param {boolean} [hidden=false] | Used to get the first estimate of the node sizes.
    *                                   Only the nodes are drawn after which they are quickly drawn over.
    * @private
@@ -14566,8 +14969,15 @@ class CanvasRenderer {
 
       this.redrawRequested = false;
 
+      const drawLater = {
+        drawExternalLabels: null,
+      };
+
       // when the container div was hidden, this fixes it back up!
-      if (this.canvas.frame.canvas.width === 0 || this.canvas.frame.canvas.height === 0) {
+      if (
+        this.canvas.frame.canvas.width === 0 ||
+        this.canvas.frame.canvas.height === 0
+      ) {
         this.canvas.setSize();
       }
 
@@ -14596,36 +15006,48 @@ class CanvasRenderer {
 
       if (hidden === false) {
         if (
-          (this.dragging === false || (this.dragging === true && this.options.hideEdgesOnDrag === false)) && 
-          (this.zooming === false || (this.zooming === true && this.options.hideEdgesOnZoom === false))
+          (this.dragging === false ||
+            (this.dragging === true &&
+              this.options.hideEdgesOnDrag === false)) &&
+          (this.zooming === false ||
+            (this.zooming === true && this.options.hideEdgesOnZoom === false))
         ) {
           this._drawEdges(ctx);
         }
       }
 
-      if (this.dragging === false || (this.dragging === true && this.options.hideNodesOnDrag === false)) {
-        this._drawNodes(ctx, hidden);
+      if (
+        this.dragging === false ||
+        (this.dragging === true && this.options.hideNodesOnDrag === false)
+      ) {
+        const { drawExternalLabels } = this._drawNodes(ctx, hidden);
+        drawLater.drawExternalLabels = drawExternalLabels;
       }
 
       // draw the arrows last so they will be at the top
       if (hidden === false) {
         if (
-          (this.dragging === false || (this.dragging === true && this.options.hideEdgesOnDrag === false)) && 
-          (this.zooming === false || (this.zooming === true && this.options.hideEdgesOnZoom === false))
+          (this.dragging === false ||
+            (this.dragging === true &&
+              this.options.hideEdgesOnDrag === false)) &&
+          (this.zooming === false ||
+            (this.zooming === true && this.options.hideEdgesOnZoom === false))
         ) {
           this._drawArrows(ctx);
         }
+      }
+
+      if (drawLater.drawExternalLabels != null) {
+        drawLater.drawExternalLabels();
       }
 
       if (hidden === false) {
         this._drawSelectionBox(ctx);
       }
 
-
       ctx.beginPath();
       this.body.emitter.emit("afterDrawing", ctx);
       ctx.closePath();
-
 
       // restore original scaling and translation
       ctx.restore();
@@ -14634,7 +15056,6 @@ class CanvasRenderer {
       }
     }
   }
-
 
   /**
    * Redraw all nodes
@@ -14672,6 +15093,7 @@ class CanvasRenderer {
    * @param {CanvasRenderingContext2D} ctx  2D context of a HTML canvas
    * @param {boolean} [alwaysShow]
    * @private
+   * @returns {object} Callbacks to draw later on higher layers.
    */
   _drawNodes(ctx, alwaysShow = false) {
     const nodes = this.body.nodes;
@@ -14680,12 +15102,19 @@ class CanvasRenderer {
     const selected = [];
     const hovered = [];
     const margin = 20;
-    const topLeft = this.canvas.DOMtoCanvas({x:-margin,y:-margin});
+    const topLeft = this.canvas.DOMtoCanvas({ x: -margin, y: -margin });
     const bottomRight = this.canvas.DOMtoCanvas({
-      x: this.canvas.frame.canvas.clientWidth+margin,
-      y: this.canvas.frame.canvas.clientHeight+margin
+      x: this.canvas.frame.canvas.clientWidth + margin,
+      y: this.canvas.frame.canvas.clientHeight + margin,
     });
-    const viewableArea = {top:topLeft.y,left:topLeft.x,bottom:bottomRight.y,right:bottomRight.x};
+    const viewableArea = {
+      top: topLeft.y,
+      left: topLeft.x,
+      bottom: bottomRight.y,
+      right: bottomRight.x,
+    };
+
+    const drawExternalLabels = [];
 
     // draw unselected nodes;
     for (let i = 0; i < nodeIndices.length; i++) {
@@ -14695,15 +15124,18 @@ class CanvasRenderer {
         hovered.push(nodeIndices[i]);
       } else if (node.isSelected()) {
         selected.push(nodeIndices[i]);
-      }
-      else {
+      } else {
         if (alwaysShow === true) {
-          node.draw(ctx);
-        }
-        else if (node.isBoundingBoxOverlappingWith(viewableArea) === true) {
-          node.draw(ctx);
-        }
-        else {
+          const drawLater = node.draw(ctx);
+          if (drawLater.drawExternalLabel != null) {
+            drawExternalLabels.push(drawLater.drawExternalLabel);
+          }
+        } else if (node.isBoundingBoxOverlappingWith(viewableArea) === true) {
+          const drawLater = node.draw(ctx);
+          if (drawLater.drawExternalLabel != null) {
+            drawExternalLabels.push(drawLater.drawExternalLabel);
+          }
+        } else {
           node.updateBoundingBox(ctx, node.selected);
         }
       }
@@ -14716,20 +15148,33 @@ class CanvasRenderer {
     // draw the selected nodes on top
     for (i = 0; i < selectedLength; i++) {
       node = nodes[selected[i]];
-      node.draw(ctx);
+      const drawLater = node.draw(ctx);
+      if (drawLater.drawExternalLabel != null) {
+        drawExternalLabels.push(drawLater.drawExternalLabel);
+      }
     }
 
     // draw hovered nodes above everything else: fixes https://github.com/visjs/vis-network/issues/226
     for (i = 0; i < hoveredLength; i++) {
       node = nodes[hovered[i]];
-      node.draw(ctx);
+      const drawLater = node.draw(ctx);
+      if (drawLater.drawExternalLabel != null) {
+        drawExternalLabels.push(drawLater.drawExternalLabel);
+      }
     }
 
+    return {
+      drawExternalLabels: () => {
+        for (const draw of drawExternalLabels) {
+          draw();
+        }
+      },
+    };
   }
-
 
   /**
    * Redraw all edges
+   *
    * @param {CanvasRenderingContext2D} ctx  2D context of a HTML canvas
    * @private
    */
@@ -14747,6 +15192,7 @@ class CanvasRenderer {
 
   /**
    * Redraw all arrows
+   *
    * @param {CanvasRenderingContext2D} ctx  2D context of a HTML canvas
    * @private
    */
@@ -14765,39 +15211,55 @@ class CanvasRenderer {
   /**
    * Determine if the browser requires a setTimeout or a requestAnimationFrame. This was required because
    * some implementations (safari and IE9) did not support requestAnimationFrame
+   *
    * @private
    */
   _determineBrowserMethod() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       const browserType = navigator.userAgent.toLowerCase();
       this.requiresTimeout = false;
-      if (browserType.indexOf('msie 9.0') != -1) { // IE 9
+      if (browserType.indexOf("msie 9.0") != -1) {
+        // IE 9
         this.requiresTimeout = true;
-      }
-      else if (browserType.indexOf('safari') != -1) {  // safari
-        if (browserType.indexOf('chrome') <= -1) {
+      } else if (browserType.indexOf("safari") != -1) {
+        // safari
+        if (browserType.indexOf("chrome") <= -1) {
           this.requiresTimeout = true;
         }
       }
-    }
-    else {
+    } else {
       this.requiresTimeout = true;
     }
   }
 
-   /**
+  /**
    * Redraw selection box
+   *
    * @param {CanvasRenderingContext2D} ctx  2D context of a HTML canvas
    * @private
    */
   _drawSelectionBox(ctx) {
     if (this.body.selectionBox.show) {
       ctx.beginPath();
-      const width = this.body.selectionBox.position.end.x - this.body.selectionBox.position.start.x;
-      const height = this.body.selectionBox.position.end.y - this.body.selectionBox.position.start.y;
-      ctx.rect(this.body.selectionBox.position.start.x, this.body.selectionBox.position.start.y, width, height);
+      const width =
+        this.body.selectionBox.position.end.x -
+        this.body.selectionBox.position.start.x;
+      const height =
+        this.body.selectionBox.position.end.y -
+        this.body.selectionBox.position.start.y;
+      ctx.rect(
+        this.body.selectionBox.position.start.x,
+        this.body.selectionBox.position.start.y,
+        width,
+        height
+      );
       ctx.fillStyle = "rgba(151, 194, 252, 0.2)";
-      ctx.fillRect(this.body.selectionBox.position.start.x, this.body.selectionBox.position.start.y, width, height);
+      ctx.fillRect(
+        this.body.selectionBox.position.start.x,
+        this.body.selectionBox.position.start.y,
+        width,
+        height
+      );
       ctx.strokeStyle = "rgba(151, 194, 252, 1)";
       ctx.stroke();
     } else {
@@ -14808,33 +15270,35 @@ class CanvasRenderer {
 
 /**
  * Register a touch event, taking place before a gesture
+ *
  * @param {Hammer} hammer       A hammer instance
- * @param {function} callback   Callback, called as callback(event)
+ * @param {Function} callback   Callback, called as callback(event)
  */
-function onTouch (hammer, callback) {
+function onTouch(hammer, callback) {
   callback.inputHandler = function (event) {
     if (event.isFirst) {
       callback(event);
     }
   };
 
-  hammer.on('hammer.input', callback.inputHandler);
+  hammer.on("hammer.input", callback.inputHandler);
 }
 
 /**
  * Register a release event, taking place after a gesture
+ *
  * @param {Hammer} hammer       A hammer instance
- * @param {function} callback   Callback, called as callback(event)
+ * @param {Function} callback   Callback, called as callback(event)
  * @returns {*}
  */
-function onRelease (hammer, callback) {
+function onRelease(hammer, callback) {
   callback.inputHandler = function (event) {
     if (event.isFinal) {
       callback(event);
     }
   };
 
-  return hammer.on('hammer.input', callback.inputHandler);
+  return hammer.on("hammer.input", callback.inputHandler);
 }
 
 /**
@@ -14845,22 +15309,21 @@ function onRelease (hammer, callback) {
  */
 class Canvas {
   /**
-   * @param {Object} body
+   * @param {object} body
    */
   constructor(body) {
     this.body = body;
     this.pixelRatio = 1;
-    this.resizeTimer = undefined;
-    this.resizeFunction = this._onResize.bind(this);
     this.cameraState = {};
     this.initialized = false;
     this.canvasViewCenter = {};
+    this._cleanupCallbacks = [];
 
     this.options = {};
     this.defaultOptions = {
       autoResize: true,
-      height: '100%',
-      width: '100%'
+      height: "100%",
+      width: "100%",
     };
     Object.assign(this.options, this.defaultOptions);
 
@@ -14889,25 +15352,50 @@ class Canvas {
   }
 
   /**
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
-      const fields = ['width','height','autoResize'];
-      selectiveDeepExtend(fields,this.options, options);
+      const fields = ["width", "height", "autoResize"];
+      selectiveDeepExtend(fields, this.options, options);
     }
 
+    // Automatically adapt to changing size of the container element.
+    this._cleanUp();
     if (this.options.autoResize === true) {
-      // automatically adapt to a changing size of the browser.
-      this._cleanUp();
-      this.resizeTimer = setInterval(() => {
-        const changed = this.setSize();
-        if (changed === true) {
-          this.body.emitter.emit("_requestRedraw");
-        }
-      }, 1000);
-      this.resizeFunction = this._onResize.bind(this);
-      addEventListener(window,'resize',this.resizeFunction);
+      if (window.ResizeObserver) {
+        // decent browsers, immediate reactions
+        const observer = new ResizeObserver(() => {
+          const changed = this.setSize();
+          if (changed === true) {
+            this.body.emitter.emit("_requestRedraw");
+          }
+        });
+        const { frame } = this;
+
+        observer.observe(frame);
+        this._cleanupCallbacks.push(() => {
+          observer.unobserve(frame);
+        });
+      } else {
+        // IE11, continous polling
+        const resizeTimer = setInterval(() => {
+          const changed = this.setSize();
+          if (changed === true) {
+            this.body.emitter.emit("_requestRedraw");
+          }
+        }, 1000);
+        this._cleanupCallbacks.push(() => {
+          clearInterval(resizeTimer);
+        });
+      }
+
+      // Automatically adapt to changing size of the browser.
+      const resizeFunction = this._onResize.bind(this);
+      window.addEventListener("resize", resizeFunction);
+      this._cleanupCallbacks.push(() => {
+        window.removeEventListener("resize", resizeFunction);
+      });
     }
   }
 
@@ -14915,12 +15403,16 @@ class Canvas {
    * @private
    */
   _cleanUp() {
-    // automatically adapt to a changing size of the browser.
-    if (this.resizeTimer !== undefined) {
-      clearInterval(this.resizeTimer);
-    }
-    removeEventListener(window,'resize',this.resizeFunction);
-    this.resizeFunction = undefined;
+    this._cleanupCallbacks
+      .splice(0)
+      .reverse()
+      .forEach((callback) => {
+        try {
+          callback();
+        } catch (error) {
+          console.error(error);
+        }
+      });
   }
 
   /**
@@ -14943,14 +15435,15 @@ class Canvas {
       this.cameraState.previousHeight = this.frame.canvas.height / pixelRatio;
       this.cameraState.scale = this.body.view.scale;
       this.cameraState.position = this.DOMtoCanvas({
-        x: 0.5 * this.frame.canvas.width / pixelRatio,
-        y: 0.5 * this.frame.canvas.height / pixelRatio
+        x: (0.5 * this.frame.canvas.width) / pixelRatio,
+        y: (0.5 * this.frame.canvas.height) / pixelRatio,
       });
     }
   }
 
   /**
    * Set the cameraState
+   *
    * @private
    */
   _setCameraState() {
@@ -14962,18 +15455,21 @@ class Canvas {
       this.cameraState.previousWidth > 0 &&
       this.cameraState.previousHeight > 0
     ) {
-
-      const widthRatio = (this.frame.canvas.width / this.pixelRatio) / this.cameraState.previousWidth;
-      const heightRatio = (this.frame.canvas.height / this.pixelRatio) / this.cameraState.previousHeight;
+      const widthRatio =
+        this.frame.canvas.width /
+        this.pixelRatio /
+        this.cameraState.previousWidth;
+      const heightRatio =
+        this.frame.canvas.height /
+        this.pixelRatio /
+        this.cameraState.previousHeight;
       let newScale = this.cameraState.scale;
 
       if (widthRatio != 1 && heightRatio != 1) {
         newScale = this.cameraState.scale * 0.5 * (widthRatio + heightRatio);
-      }
-      else if (widthRatio != 1) {
+      } else if (widthRatio != 1) {
         newScale = this.cameraState.scale * widthRatio;
-      }
-      else if (heightRatio != 1) {
+      } else if (heightRatio != 1) {
         newScale = this.cameraState.scale * heightRatio;
       }
 
@@ -14981,15 +15477,18 @@ class Canvas {
       // this comes from the view module.
       const currentViewCenter = this.DOMtoCanvas({
         x: 0.5 * this.frame.canvas.clientWidth,
-        y: 0.5 * this.frame.canvas.clientHeight
+        y: 0.5 * this.frame.canvas.clientHeight,
       });
 
-      const distanceFromCenter = { // offset from view, distance view has to change by these x and y to center the node
+      const distanceFromCenter = {
+        // offset from view, distance view has to change by these x and y to center the node
         x: currentViewCenter.x - this.cameraState.position.x,
-        y: currentViewCenter.y - this.cameraState.position.y
+        y: currentViewCenter.y - this.cameraState.position.y,
       };
-      this.body.view.translation.x += distanceFromCenter.x * this.body.view.scale;
-      this.body.view.translation.y += distanceFromCenter.y * this.body.view.scale;
+      this.body.view.translation.x +=
+        distanceFromCenter.x * this.body.view.scale;
+      this.body.view.translation.y +=
+        distanceFromCenter.y * this.body.view.scale;
     }
   }
 
@@ -15000,20 +15499,19 @@ class Canvas {
    * @private
    */
   _prepareValue(value) {
-    if (typeof value === 'number') {
-      return value + 'px';
-    }
-    else if (typeof value === 'string') {
-      if (value.indexOf('%') !== -1 || value.indexOf('px') !== -1) {
+    if (typeof value === "number") {
+      return value + "px";
+    } else if (typeof value === "string") {
+      if (value.indexOf("%") !== -1 || value.indexOf("px") !== -1) {
         return value;
-      }
-      else if (value.indexOf('%') === -1) {
-        return value + 'px';
+      } else if (value.indexOf("%") === -1) {
+        return value + "px";
       }
     }
-    throw new Error('Could not use the value supplied for width or height:' + value);
+    throw new Error(
+      "Could not use the value supplied for width or height:" + value
+    );
   }
-
 
   /**
    * Create the HTML
@@ -15024,27 +15522,26 @@ class Canvas {
       this.body.container.removeChild(this.body.container.firstChild);
     }
 
-    this.frame = document.createElement('div');
-    this.frame.className = 'vis-network';
-    this.frame.style.position = 'relative';
-    this.frame.style.overflow = 'hidden';
-    this.frame.tabIndex = 900; // tab index is required for keycharm to bind keystrokes to the div instead of the window
+    this.frame = document.createElement("div");
+    this.frame.className = "vis-network";
+    this.frame.style.position = "relative";
+    this.frame.style.overflow = "hidden";
+    this.frame.tabIndex = 0; // tab index is required for keycharm to bind keystrokes to the div instead of the window
 
     //////////////////////////////////////////////////////////////////
 
     this.frame.canvas = document.createElement("canvas");
-    this.frame.canvas.style.position = 'relative';
+    this.frame.canvas.style.position = "relative";
     this.frame.appendChild(this.frame.canvas);
 
     if (!this.frame.canvas.getContext) {
-      const noCanvas = document.createElement( 'DIV' );
-      noCanvas.style.color = 'red';
-      noCanvas.style.fontWeight =  'bold' ;
-      noCanvas.style.padding =  '10px';
-      noCanvas.innerHTML =  'Error: your browser does not support HTML canvas';
+      const noCanvas = document.createElement("DIV");
+      noCanvas.style.color = "red";
+      noCanvas.style.fontWeight = "bold";
+      noCanvas.style.padding = "10px";
+      noCanvas.innerText = "Error: your browser does not support HTML canvas";
       this.frame.canvas.appendChild(noCanvas);
-    }
-    else {
+    } else {
       this._setPixelRatio();
       this.setTransform();
     }
@@ -15053,14 +15550,17 @@ class Canvas {
     this.body.container.appendChild(this.frame);
 
     this.body.view.scale = 1;
-    this.body.view.translation = {x: 0.5 * this.frame.canvas.clientWidth,y: 0.5 * this.frame.canvas.clientHeight};
+    this.body.view.translation = {
+      x: 0.5 * this.frame.canvas.clientWidth,
+      y: 0.5 * this.frame.canvas.clientHeight,
+    };
 
     this._bindHammer();
   }
 
-
   /**
    * This function binds hammer, it can be repeated over and over due to the uniqueness check.
+   *
    * @private
    */
   _bindHammer() {
@@ -15071,33 +15571,59 @@ class Canvas {
     this.pinch = {};
 
     // init hammer
-    this.hammer = new hammer(this.frame.canvas);
-    this.hammer.get('pinch').set({enable: true});
+    this.hammer = new Hammer(this.frame.canvas);
+    this.hammer.get("pinch").set({ enable: true });
     // enable to get better response, todo: test on mobile.
-    this.hammer.get('pan').set({threshold:5, direction: hammer.DIRECTION_ALL});
+    this.hammer
+      .get("pan")
+      .set({ threshold: 5, direction: Hammer.DIRECTION_ALL });
 
-    onTouch(this.hammer, (event) => {this.body.eventListeners.onTouch(event);});
-    this.hammer.on('tap',       (event) => {this.body.eventListeners.onTap(event);});
-    this.hammer.on('doubletap', (event) => {this.body.eventListeners.onDoubleTap(event);});
-    this.hammer.on('press',     (event) => {this.body.eventListeners.onHold(event);});
-    this.hammer.on('panstart',  (event) => {this.body.eventListeners.onDragStart(event);});
-    this.hammer.on('panmove',   (event) => {this.body.eventListeners.onDrag(event);});
-    this.hammer.on('panend',    (event) => {this.body.eventListeners.onDragEnd(event);});
-    this.hammer.on('pinch',     (event) => {this.body.eventListeners.onPinch(event);});
+    onTouch(this.hammer, (event) => {
+      this.body.eventListeners.onTouch(event);
+    });
+    this.hammer.on("tap", (event) => {
+      this.body.eventListeners.onTap(event);
+    });
+    this.hammer.on("doubletap", (event) => {
+      this.body.eventListeners.onDoubleTap(event);
+    });
+    this.hammer.on("press", (event) => {
+      this.body.eventListeners.onHold(event);
+    });
+    this.hammer.on("panstart", (event) => {
+      this.body.eventListeners.onDragStart(event);
+    });
+    this.hammer.on("panmove", (event) => {
+      this.body.eventListeners.onDrag(event);
+    });
+    this.hammer.on("panend", (event) => {
+      this.body.eventListeners.onDragEnd(event);
+    });
+    this.hammer.on("pinch", (event) => {
+      this.body.eventListeners.onPinch(event);
+    });
 
     // TODO: neatly cleanup these handlers when re-creating the Canvas, IF these are done with hammer, event.stopPropagation will not work?
-    this.frame.canvas.addEventListener('wheel', (event) => {this.body.eventListeners.onMouseWheel(event);});
+    this.frame.canvas.addEventListener("wheel", (event) => {
+      this.body.eventListeners.onMouseWheel(event);
+    });
 
-    this.frame.canvas.addEventListener('mousemove', (event) => {this.body.eventListeners.onMouseMove(event);});
-    this.frame.canvas.addEventListener('contextmenu', (event) => {this.body.eventListeners.onContext(event);});
+    this.frame.canvas.addEventListener("mousemove", (event) => {
+      this.body.eventListeners.onMouseMove(event);
+    });
+    this.frame.canvas.addEventListener("contextmenu", (event) => {
+      this.body.eventListeners.onContext(event);
+    });
 
-    this.hammerFrame = new hammer(this.frame);
-    onRelease(this.hammerFrame, (event) => {this.body.eventListeners.onRelease(event);});
+    this.hammerFrame = new Hammer(this.frame);
+    onRelease(this.hammerFrame, (event) => {
+      this.body.eventListeners.onRelease(event);
+    });
   }
-
 
   /**
    * Set a new size for the network
+   *
    * @param {string} width   Width in pixels or percentage (for example '800px'
    *                         or '50%')
    * @param {string} height  Height in pixels or percentage  (for example '400px'
@@ -15106,7 +15632,7 @@ class Canvas {
    */
   setSize(width = this.options.width, height = this.options.height) {
     width = this._prepareValue(width);
-    height= this._prepareValue(height);
+    height = this._prepareValue(height);
 
     let emitEvent = false;
     const oldWidth = this.frame.canvas.width;
@@ -15127,37 +15653,52 @@ class Canvas {
     const previousRatio = this.pixelRatio; // we cache this because the camera state storage needs the old value
     this._setPixelRatio();
 
-    if (width != this.options.width || height != this.options.height || this.frame.style.width != width || this.frame.style.height != height) {
+    if (
+      width != this.options.width ||
+      height != this.options.height ||
+      this.frame.style.width != width ||
+      this.frame.style.height != height
+    ) {
       this._getCameraState(previousRatio);
 
       this.frame.style.width = width;
       this.frame.style.height = height;
 
-      this.frame.canvas.style.width = '100%';
-      this.frame.canvas.style.height = '100%';
+      this.frame.canvas.style.width = "100%";
+      this.frame.canvas.style.height = "100%";
 
-      this.frame.canvas.width = Math.round(this.frame.canvas.clientWidth * this.pixelRatio);
-      this.frame.canvas.height = Math.round(this.frame.canvas.clientHeight * this.pixelRatio);
+      this.frame.canvas.width = Math.round(
+        this.frame.canvas.clientWidth * this.pixelRatio
+      );
+      this.frame.canvas.height = Math.round(
+        this.frame.canvas.clientHeight * this.pixelRatio
+      );
 
       this.options.width = width;
       this.options.height = height;
 
       this.canvasViewCenter = {
         x: 0.5 * this.frame.clientWidth,
-        y: 0.5 * this.frame.clientHeight
+        y: 0.5 * this.frame.clientHeight,
       };
 
       emitEvent = true;
-    }
-    else {
+    } else {
       // this would adapt the width of the canvas to the width from 100% if and only if
       // there is a change.
 
-      const newWidth  = Math.round(this.frame.canvas.clientWidth  * this.pixelRatio);
-      const newHeight = Math.round(this.frame.canvas.clientHeight * this.pixelRatio);
+      const newWidth = Math.round(
+        this.frame.canvas.clientWidth * this.pixelRatio
+      );
+      const newHeight = Math.round(
+        this.frame.canvas.clientHeight * this.pixelRatio
+      );
 
       // store the camera if there is a change in size.
-      if (this.frame.canvas.width !== newWidth || this.frame.canvas.height !== newHeight) {
+      if (
+        this.frame.canvas.width !== newWidth ||
+        this.frame.canvas.height !== newHeight
+      ) {
         this._getCameraState(previousRatio);
       }
 
@@ -15172,17 +15713,16 @@ class Canvas {
     }
 
     if (emitEvent === true) {
-      this.body.emitter.emit('resize', {
-        width    : Math.round(this.frame.canvas.width / this.pixelRatio),
-        height   : Math.round(this.frame.canvas.height / this.pixelRatio),
-        oldWidth : Math.round(oldWidth / this.pixelRatio),
-        oldHeight: Math.round(oldHeight / this.pixelRatio)
+      this.body.emitter.emit("resize", {
+        width: Math.round(this.frame.canvas.width / this.pixelRatio),
+        height: Math.round(this.frame.canvas.height / this.pixelRatio),
+        oldWidth: Math.round(oldWidth / this.pixelRatio),
+        oldHeight: Math.round(oldHeight / this.pixelRatio),
       });
 
       // restore the camera on change.
       this._setCameraState();
     }
-
 
     // set initialized so the get and set camera will work from now on.
     this.initialized = true;
@@ -15206,20 +15746,23 @@ class Canvas {
   _determinePixelRatio() {
     const ctx = this.getContext();
     if (ctx === undefined) {
-     throw new Error("Could not get canvax context");
+      throw new Error("Could not get canvax context");
     }
 
     let numerator = 1;
-    if(typeof window !== 'undefined') {  // (window !== undefined) doesn't work here!
+    if (typeof window !== "undefined") {
+      // (window !== undefined) doesn't work here!
       // Protection during unit tests, where 'window' can be missing
-      numerator = (window.devicePixelRatio || 1);
+      numerator = window.devicePixelRatio || 1;
     }
 
-    const denominator = (ctx.webkitBackingStorePixelRatio ||
+    const denominator =
+      ctx.webkitBackingStorePixelRatio ||
       ctx.mozBackingStorePixelRatio ||
-      ctx.msBackingStorePixelRatio  ||
-      ctx.oBackingStorePixelRatio   ||
-      ctx.backingStorePixelRatio    || 1);
+      ctx.msBackingStorePixelRatio ||
+      ctx.oBackingStorePixelRatio ||
+      ctx.backingStorePixelRatio ||
+      1;
 
     return numerator / denominator;
   }
@@ -15239,16 +15782,16 @@ class Canvas {
   setTransform() {
     const ctx = this.getContext();
     if (ctx === undefined) {
-     throw new Error("Could not get canvax context");
+      throw new Error("Could not get canvax context");
     }
 
     ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
   }
 
-
   /**
    * Convert the X coordinate in DOM-space (coordinate point in browser relative to the container div) to
    * the X coordinate in canvas-space (the simulation sandbox, which the camera looks upon)
+   *
    * @param {number} x
    * @returns {number}
    * @private
@@ -15260,6 +15803,7 @@ class Canvas {
   /**
    * Convert the X coordinate in canvas-space (the simulation sandbox, which the camera looks upon) to
    * the X coordinate in DOM-space (coordinate point in browser relative to the container div)
+   *
    * @param {number} x
    * @returns {number}
    * @private
@@ -15271,6 +15815,7 @@ class Canvas {
   /**
    * Convert the Y coordinate in DOM-space (coordinate point in browser relative to the container div) to
    * the Y coordinate in canvas-space (the simulation sandbox, which the camera looks upon)
+   *
    * @param {number} y
    * @returns {number}
    * @private
@@ -15282,6 +15827,7 @@ class Canvas {
   /**
    * Convert the Y coordinate in canvas-space (the simulation sandbox, which the camera looks upon) to
    * the Y coordinate in DOM-space (coordinate point in browser relative to the container div)
+   *
    * @param {number} y
    * @returns {number}
    * @private
@@ -15290,13 +15836,15 @@ class Canvas {
     return y * this.body.view.scale + this.body.view.translation.y;
   }
 
-
   /**
    * @param {point} pos
    * @returns {point}
    */
-  canvasToDOM (pos) {
-    return {x: this._XconvertCanvasToDOM(pos.x), y: this._YconvertCanvasToDOM(pos.y)};
+  canvasToDOM(pos) {
+    return {
+      x: this._XconvertCanvasToDOM(pos.x),
+      y: this._YconvertCanvasToDOM(pos.y),
+    };
   }
 
   /**
@@ -15304,10 +15852,51 @@ class Canvas {
    * @param {point} pos
    * @returns {point}
    */
-  DOMtoCanvas (pos) {
-    return {x: this._XconvertDOMtoCanvas(pos.x), y: this._YconvertDOMtoCanvas(pos.y)};
+  DOMtoCanvas(pos) {
+    return {
+      x: this._XconvertDOMtoCanvas(pos.x),
+      y: this._YconvertDOMtoCanvas(pos.y),
+    };
   }
+}
 
+/**
+ * Validate the fit options, replace missing optional values by defaults etc.
+ *
+ * @param rawOptions - The raw options.
+ * @param allNodeIds - All node ids that will be used if nodes are omitted in
+ * the raw options.
+ * @returns Options with everything filled in and validated.
+ */
+function normalizeFitOptions(rawOptions, allNodeIds) {
+  const options = Object.assign(
+    {
+      nodes: allNodeIds,
+      minZoomLevel: Number.MIN_VALUE,
+      maxZoomLevel: 1,
+    },
+    rawOptions ?? {}
+  );
+  if (!Array.isArray(options.nodes)) {
+    throw new TypeError("Nodes has to be an array of ids.");
+  }
+  if (options.nodes.length === 0) {
+    options.nodes = allNodeIds;
+  }
+  if (!(typeof options.minZoomLevel === "number" && options.minZoomLevel > 0)) {
+    throw new TypeError("Min zoom level has to be a number higher than zero.");
+  }
+  if (
+    !(
+      typeof options.maxZoomLevel === "number" &&
+      options.minZoomLevel <= options.maxZoomLevel
+    )
+  ) {
+    throw new TypeError(
+      "Max zoom level has to be a number higher than min zoom level."
+    );
+  }
+  return options;
 }
 
 /**
@@ -15315,14 +15904,14 @@ class Canvas {
  */
 class View {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Canvas} canvas
    */
   constructor(body, canvas) {
     this.body = body;
     this.canvas = canvas;
 
-    this.animationSpeed = 1/this.renderRefreshRate;
+    this.animationSpeed = 1 / this.renderRefreshRate;
     this.animationEasingFunction = "easeInOutQuint";
     this.easingTime = 0;
     this.sourceScale = 0;
@@ -15335,36 +15924,36 @@ class View {
 
     this.viewFunction = undefined;
 
-    this.body.emitter.on("fit",                 this.fit.bind(this));
-    this.body.emitter.on("animationFinished",   () => {this.body.emitter.emit("_stopRendering");});
-    this.body.emitter.on("unlockNode",          this.releaseNode.bind(this));
+    this.body.emitter.on("fit", this.fit.bind(this));
+    this.body.emitter.on("animationFinished", () => {
+      this.body.emitter.emit("_stopRendering");
+    });
+    this.body.emitter.on("unlockNode", this.releaseNode.bind(this));
   }
 
   /**
    *
-   * @param {Object} [options={}]
+   * @param {object} [options={}]
    */
   setOptions(options = {}) {
     this.options = options;
   }
 
-
   /**
    * This function zooms out to fit all data on screen based on amount of nodes
-   * @param {Object} [options={{nodes=Array}}]
+   *
+   * @param {object} [options={{nodes=Array}}]
+   * @param options
    * @param {boolean} [initialZoom=false]  | zoom based on fitted formula or range, true = fitted, default = false;
    */
-  fit(options = {nodes:[]}, initialZoom = false) {
-    let range;
-    let zoomLevel;
-    options = Object.assign({}, options);
-    if (options.nodes === undefined || options.nodes.length === 0) {
-      options.nodes = this.body.nodeIndices;
-    }
+  fit(options, initialZoom = false) {
+    options = normalizeFitOptions(options, this.body.nodeIndices);
 
     const canvasWidth = this.canvas.frame.canvas.clientWidth;
     const canvasHeight = this.canvas.frame.canvas.clientHeight;
 
+    let range;
+    let zoomLevel;
     if (canvasWidth === 0 || canvasHeight === 0) {
       // There's no point in trying to fit into zero sized canvas. This could
       // potentially even result in invalid values being computed. For example
@@ -15386,7 +15975,7 @@ class View {
         }
       }
       if (positionDefined > 0.5 * this.body.nodeIndices.length) {
-        this.fit(options,false);
+        this.fit(options, false);
         return;
       }
 
@@ -15398,32 +15987,34 @@ class View {
       // correct for larger canvasses.
       const factor = Math.min(canvasWidth / 600, canvasHeight / 600);
       zoomLevel *= factor;
-    }
-    else {
+    } else {
       this.body.emitter.emit("_resizeNodes");
       range = NetworkUtil.getRange(this.body.nodes, options.nodes);
 
       const xDistance = Math.abs(range.maxX - range.minX) * 1.1;
       const yDistance = Math.abs(range.maxY - range.minY) * 1.1;
 
-      const xZoomLevel = canvasWidth  / xDistance;
+      const xZoomLevel = canvasWidth / xDistance;
       const yZoomLevel = canvasHeight / yDistance;
 
-      zoomLevel = (xZoomLevel <= yZoomLevel) ? xZoomLevel : yZoomLevel;
+      zoomLevel = xZoomLevel <= yZoomLevel ? xZoomLevel : yZoomLevel;
     }
 
-    if (zoomLevel > 1.0) {
-      zoomLevel = 1.0;
-    }
-    else if (zoomLevel === 0) {
-      zoomLevel = 1.0;
+    if (zoomLevel > options.maxZoomLevel) {
+      zoomLevel = options.maxZoomLevel;
+    } else if (zoomLevel < options.minZoomLevel) {
+      zoomLevel = options.minZoomLevel;
     }
 
     const center = NetworkUtil.findCenter(range);
-    const animationOptions = {position: center, scale: zoomLevel, animation: options.animation};
+    const animationOptions = {
+      position: center,
+      scale: zoomLevel,
+      animation: options.animation,
+    };
     this.moveTo(animationOptions);
   }
-  
+
   // animation
 
   /**
@@ -15434,20 +16025,22 @@ class View {
    */
   focus(nodeId, options = {}) {
     if (this.body.nodes[nodeId] !== undefined) {
-      const nodePosition = {x: this.body.nodes[nodeId].x, y: this.body.nodes[nodeId].y};
+      const nodePosition = {
+        x: this.body.nodes[nodeId].x,
+        y: this.body.nodes[nodeId].y,
+      };
       options.position = nodePosition;
       options.lockedOnNode = nodeId;
 
       this.moveTo(options);
-    }
-    else {
-      console.log("Node: " + nodeId + " cannot be found.");
+    } else {
+      console.error("Node: " + nodeId + " cannot be found.");
     }
   }
 
   /**
    *
-   * @param {Object} options  |  options.offset   = {x:number, y:number}   // offset from the center in DOM pixels
+   * @param {object} options  |  options.offset   = {x:number, y:number}   // offset from the center in DOM pixels
    *                          |  options.scale    = number                 // scale to move to
    *                          |  options.position = {x:number, y:number}   // position to move to
    *                          |  options.animation = {duration:number, easingFunction:String} || Boolean   // position to move to
@@ -15463,7 +16056,9 @@ class View {
         // Coerce and verify that x is valid.
         options.offset.x = +options.offset.x;
         if (!Number.isFinite(options.offset.x)) {
-          throw new TypeError('The option "offset.x" has to be a finite number.')
+          throw new TypeError(
+            'The option "offset.x" has to be a finite number.'
+          );
         }
       } else {
         options.offset.x = 0;
@@ -15473,7 +16068,9 @@ class View {
         // Coerce and verify that y is valid.
         options.offset.y = +options.offset.y;
         if (!Number.isFinite(options.offset.y)) {
-          throw new TypeError('The option "offset.y" has to be a finite number.')
+          throw new TypeError(
+            'The option "offset.y" has to be a finite number.'
+          );
         }
       } else {
         options.offset.x = 0;
@@ -15481,7 +16078,7 @@ class View {
     } else {
       options.offset = {
         x: 0,
-        y: 0
+        y: 0,
       };
     }
 
@@ -15490,7 +16087,9 @@ class View {
         // Coerce and verify that x is valid.
         options.position.x = +options.position.x;
         if (!Number.isFinite(options.position.x)) {
-          throw new TypeError('The option "position.x" has to be a finite number.')
+          throw new TypeError(
+            'The option "position.x" has to be a finite number.'
+          );
         }
       } else {
         options.position.x = 0;
@@ -15500,7 +16099,9 @@ class View {
         // Coerce and verify that y is valid.
         options.position.y = +options.position.y;
         if (!Number.isFinite(options.position.y)) {
-          throw new TypeError('The option "position.y" has to be a finite number.')
+          throw new TypeError(
+            'The option "position.y" has to be a finite number.'
+          );
         }
       } else {
         options.position.x = 0;
@@ -15513,24 +16114,36 @@ class View {
       // Coerce and verify that the scale is valid.
       options.scale = +options.scale;
       if (!(options.scale > 0)) {
-        throw new TypeError('The option "scale" has to be a number greater than zero.')
+        throw new TypeError(
+          'The option "scale" has to be a number greater than zero.'
+        );
       }
     } else {
       options.scale = this.body.view.scale;
     }
 
-    if (options.animation === undefined)           {options.animation = {duration:0};    }
-    if (options.animation === false    )           {options.animation = {duration:0};    }
-    if (options.animation === true     )           {options.animation = {};              }
-    if (options.animation.duration === undefined)  {options.animation.duration = 1000;   }  // default duration
-    if (options.animation.easingFunction === undefined)  {options.animation.easingFunction = "easeInOutQuad";  } // default easing function
+    if (options.animation === undefined) {
+      options.animation = { duration: 0 };
+    }
+    if (options.animation === false) {
+      options.animation = { duration: 0 };
+    }
+    if (options.animation === true) {
+      options.animation = {};
+    }
+    if (options.animation.duration === undefined) {
+      options.animation.duration = 1000;
+    } // default duration
+    if (options.animation.easingFunction === undefined) {
+      options.animation.easingFunction = "easeInOutQuad";
+    } // default easing function
 
     this.animateView(options);
   }
 
   /**
    *
-   * @param {Object} options  |  options.offset   = {x:number, y:number}   // offset from the center in DOM pixels
+   * @param {object} options  |  options.offset   = {x:number, y:number}   // offset from the center in DOM pixels
    *                          |  options.time     = number                 // animation time in milliseconds
    *                          |  options.scale    = number                 // scale to animate to
    *                          |  options.position = {x:number, y:number}   // position to animate to
@@ -15563,15 +16176,25 @@ class View {
     // set the scale so the viewCenter is based on the correct zoom level. This is overridden in the transitionRedraw
     // but at least then we'll have the target transition
     this.body.view.scale = this.targetScale;
-    const viewCenter = this.canvas.DOMtoCanvas({x: 0.5 * this.canvas.frame.canvas.clientWidth, y: 0.5 * this.canvas.frame.canvas.clientHeight});
+    const viewCenter = this.canvas.DOMtoCanvas({
+      x: 0.5 * this.canvas.frame.canvas.clientWidth,
+      y: 0.5 * this.canvas.frame.canvas.clientHeight,
+    });
 
-    const distanceFromCenter = { // offset from view, distance view has to change by these x and y to center the node
+    const distanceFromCenter = {
+      // offset from view, distance view has to change by these x and y to center the node
       x: viewCenter.x - options.position.x,
-      y: viewCenter.y - options.position.y
+      y: viewCenter.y - options.position.y,
     };
     this.targetTranslation = {
-      x: this.sourceTranslation.x + distanceFromCenter.x * this.targetScale + options.offset.x,
-      y: this.sourceTranslation.y + distanceFromCenter.y * this.targetScale + options.offset.y
+      x:
+        this.sourceTranslation.x +
+        distanceFromCenter.x * this.targetScale +
+        options.offset.x,
+      y:
+        this.sourceTranslation.y +
+        distanceFromCenter.y * this.targetScale +
+        options.offset.y,
     };
 
     // if the time is set to 0, don't do an animation
@@ -15579,17 +16202,15 @@ class View {
       if (this.lockedOnNodeId != undefined) {
         this.viewFunction = this._lockedRedraw.bind(this);
         this.body.emitter.on("initRedraw", this.viewFunction);
-      }
-      else {
+      } else {
         this.body.view.scale = this.targetScale;
         this.body.view.translation = this.targetTranslation;
         this.body.emitter.emit("_requestRedraw");
       }
-    }
-    else {
-      this.animationSpeed = 1 / (60 * options.animation.duration * 0.001) || 1 / 60; // 60 for 60 seconds, 0.001 for milli's
+    } else {
+      this.animationSpeed =
+        1 / (60 * options.animation.duration * 0.001) || 1 / 60; // 60 for 60 seconds, 0.001 for milli's
       this.animationEasingFunction = options.animation.easingFunction;
-
 
       this.viewFunction = this._transitionRedraw.bind(this);
       this.body.emitter.on("initRedraw", this.viewFunction);
@@ -15599,19 +16220,33 @@ class View {
 
   /**
    * used to animate smoothly by hijacking the redraw function.
+   *
    * @private
    */
   _lockedRedraw() {
-    const nodePosition = {x: this.body.nodes[this.lockedOnNodeId].x, y: this.body.nodes[this.lockedOnNodeId].y};
-    const viewCenter = this.canvas.DOMtoCanvas({x: 0.5 * this.canvas.frame.canvas.clientWidth, y: 0.5 * this.canvas.frame.canvas.clientHeight});
-    const distanceFromCenter = { // offset from view, distance view has to change by these x and y to center the node
+    const nodePosition = {
+      x: this.body.nodes[this.lockedOnNodeId].x,
+      y: this.body.nodes[this.lockedOnNodeId].y,
+    };
+    const viewCenter = this.canvas.DOMtoCanvas({
+      x: 0.5 * this.canvas.frame.canvas.clientWidth,
+      y: 0.5 * this.canvas.frame.canvas.clientHeight,
+    });
+    const distanceFromCenter = {
+      // offset from view, distance view has to change by these x and y to center the node
       x: viewCenter.x - nodePosition.x,
-      y: viewCenter.y - nodePosition.y
+      y: viewCenter.y - nodePosition.y,
     };
     const sourceTranslation = this.body.view.translation;
     const targetTranslation = {
-      x: sourceTranslation.x + distanceFromCenter.x * this.body.view.scale + this.lockedOnNodeOffset.x,
-      y: sourceTranslation.y + distanceFromCenter.y * this.body.view.scale + this.lockedOnNodeOffset.y
+      x:
+        sourceTranslation.x +
+        distanceFromCenter.x * this.body.view.scale +
+        this.lockedOnNodeOffset.x,
+      y:
+        sourceTranslation.y +
+        distanceFromCenter.y * this.body.view.scale +
+        this.lockedOnNodeOffset.y,
     };
 
     this.body.view.translation = targetTranslation;
@@ -15636,12 +16271,19 @@ class View {
     this.easingTime += this.animationSpeed;
     this.easingTime = finished === true ? 1.0 : this.easingTime;
 
-    const progress = easingFunctions[this.animationEasingFunction](this.easingTime);
+    const progress = easingFunctions[this.animationEasingFunction](
+      this.easingTime
+    );
 
-    this.body.view.scale = this.sourceScale + (this.targetScale - this.sourceScale) * progress;
+    this.body.view.scale =
+      this.sourceScale + (this.targetScale - this.sourceScale) * progress;
     this.body.view.translation = {
-      x: this.sourceTranslation.x + (this.targetTranslation.x - this.sourceTranslation.x) * progress,
-      y: this.sourceTranslation.y + (this.targetTranslation.y - this.sourceTranslation.y) * progress
+      x:
+        this.sourceTranslation.x +
+        (this.targetTranslation.x - this.sourceTranslation.x) * progress,
+      y:
+        this.sourceTranslation.y +
+        (this.targetTranslation.y - this.sourceTranslation.y) * progress,
     };
 
     // cleanup
@@ -15656,7 +16298,6 @@ class View {
     }
   }
 
-
   /**
    *
    * @returns {number}
@@ -15670,10 +16311,11 @@ class View {
    * @returns {{x: number, y: number}}
    */
   getViewPosition() {
-    return this.canvas.DOMtoCanvas({x: 0.5 * this.canvas.frame.canvas.clientWidth, y: 0.5 * this.canvas.frame.canvas.clientHeight});
+    return this.canvas.DOMtoCanvas({
+      x: 0.5 * this.canvas.frame.canvas.clientWidth,
+      y: 0.5 * this.canvas.frame.canvas.clientHeight,
+    });
   }
-
-
 }
 
 /**
@@ -15681,7 +16323,7 @@ class View {
  */
 class NavigationHandler {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Canvas} canvas
    */
   constructor(body, canvas) {
@@ -15694,17 +16336,26 @@ class NavigationHandler {
     this.touchTime = 0;
     this.activated = false;
 
-
-    this.body.emitter.on("activate",   () => {this.activated = true;  this.configureKeyboardBindings();});
-    this.body.emitter.on("deactivate", () => {this.activated = false; this.configureKeyboardBindings();});
-    this.body.emitter.on("destroy",    () => {if (this.keycharm !== undefined) {this.keycharm.destroy();}});
+    this.body.emitter.on("activate", () => {
+      this.activated = true;
+      this.configureKeyboardBindings();
+    });
+    this.body.emitter.on("deactivate", () => {
+      this.activated = false;
+      this.configureKeyboardBindings();
+    });
+    this.body.emitter.on("destroy", () => {
+      if (this.keycharm !== undefined) {
+        this.keycharm.destroy();
+      }
+    });
 
     this.options = {};
   }
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
@@ -15721,8 +16372,7 @@ class NavigationHandler {
       if (this.iconsCreated === false) {
         this.loadNavigationElements();
       }
-    }
-    else if (this.iconsCreated === true) {
+    } else if (this.iconsCreated === true) {
       this.cleanNavigation();
     }
 
@@ -15742,8 +16392,14 @@ class NavigationHandler {
     }
 
     // clean up previous navigation items
-    if (this.navigationDOM && this.navigationDOM['wrapper'] && this.navigationDOM['wrapper'].parentNode) {
-      this.navigationDOM['wrapper'].parentNode.removeChild(this.navigationDOM['wrapper']);
+    if (
+      this.navigationDOM &&
+      this.navigationDOM["wrapper"] &&
+      this.navigationDOM["wrapper"].parentNode
+    ) {
+      this.navigationDOM["wrapper"].parentNode.removeChild(
+        this.navigationDOM["wrapper"]
+      );
     }
 
     this.iconsCreated = false;
@@ -15761,33 +16417,53 @@ class NavigationHandler {
     this.cleanNavigation();
 
     this.navigationDOM = {};
-    const navigationDivs = ['up','down','left','right','zoomIn','zoomOut','zoomExtends'];
-    const navigationDivActions = ['_moveUp','_moveDown','_moveLeft','_moveRight','_zoomIn','_zoomOut','_fit'];
+    const navigationDivs = [
+      "up",
+      "down",
+      "left",
+      "right",
+      "zoomIn",
+      "zoomOut",
+      "zoomExtends",
+    ];
+    const navigationDivActions = [
+      "_moveUp",
+      "_moveDown",
+      "_moveLeft",
+      "_moveRight",
+      "_zoomIn",
+      "_zoomOut",
+      "_fit",
+    ];
 
-    this.navigationDOM['wrapper'] = document.createElement('div');
-    this.navigationDOM['wrapper'].className = 'vis-navigation';
-    this.canvas.frame.appendChild(this.navigationDOM['wrapper']);
+    this.navigationDOM["wrapper"] = document.createElement("div");
+    this.navigationDOM["wrapper"].className = "vis-navigation";
+    this.canvas.frame.appendChild(this.navigationDOM["wrapper"]);
 
     for (let i = 0; i < navigationDivs.length; i++) {
-      this.navigationDOM[navigationDivs[i]] = document.createElement('div');
-      this.navigationDOM[navigationDivs[i]].className = 'vis-button vis-' + navigationDivs[i];
-      this.navigationDOM['wrapper'].appendChild(this.navigationDOM[navigationDivs[i]]);
+      this.navigationDOM[navigationDivs[i]] = document.createElement("div");
+      this.navigationDOM[navigationDivs[i]].className =
+        "vis-button vis-" + navigationDivs[i];
+      this.navigationDOM["wrapper"].appendChild(
+        this.navigationDOM[navigationDivs[i]]
+      );
 
-      const hammer$1 = new hammer(this.navigationDOM[navigationDivs[i]]);
+      const hammer = new Hammer(this.navigationDOM[navigationDivs[i]]);
       if (navigationDivActions[i] === "_fit") {
-        onTouch(hammer$1, this._fit.bind(this));
-      }
-      else {
-        onTouch(hammer$1, this.bindToRedraw.bind(this,navigationDivActions[i]));
+        onTouch(hammer, this._fit.bind(this));
+      } else {
+        onTouch(hammer, this.bindToRedraw.bind(this, navigationDivActions[i]));
       }
 
-      this.navigationHammers.push(hammer$1);
+      this.navigationHammers.push(hammer);
     }
 
     // use a hammer for the release so we do not require the one used in the rest of the network
     // the one the rest uses can be overloaded by the manipulation system.
-    const hammerFrame = new hammer(this.canvas.frame);
-    onRelease(hammerFrame, () => {this._stopMovement();});
+    const hammerFrame = new Hammer(this.canvas.frame);
+    onRelease(hammerFrame, () => {
+      this._stopMovement();
+    });
     this.navigationHammers.push(hammerFrame);
 
     this.iconsCreated = true;
@@ -15823,8 +16499,9 @@ class NavigationHandler {
    * @private
    */
   _fit() {
-    if (new Date().valueOf() - this.touchTime > 700) { // TODO: fix ugly hack to avoid hammer's double fireing of event (because we use release?)
-      this.body.emitter.emit("fit", {duration: 700});
+    if (new Date().valueOf() - this.touchTime > 700) {
+      // TODO: fix ugly hack to avoid hammer's double fireing of event (because we use release?)
+      this.body.emitter.emit("fit", { duration: 700 });
       this.touchTime = new Date().valueOf();
     }
   }
@@ -15836,7 +16513,9 @@ class NavigationHandler {
    */
   _stopMovement() {
     for (const boundAction in this.boundFunctions) {
-      if (Object.prototype.hasOwnProperty.call(this.boundFunctions, boundAction)) {
+      if (
+        Object.prototype.hasOwnProperty.call(this.boundFunctions, boundAction)
+      ) {
         this.body.emitter.off("initRedraw", this.boundFunctions[boundAction]);
         this.body.emitter.emit("_stopRendering");
       }
@@ -15847,22 +16526,30 @@ class NavigationHandler {
    *
    * @private
    */
-  _moveUp()   {this.body.view.translation.y += this.options.keyboard.speed.y;}
+  _moveUp() {
+    this.body.view.translation.y += this.options.keyboard.speed.y;
+  }
   /**
    *
    * @private
    */
-  _moveDown() {this.body.view.translation.y -= this.options.keyboard.speed.y;}
+  _moveDown() {
+    this.body.view.translation.y -= this.options.keyboard.speed.y;
+  }
   /**
    *
    * @private
    */
-  _moveLeft() {this.body.view.translation.x += this.options.keyboard.speed.x;}
+  _moveLeft() {
+    this.body.view.translation.x += this.options.keyboard.speed.x;
+  }
   /**
    *
    * @private
    */
-  _moveRight(){this.body.view.translation.x -= this.options.keyboard.speed.x;}
+  _moveRight() {
+    this.body.view.translation.x -= this.options.keyboard.speed.x;
+  }
   /**
    *
    * @private
@@ -15872,32 +16559,46 @@ class NavigationHandler {
     const scale = this.body.view.scale * (1 + this.options.keyboard.speed.zoom);
     const translation = this.body.view.translation;
     const scaleFrac = scale / scaleOld;
-    const tx = (1 - scaleFrac) * this.canvas.canvasViewCenter.x + translation.x * scaleFrac;
-    const ty = (1 - scaleFrac) * this.canvas.canvasViewCenter.y + translation.y * scaleFrac;
+    const tx =
+      (1 - scaleFrac) * this.canvas.canvasViewCenter.x +
+      translation.x * scaleFrac;
+    const ty =
+      (1 - scaleFrac) * this.canvas.canvasViewCenter.y +
+      translation.y * scaleFrac;
 
     this.body.view.scale = scale;
     this.body.view.translation = { x: tx, y: ty };
-    this.body.emitter.emit('zoom', { direction: '+', scale: this.body.view.scale, pointer: null });
-
+    this.body.emitter.emit("zoom", {
+      direction: "+",
+      scale: this.body.view.scale,
+      pointer: null,
+    });
   }
 
   /**
    *
    * @private
    */
-  _zoomOut()  {
+  _zoomOut() {
     const scaleOld = this.body.view.scale;
     const scale = this.body.view.scale / (1 + this.options.keyboard.speed.zoom);
     const translation = this.body.view.translation;
     const scaleFrac = scale / scaleOld;
-    const tx = (1 - scaleFrac) * this.canvas.canvasViewCenter.x + translation.x * scaleFrac;
-    const ty = (1 - scaleFrac) * this.canvas.canvasViewCenter.y + translation.y * scaleFrac;
+    const tx =
+      (1 - scaleFrac) * this.canvas.canvasViewCenter.x +
+      translation.x * scaleFrac;
+    const ty =
+      (1 - scaleFrac) * this.canvas.canvasViewCenter.y +
+      translation.y * scaleFrac;
 
     this.body.view.scale = scale;
     this.body.view.translation = { x: tx, y: ty };
-    this.body.emitter.emit('zoom', { direction: '-', scale: this.body.view.scale, pointer: null });
+    this.body.emitter.emit("zoom", {
+      direction: "-",
+      scale: this.body.view.scale,
+      pointer: null,
+    });
   }
-
 
   /**
    * bind all keys using keycharm.
@@ -15909,173 +16610,188 @@ class NavigationHandler {
 
     if (this.options.keyboard.enabled === true) {
       if (this.options.keyboard.bindToWindow === true) {
-        this.keycharm = keycharm({container: window, preventDefault: true});
-      }
-      else {
-        this.keycharm = keycharm({container: this.canvas.frame, preventDefault: true});
+        this.keycharm = keycharm({ container: window, preventDefault: true });
+      } else {
+        this.keycharm = keycharm({
+          container: this.canvas.frame,
+          preventDefault: true,
+        });
       }
 
       this.keycharm.reset();
 
       if (this.activated === true) {
-        this.keycharm.bind("up",       () => {this.bindToRedraw("_moveUp")   ;}, "keydown");
-        this.keycharm.bind("down",     () => {this.bindToRedraw("_moveDown") ;}, "keydown");
-        this.keycharm.bind("left",     () => {this.bindToRedraw("_moveLeft") ;}, "keydown");
-        this.keycharm.bind("right",    () => {this.bindToRedraw("_moveRight");}, "keydown");
-        this.keycharm.bind("=",        () => {this.bindToRedraw("_zoomIn")   ;}, "keydown");
-        this.keycharm.bind("num+",     () => {this.bindToRedraw("_zoomIn")   ;}, "keydown");
-        this.keycharm.bind("num-",     () => {this.bindToRedraw("_zoomOut")  ;}, "keydown");
-        this.keycharm.bind("-",        () => {this.bindToRedraw("_zoomOut")  ;}, "keydown");
-        this.keycharm.bind("[",        () => {this.bindToRedraw("_zoomOut")  ;}, "keydown");
-        this.keycharm.bind("]",        () => {this.bindToRedraw("_zoomIn")   ;}, "keydown");
-        this.keycharm.bind("pageup",   () => {this.bindToRedraw("_zoomIn")   ;}, "keydown");
-        this.keycharm.bind("pagedown", () => {this.bindToRedraw("_zoomOut")  ;}, "keydown");
+        this.keycharm.bind(
+          "up",
+          () => {
+            this.bindToRedraw("_moveUp");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "down",
+          () => {
+            this.bindToRedraw("_moveDown");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "left",
+          () => {
+            this.bindToRedraw("_moveLeft");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "right",
+          () => {
+            this.bindToRedraw("_moveRight");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "=",
+          () => {
+            this.bindToRedraw("_zoomIn");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "num+",
+          () => {
+            this.bindToRedraw("_zoomIn");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "num-",
+          () => {
+            this.bindToRedraw("_zoomOut");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "-",
+          () => {
+            this.bindToRedraw("_zoomOut");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "[",
+          () => {
+            this.bindToRedraw("_zoomOut");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "]",
+          () => {
+            this.bindToRedraw("_zoomIn");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "pageup",
+          () => {
+            this.bindToRedraw("_zoomIn");
+          },
+          "keydown"
+        );
+        this.keycharm.bind(
+          "pagedown",
+          () => {
+            this.bindToRedraw("_zoomOut");
+          },
+          "keydown"
+        );
 
-        this.keycharm.bind("up",       () => {this.unbindFromRedraw("_moveUp")   ;}, "keyup");
-        this.keycharm.bind("down",     () => {this.unbindFromRedraw("_moveDown") ;}, "keyup");
-        this.keycharm.bind("left",     () => {this.unbindFromRedraw("_moveLeft") ;}, "keyup");
-        this.keycharm.bind("right",    () => {this.unbindFromRedraw("_moveRight");}, "keyup");
-        this.keycharm.bind("=",        () => {this.unbindFromRedraw("_zoomIn")   ;}, "keyup");
-        this.keycharm.bind("num+",     () => {this.unbindFromRedraw("_zoomIn")   ;}, "keyup");
-        this.keycharm.bind("num-",     () => {this.unbindFromRedraw("_zoomOut")  ;}, "keyup");
-        this.keycharm.bind("-",        () => {this.unbindFromRedraw("_zoomOut")  ;}, "keyup");
-        this.keycharm.bind("[",        () => {this.unbindFromRedraw("_zoomOut")  ;}, "keyup");
-        this.keycharm.bind("]",        () => {this.unbindFromRedraw("_zoomIn")   ;}, "keyup");
-        this.keycharm.bind("pageup",   () => {this.unbindFromRedraw("_zoomIn")   ;}, "keyup");
-        this.keycharm.bind("pagedown", () => {this.unbindFromRedraw("_zoomOut")  ;}, "keyup");
+        this.keycharm.bind(
+          "up",
+          () => {
+            this.unbindFromRedraw("_moveUp");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "down",
+          () => {
+            this.unbindFromRedraw("_moveDown");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "left",
+          () => {
+            this.unbindFromRedraw("_moveLeft");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "right",
+          () => {
+            this.unbindFromRedraw("_moveRight");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "=",
+          () => {
+            this.unbindFromRedraw("_zoomIn");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "num+",
+          () => {
+            this.unbindFromRedraw("_zoomIn");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "num-",
+          () => {
+            this.unbindFromRedraw("_zoomOut");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "-",
+          () => {
+            this.unbindFromRedraw("_zoomOut");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "[",
+          () => {
+            this.unbindFromRedraw("_zoomOut");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "]",
+          () => {
+            this.unbindFromRedraw("_zoomIn");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "pageup",
+          () => {
+            this.unbindFromRedraw("_zoomIn");
+          },
+          "keyup"
+        );
+        this.keycharm.bind(
+          "pagedown",
+          () => {
+            this.unbindFromRedraw("_zoomOut");
+          },
+          "keyup"
+        );
       }
     }
-  }
-}
-
-/**
- * Popup is a class to create a popup window with some text
- */
-class Popup {
-  /**
-   * @param {Element} container       The container object.
-   * @param {string}  overflowMethod  How the popup should act to overflowing ('flip' or 'cap')
-   */
-  constructor(container, overflowMethod) {
-    this.container = container;
-    this.overflowMethod = overflowMethod || 'cap';
-
-    this.x = 0;
-    this.y = 0;
-    this.padding = 5;
-    this.hidden = false;
-
-    // create the frame
-    this.frame = document.createElement('div');
-    this.frame.className = 'vis-tooltip';
-    this.container.appendChild(this.frame);
-  }
-
-  /**
-   * @param {number} x   Horizontal position of the popup window
-   * @param {number} y   Vertical position of the popup window
-   */
-  setPosition(x, y) {
-    this.x = parseInt(x);
-    this.y = parseInt(y);
-  }
-
-  /**
-   * Set the content for the popup window. This can be HTML code or text.
-   * @param {string | Element} content
-   */
-  setText(content) {
-    if (content instanceof Element) {
-      this.frame.innerHTML = '';
-      this.frame.appendChild(content);
-    }
-    else {
-      this.frame.innerHTML = content; // string containing text or HTML
-    }
-  }
-
-  /**
-   * Show the popup window
-   * @param {boolean} [doShow]    Show or hide the window
-   */
-  show(doShow) {
-    if (doShow === undefined) {
-      doShow = true;
-    }
-
-    if (doShow === true) {
-      const height = this.frame.clientHeight;
-      const width = this.frame.clientWidth;
-      const maxHeight = this.frame.parentNode.clientHeight;
-      const maxWidth = this.frame.parentNode.clientWidth;
-
-      let left = 0, top = 0;
-
-      if (this.overflowMethod == 'flip') {
-        let isLeft = false, isTop = true; // Where around the position it's located
-
-        if (this.y - height < this.padding) {
-          isTop = false;
-        }
-
-        if (this.x + width > maxWidth - this.padding) {
-          isLeft = true;
-        }
-
-        if (isLeft) {
-          left = this.x - width;
-        } else {
-          left = this.x;
-        }
-
-        if (isTop) {
-          top = this.y - height;
-        } else {
-          top = this.y;
-        }
-      } else {
-        top = (this.y - height);
-        if (top + height + this.padding > maxHeight) {
-          top = maxHeight - height - this.padding;
-        }
-        if (top < this.padding) {
-          top = this.padding;
-        }
-
-        left = this.x;
-        if (left + width + this.padding > maxWidth) {
-          left = maxWidth - width - this.padding;
-        }
-        if (left < this.padding) {
-          left = this.padding;
-        }
-      }
-
-      this.frame.style.left = left + "px";
-      this.frame.style.top = top + "px";
-      this.frame.style.visibility = "visible";
-      this.hidden = false;
-    }
-    else {
-      this.hide();
-    }
-  }
-
-  /**
-   * Hide the popup window
-   */
-  hide() {
-    this.hidden = true;
-    this.frame.style.left = "0";
-    this.frame.style.top = "0";
-    this.frame.style.visibility = "hidden";
-  }
-
-  /**
-   * Remove the popup window
-   */
-  destroy() {
-    this.frame.parentNode.removeChild(this.frame); // Remove element from DOM
   }
 }
 
@@ -16084,7 +16800,7 @@ class Popup {
  */
 class InteractionHandler {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Canvas} canvas
    * @param {SelectionHandler} selectionHandler
    */
@@ -16092,21 +16808,21 @@ class InteractionHandler {
     this.body = body;
     this.canvas = canvas;
     this.selectionHandler = selectionHandler;
-    this.navigationHandler = new NavigationHandler(body,canvas);
+    this.navigationHandler = new NavigationHandler(body, canvas);
 
     // bind the events from hammer to functions in this object
-    this.body.eventListeners.onTap        = this.onTap.bind(this);
-    this.body.eventListeners.onTouch      = this.onTouch.bind(this);
-    this.body.eventListeners.onDoubleTap  = this.onDoubleTap.bind(this);
-    this.body.eventListeners.onHold       = this.onHold.bind(this);
-    this.body.eventListeners.onDragStart  = this.onDragStart.bind(this);
-    this.body.eventListeners.onDrag       = this.onDrag.bind(this);
-    this.body.eventListeners.onDragEnd    = this.onDragEnd.bind(this);
+    this.body.eventListeners.onTap = this.onTap.bind(this);
+    this.body.eventListeners.onTouch = this.onTouch.bind(this);
+    this.body.eventListeners.onDoubleTap = this.onDoubleTap.bind(this);
+    this.body.eventListeners.onHold = this.onHold.bind(this);
+    this.body.eventListeners.onDragStart = this.onDragStart.bind(this);
+    this.body.eventListeners.onDrag = this.onDrag.bind(this);
+    this.body.eventListeners.onDragEnd = this.onDragEnd.bind(this);
     this.body.eventListeners.onMouseWheel = this.onMouseWheel.bind(this);
-    this.body.eventListeners.onPinch      = this.onPinch.bind(this);
-    this.body.eventListeners.onMouseMove  = this.onMouseMove.bind(this);
-    this.body.eventListeners.onRelease    = this.onRelease.bind(this);
-    this.body.eventListeners.onContext    = this.onContext.bind(this);
+    this.body.eventListeners.onPinch = this.onPinch.bind(this);
+    this.body.eventListeners.onMouseMove = this.onMouseMove.bind(this);
+    this.body.eventListeners.onRelease = this.onRelease.bind(this);
+    this.body.eventListeners.onContext = this.onContext.bind(this);
 
     this.touchTime = 0;
     this.drag = {};
@@ -16119,20 +16835,21 @@ class InteractionHandler {
 
     this.options = {};
     this.defaultOptions = {
-      dragNodes:true,
+      dragNodes: true,
       dragView: true,
       hover: false,
       keyboard: {
         enabled: false,
-        speed: {x: 10, y: 10, zoom: 0.02},
-        bindToWindow: true
+        speed: { x: 10, y: 10, zoom: 0.02 },
+        bindToWindow: true,
+        autoFocus: true,
       },
       navigationButtons: false,
       tooltipDelay: 300,
       zoomView: true,
-      zoomSpeed: 1
+      zoomSpeed: 1,
     };
-    Object.assign(this.options,this.defaultOptions);
+    Object.assign(this.options, this.defaultOptions);
 
     this.bindEventListeners();
   }
@@ -16141,7 +16858,7 @@ class InteractionHandler {
    * Binds event listeners
    */
   bindEventListeners() {
-    this.body.emitter.on('destroy', () => {
+    this.body.emitter.on("destroy", () => {
       clearTimeout(this.popupTimer);
       delete this.body.functions.getPointer;
     });
@@ -16149,16 +16866,24 @@ class InteractionHandler {
 
   /**
    *
-   * @param {Object} options
+   * @param {object} options
    */
   setOptions(options) {
     if (options !== undefined) {
       // extend all but the values in fields
-      const fields = ['hideEdgesOnDrag', 'hideEdgesOnZoom', 'hideNodesOnDrag','keyboard','multiselect','selectable','selectConnectedEdges'];
+      const fields = [
+        "hideEdgesOnDrag",
+        "hideEdgesOnZoom",
+        "hideNodesOnDrag",
+        "keyboard",
+        "multiselect",
+        "selectable",
+        "selectConnectedEdges",
+      ];
       selectiveNotDeepExtend(fields, this.options, options);
 
       // merge the keyboard options in.
-      mergeOptions(this.options, options, 'keyboard');
+      mergeOptions(this.options, options, "keyboard");
 
       if (options.tooltip) {
         Object.assign(this.options.tooltip, options.tooltip);
@@ -16171,23 +16896,23 @@ class InteractionHandler {
     this.navigationHandler.setOptions(this.options);
   }
 
-
   /**
    * Get the pointer location from a touch location
+   *
    * @param {{x: number, y: number}} touch
-   * @return {{x: number, y: number}} pointer
+   * @returns {{x: number, y: number}} pointer
    * @private
    */
   getPointer(touch) {
     return {
       x: touch.x - getAbsoluteLeft(this.canvas.frame.canvas),
-      y: touch.y - getAbsoluteTop(this.canvas.frame.canvas)
+      y: touch.y - getAbsoluteTop(this.canvas.frame.canvas),
     };
   }
 
-
   /**
    * On start of a touch gesture, store the pointer
+   *
    * @param {Event}  event   The event
    * @private
    */
@@ -16201,35 +16926,38 @@ class InteractionHandler {
     }
   }
 
-
   /**
    * handle tap/click event: select/unselect a node
+   *
    * @param {Event} event
    * @private
    */
   onTap(event) {
     const pointer = this.getPointer(event.center);
-    const multiselect = this.selectionHandler.options.multiselect &&
-        (event.changedPointers[0].ctrlKey || event.changedPointers[0].metaKey);
+    const multiselect =
+      this.selectionHandler.options.multiselect &&
+      (event.changedPointers[0].ctrlKey || event.changedPointers[0].metaKey);
 
-    this.checkSelectionChanges(pointer, event, multiselect);
-    this.selectionHandler._generateClickEvent('click', event, pointer);
+    this.checkSelectionChanges(pointer, multiselect);
+
+    this.selectionHandler.commitAndEmit(pointer, event);
+    this.selectionHandler.generateClickEvent("click", event, pointer);
   }
-
 
   /**
    * handle doubletap event
+   *
    * @param {Event} event
    * @private
    */
   onDoubleTap(event) {
     const pointer = this.getPointer(event.center);
-    this.selectionHandler._generateClickEvent('doubleClick', event, pointer);
+    this.selectionHandler.generateClickEvent("doubleClick", event, pointer);
   }
-
 
   /**
    * handle long tap event: multi select nodes
+   *
    * @param {Event} event
    * @private
    */
@@ -16237,12 +16965,12 @@ class InteractionHandler {
     const pointer = this.getPointer(event.center);
     const multiselect = this.selectionHandler.options.multiselect;
 
-    this.checkSelectionChanges(pointer, event, multiselect);
+    this.checkSelectionChanges(pointer, multiselect);
 
-    this.selectionHandler._generateClickEvent('click', event, pointer);
-    this.selectionHandler._generateClickEvent('hold', event, pointer);
+    this.selectionHandler.commitAndEmit(pointer, event);
+    this.selectionHandler.generateClickEvent("click", event, pointer);
+    this.selectionHandler.generateClickEvent("hold", event, pointer);
   }
-
 
   /**
    * handle the release of the screen
@@ -16253,7 +16981,7 @@ class InteractionHandler {
   onRelease(event) {
     if (new Date().valueOf() - this.touchTime > 10) {
       const pointer = this.getPointer(event.center);
-      this.selectionHandler._generateClickEvent('release', event, pointer);
+      this.selectionHandler.generateClickEvent("release", event, pointer);
       // to avoid double fireing of this event because we have two hammer instances. (on canvas and on frame)
       this.touchTime = new Date().valueOf();
     }
@@ -16264,67 +16992,23 @@ class InteractionHandler {
    * @param {Event} event
    */
   onContext(event) {
-    const pointer = this.getPointer({x:event.clientX, y:event.clientY});
-    this.selectionHandler._generateClickEvent('oncontext', event, pointer);
+    const pointer = this.getPointer({ x: event.clientX, y: event.clientY });
+    this.selectionHandler.generateClickEvent("oncontext", event, pointer);
   }
-
 
   /**
    * Select and deselect nodes depending current selection change.
    *
-   * For changing nodes, select/deselect events are fired.
-   *
-   * NOTE: For a given edge, if one connecting node is deselected and with the same
-   *       click the other node is selected, no events for the edge will fire.
-   *       It was selected and it will remain selected.
-   *
-   * TODO: This is all SelectionHandler calls; the method should be moved to there.
-   *
    * @param {{x: number, y: number}} pointer
-   * @param {Event} event
    * @param {boolean} [add=false]
    */
-  checkSelectionChanges(pointer, event, add = false) {
-    const previousSelection = this.selectionHandler.getSelection();
-    let selected = false;
+  checkSelectionChanges(pointer, add = false) {
     if (add === true) {
-      selected = this.selectionHandler.selectAdditionalOnPoint(pointer);
-    }
-    else {
-      selected = this.selectionHandler.selectOnPoint(pointer);
-    }
-    const currentSelection = this.selectionHandler.getSelection();
-
-    // See NOTE in method comment for the reason to do it like this
-    const deselectedItems = this._determineDifference(previousSelection, currentSelection);
-    const selectedItems   = this._determineDifference(currentSelection , previousSelection);
-
-    if (deselectedItems.edges.length > 0) {
-      this.selectionHandler._generateClickEvent('deselectEdge', event, pointer, previousSelection);
-      selected = true;
-    }
-
-    if (deselectedItems.nodes.length > 0) {
-      this.selectionHandler._generateClickEvent('deselectNode', event, pointer, previousSelection);
-      selected = true;
-    }
-
-    if (selectedItems.nodes.length > 0) {
-      this.selectionHandler._generateClickEvent('selectNode', event, pointer);
-      selected = true;
-    }
-
-    if (selectedItems.edges.length > 0) {
-      this.selectionHandler._generateClickEvent('selectEdge', event, pointer);
-      selected = true;
-    }
-
-    // fire the select event if anything has been selected or deselected
-    if (selected === true) { // select or unselect
-      this.selectionHandler._generateClickEvent('select', event, pointer);
+      this.selectionHandler.selectAdditionalOnPoint(pointer);
+    } else {
+      this.selectionHandler.selectOnPoint(pointer);
     }
   }
-
 
   /**
    * Remove all node and edge id's from the first set that are present in the second one.
@@ -16335,7 +17019,7 @@ class InteractionHandler {
    * @private
    */
   _determineDifference(firstSet, secondSet) {
-    const arrayDiff = function(firstArr, secondArr) {
+    const arrayDiff = function (firstArr, secondArr) {
       const result = [];
 
       for (let i = 0; i < firstArr.length; i++) {
@@ -16350,10 +17034,9 @@ class InteractionHandler {
 
     return {
       nodes: arrayDiff(firstSet.nodes, secondSet.nodes),
-      edges: arrayDiff(firstSet.edges, secondSet.edges)
+      edges: arrayDiff(firstSet.edges, secondSet.edges),
     };
   }
-
 
   /**
    * This function is called by onDragStart.
@@ -16365,7 +17048,7 @@ class InteractionHandler {
   onDragStart(event) {
     // if already dragging, do not start
     // this can happen on touch screens with multiple fingers
-    if(this.drag.dragging){
+    if (this.drag.dragging) {
       return;
     }
 
@@ -16379,60 +17062,68 @@ class InteractionHandler {
 
     this.drag.dragging = true;
     this.drag.selection = [];
-    this.drag.translation = Object.assign({},this.body.view.translation); // copy the object
+    this.drag.translation = Object.assign({}, this.body.view.translation); // copy the object
     this.drag.nodeId = undefined;
-    
+
     if (event.srcEvent.shiftKey) {
       this.body.selectionBox.show = true;
       const pointer = this.getPointer(event.center);
 
-      this.body.selectionBox.position.start = { x: this.canvas._XconvertDOMtoCanvas(pointer.x), y: this.canvas._YconvertDOMtoCanvas(pointer.y) };
-      this.body.selectionBox.position.end =  { x: this.canvas._XconvertDOMtoCanvas(pointer.x), y: this.canvas._YconvertDOMtoCanvas(pointer.y) };
-    }
-
-    if (node !== undefined && this.options.dragNodes === true) {
+      this.body.selectionBox.position.start = {
+        x: this.canvas._XconvertDOMtoCanvas(pointer.x),
+        y: this.canvas._YconvertDOMtoCanvas(pointer.y),
+      };
+      this.body.selectionBox.position.end = {
+        x: this.canvas._XconvertDOMtoCanvas(pointer.x),
+        y: this.canvas._YconvertDOMtoCanvas(pointer.y),
+      };
+    } else if (node !== undefined && this.options.dragNodes === true) {
       this.drag.nodeId = node.id;
       // select the clicked node if not yet selected
       if (node.isSelected() === false) {
-        this.selectionHandler.unselectAll();
-        this.selectionHandler.selectObject(node);
+        this.selectionHandler.setSelection({ nodes: [node.id] });
       }
 
       // after select to contain the node
-      this.selectionHandler._generateClickEvent('dragStart', event, this.drag.pointer);
+      this.selectionHandler.generateClickEvent(
+        "dragStart",
+        event,
+        this.drag.pointer
+      );
 
-      const selection = this.selectionHandler.selectionObj.nodes;
       // create an array with the selected nodes and their original location and status
-      for (const nodeId in selection) {
-        if (Object.prototype.hasOwnProperty.call(selection, nodeId)) {
-          const object = selection[nodeId];
-          const s = {
-            id: object.id,
-            node: object,
+      for (const node of this.selectionHandler.getSelectedNodes()) {
+        const s = {
+          id: node.id,
+          node: node,
 
-            // store original x, y, xFixed and yFixed, make the node temporarily Fixed
-            x: object.x,
-            y: object.y,
-            xFixed: object.options.fixed.x,
-            yFixed: object.options.fixed.y
-          };
+          // store original x, y, xFixed and yFixed, make the node temporarily Fixed
+          x: node.x,
+          y: node.y,
+          xFixed: node.options.fixed.x,
+          yFixed: node.options.fixed.y,
+        };
 
-          object.options.fixed.x = true;
-          object.options.fixed.y = true;
+        node.options.fixed.x = true;
+        node.options.fixed.y = true;
 
-          this.drag.selection.push(s);
-        }
+        this.drag.selection.push(s);
       }
-    }
-    else {
+    } else {
       // fallback if no node is selected and thus the view is dragged.
-      this.selectionHandler._generateClickEvent('dragStart', event, this.drag.pointer, undefined, true);
+      this.selectionHandler.generateClickEvent(
+        "dragStart",
+        event,
+        this.drag.pointer,
+        undefined,
+        true
+      );
     }
   }
 
-
   /**
    * handle drag event
+   *
    * @param {Event} event
    * @private
    */
@@ -16442,13 +17133,13 @@ class InteractionHandler {
     }
 
     // remove the focus on node if it is focussed on by the focusOnNode
-    this.body.emitter.emit('unlockNode');
+    this.body.emitter.emit("unlockNode");
 
     const pointer = this.getPointer(event.center);
 
     const selection = this.drag.selection;
     if (selection && selection.length && this.options.dragNodes === true) {
-      this.selectionHandler._generateClickEvent('dragging', event, pointer);
+      this.selectionHandler.generateClickEvent("dragging", event, pointer);
 
       // calculate delta's and new location
       const deltaX = pointer.x - this.drag.pointer.x;
@@ -16459,36 +17150,54 @@ class InteractionHandler {
         const node = selection.node;
         // only move the node if it was not fixed initially
         if (selection.xFixed === false) {
-          node.x = this.canvas._XconvertDOMtoCanvas(this.canvas._XconvertCanvasToDOM(selection.x) + deltaX);
+          node.x = this.canvas._XconvertDOMtoCanvas(
+            this.canvas._XconvertCanvasToDOM(selection.x) + deltaX
+          );
         }
         // only move the node if it was not fixed initially
         if (selection.yFixed === false) {
-          node.y = this.canvas._YconvertDOMtoCanvas(this.canvas._YconvertCanvasToDOM(selection.y) + deltaY);
+          node.y = this.canvas._YconvertDOMtoCanvas(
+            this.canvas._YconvertCanvasToDOM(selection.y) + deltaY
+          );
         }
       });
 
       // start the simulation of the physics
-      this.body.emitter.emit('startSimulation');
-    }
-    else {
+      this.body.emitter.emit("startSimulation");
+    } else {
       // create selection box
       if (event.srcEvent.shiftKey) {
-        this.selectionHandler._generateClickEvent('dragging', event, pointer, undefined, true);
-  
+        this.selectionHandler.generateClickEvent(
+          "dragging",
+          event,
+          pointer,
+          undefined,
+          true
+        );
+
         // if the drag was not started properly because the click started outside the network div, start it now.
         if (this.drag.pointer === undefined) {
           this.onDragStart(event);
           return;
         }
 
-        this.body.selectionBox.position.end =  { x: this.canvas._XconvertDOMtoCanvas(pointer.x), y: this.canvas._YconvertDOMtoCanvas(pointer.y) };
-        this.body.emitter.emit('_requestRedraw');
+        this.body.selectionBox.position.end = {
+          x: this.canvas._XconvertDOMtoCanvas(pointer.x),
+          y: this.canvas._YconvertDOMtoCanvas(pointer.y),
+        };
+        this.body.emitter.emit("_requestRedraw");
       }
-      
+
       // move the network
       if (this.options.dragView === true && !event.srcEvent.shiftKey) {
-        this.selectionHandler._generateClickEvent('dragging', event, pointer, undefined, true);
-  
+        this.selectionHandler.generateClickEvent(
+          "dragging",
+          event,
+          pointer,
+          undefined,
+          true
+        );
+
         // if the drag was not started properly because the click started outside the network div, start it now.
         if (this.drag.pointer === undefined) {
           this.onDragStart(event);
@@ -16498,42 +17207,70 @@ class InteractionHandler {
         const diffX = pointer.x - this.drag.pointer.x;
         const diffY = pointer.y - this.drag.pointer.y;
 
-        this.body.view.translation = {x:this.drag.translation.x + diffX, y:this.drag.translation.y + diffY};
-        this.body.emitter.emit('_requestRedraw');
+        this.body.view.translation = {
+          x: this.drag.translation.x + diffX,
+          y: this.drag.translation.y + diffY,
+        };
+        this.body.emitter.emit("_requestRedraw");
       }
     }
   }
 
-
   /**
    * handle drag start event
+   *
    * @param {Event} event
    * @private
    */
   onDragEnd(event) {
     this.drag.dragging = false;
-    
+
     if (this.body.selectionBox.show) {
       this.body.selectionBox.show = false;
-      const selectionBoxPosition = this.body.selectionBox.position; 
+      const selectionBoxPosition = this.body.selectionBox.position;
       const selectionBoxPositionMinMax = {
-        minX: Math.min(selectionBoxPosition.start.x, selectionBoxPosition.end.x),
-        minY: Math.min(selectionBoxPosition.start.y, selectionBoxPosition.end.y),
-        maxX: Math.max(selectionBoxPosition.start.x, selectionBoxPosition.end.x),
-        maxY: Math.max(selectionBoxPosition.start.y, selectionBoxPosition.end.y),
+        minX: Math.min(
+          selectionBoxPosition.start.x,
+          selectionBoxPosition.end.x
+        ),
+        minY: Math.min(
+          selectionBoxPosition.start.y,
+          selectionBoxPosition.end.y
+        ),
+        maxX: Math.max(
+          selectionBoxPosition.start.x,
+          selectionBoxPosition.end.x
+        ),
+        maxY: Math.max(
+          selectionBoxPosition.start.y,
+          selectionBoxPosition.end.y
+        ),
       };
 
       const toBeSelectedNodes = this.body.nodeIndices.filter((nodeId) => {
         const node = this.body.nodes[nodeId];
         return (
-          node.x >= selectionBoxPositionMinMax.minX && node.x <= selectionBoxPositionMinMax.maxX &&
-          node.y >= selectionBoxPositionMinMax.minY && node.y <= selectionBoxPositionMinMax.maxY 
-        )
-        });
+          node.x >= selectionBoxPositionMinMax.minX &&
+          node.x <= selectionBoxPositionMinMax.maxX &&
+          node.y >= selectionBoxPositionMinMax.minY &&
+          node.y <= selectionBoxPositionMinMax.maxY
+        );
+      });
 
-      toBeSelectedNodes.forEach((nodeId) => (this.selectionHandler.selectObject(this.body.nodes[nodeId])));
-      this.selectionHandler._generateClickEvent('dragEnd', event, this.getPointer(event.center), undefined, true);
-      this.body.emitter.emit('_requestRedraw');
+      toBeSelectedNodes.forEach((nodeId) =>
+        this.selectionHandler.selectObject(this.body.nodes[nodeId])
+      );
+
+      const pointer = this.getPointer(event.center);
+      this.selectionHandler.commitAndEmit(pointer, event);
+      this.selectionHandler.generateClickEvent(
+        "dragEnd",
+        event,
+        this.getPointer(event.center),
+        undefined,
+        true
+      );
+      this.body.emitter.emit("_requestRedraw");
     } else {
       const selection = this.drag.selection;
       if (selection && selection.length) {
@@ -16542,20 +17279,28 @@ class InteractionHandler {
           s.node.options.fixed.x = s.xFixed;
           s.node.options.fixed.y = s.yFixed;
         });
-        this.selectionHandler._generateClickEvent('dragEnd', event, this.getPointer(event.center));
-        this.body.emitter.emit('startSimulation');
-      }
-      else {
-        this.selectionHandler._generateClickEvent('dragEnd', event, this.getPointer(event.center), undefined, true);
-        this.body.emitter.emit('_requestRedraw');
+        this.selectionHandler.generateClickEvent(
+          "dragEnd",
+          event,
+          this.getPointer(event.center)
+        );
+        this.body.emitter.emit("startSimulation");
+      } else {
+        this.selectionHandler.generateClickEvent(
+          "dragEnd",
+          event,
+          this.getPointer(event.center),
+          undefined,
+          true
+        );
+        this.body.emitter.emit("_requestRedraw");
       }
     }
   }
 
-
-
   /**
    * Handle pinch event
+   *
    * @param {Event}  event   The event
    * @private
    */
@@ -16563,7 +17308,7 @@ class InteractionHandler {
     const pointer = this.getPointer(event.center);
 
     this.drag.pinched = true;
-    if (this.pinch['scale'] === undefined) {
+    if (this.pinch["scale"] === undefined) {
       this.pinch.scale = 1;
     }
 
@@ -16572,9 +17317,9 @@ class InteractionHandler {
     this.zoom(scale, pointer);
   }
 
-
   /**
    * Zoom the network in or out
+   *
    * @param {number} scale a number around 1, and between 0.01 and 10
    * @param {{x: number, y: number}} pointer    Position on screen
    * @private
@@ -16603,30 +17348,38 @@ class InteractionHandler {
       const ty = (1 - scaleFrac) * pointer.y + translation.y * scaleFrac;
 
       this.body.view.scale = scale;
-      this.body.view.translation = {x:tx, y:ty};
+      this.body.view.translation = { x: tx, y: ty };
 
       if (preScaleDragPointer != undefined) {
-        const postScaleDragPointer = this.canvas.canvasToDOM(preScaleDragPointer);
+        const postScaleDragPointer =
+          this.canvas.canvasToDOM(preScaleDragPointer);
         this.drag.pointer.x = postScaleDragPointer.x;
         this.drag.pointer.y = postScaleDragPointer.y;
       }
 
-      this.body.emitter.emit('_requestRedraw');
+      this.body.emitter.emit("_requestRedraw");
 
       if (scaleOld < scale) {
-        this.body.emitter.emit('zoom', {direction: '+', scale: this.body.view.scale, pointer: pointer});
-      }
-      else {
-        this.body.emitter.emit('zoom', {direction: '-', scale: this.body.view.scale, pointer: pointer});
+        this.body.emitter.emit("zoom", {
+          direction: "+",
+          scale: this.body.view.scale,
+          pointer: pointer,
+        });
+      } else {
+        this.body.emitter.emit("zoom", {
+          direction: "-",
+          scale: this.body.view.scale,
+          pointer: pointer,
+        });
       }
     }
   }
-
 
   /**
    * Event handler for mouse wheel event, used to zoom the timeline
    * See http://adomas.org/javascript-mouse-wheel/
    *     https://github.com/EightMedia/hammer.js/issues/256
+   *
    * @param {MouseEvent}  event
    * @private
    */
@@ -16636,13 +17389,13 @@ class InteractionHandler {
       // Basically, delta is now positive if wheel was scrolled up,
       // and negative, if wheel was scrolled down.
       if (event.deltaY !== 0) {
-
         // calculate the new scale
         let scale = this.body.view.scale;
-        scale *= 1 + (event.deltaY < 0 ? 1 : -1) * (this.options.zoomSpeed * 0.1);
+        scale *=
+          1 + (event.deltaY < 0 ? 1 : -1) * (this.options.zoomSpeed * 0.1);
 
         // calculate the pointer location
-        const pointer = this.getPointer({x: event.clientX, y: event.clientY});
+        const pointer = this.getPointer({ x: event.clientX, y: event.clientY });
 
         // apply the new scale
         this.zoom(scale, pointer);
@@ -16653,14 +17406,14 @@ class InteractionHandler {
     }
   }
 
-
   /**
    * Mouse move handler for checking whether the title moves over a node with a title.
+   *
    * @param  {Event} event
    * @private
    */
   onMouseMove(event) {
-    const pointer = this.getPointer({x:event.clientX, y:event.clientY});
+    const pointer = this.getPointer({ x: event.clientX, y: event.clientY });
     let popupVisible = false;
 
     // check if the previously selected node is still selected
@@ -16678,7 +17431,11 @@ class InteractionHandler {
     }
 
     // if we bind the keyboard to the div, we have to highlight it to use it. This highlights it on mouse over.
-    if (this.options.keyboard.bindToWindow === false && this.options.keyboard.enabled === true) {
+    if (
+      this.options.keyboard.autoFocus &&
+      this.options.keyboard.bindToWindow === false &&
+      this.options.keyboard.enabled === true
+    ) {
       this.canvas.frame.focus();
     }
 
@@ -16689,7 +17446,10 @@ class InteractionHandler {
         this.popupTimer = undefined;
       }
       if (!this.drag.dragging) {
-        this.popupTimer = setTimeout(() => this._checkShowPopup(pointer), this.options.tooltipDelay);
+        this.popupTimer = setTimeout(
+          () => this._checkShowPopup(pointer),
+          this.options.tooltipDelay
+        );
       }
     }
 
@@ -16699,8 +17459,6 @@ class InteractionHandler {
     }
   }
 
-
-
   /**
    * Check if there is an element on the given position in the network
    * (a node or edge). If so, and if this element has a title,
@@ -16709,19 +17467,20 @@ class InteractionHandler {
    * @param {{x:number, y:number}} pointer
    * @private
    */
- _checkShowPopup(pointer) {
+  _checkShowPopup(pointer) {
     const x = this.canvas._XconvertDOMtoCanvas(pointer.x);
     const y = this.canvas._YconvertDOMtoCanvas(pointer.y);
     const pointerObj = {
-      left:   x,
-      top:    y,
-      right:  x,
-      bottom: y
+      left: x,
+      top: y,
+      right: x,
+      bottom: y,
     };
 
-    const previousPopupObjId = this.popupObj === undefined ? undefined : this.popupObj.id;
+    const previousPopupObjId =
+      this.popupObj === undefined ? undefined : this.popupObj.id;
     let nodeUnderCursor = false;
-    let popupType = 'node';
+    let popupType = "node";
 
     // check if a node is under the cursor.
     if (this.popupObj === undefined) {
@@ -16765,7 +17524,7 @@ class InteractionHandler {
 
       if (overlappingEdges.length > 0) {
         this.popupObj = edges[overlappingEdges[overlappingEdges.length - 1]];
-        popupType = 'edge';
+        popupType = "edge";
       }
     }
 
@@ -16785,69 +17544,375 @@ class InteractionHandler {
         this.popup.setPosition(pointer.x + 3, pointer.y - 5);
         this.popup.setText(this.popupObj.getTitle());
         this.popup.show();
-        this.body.emitter.emit('showPopup',this.popupObj.id);
+        this.body.emitter.emit("showPopup", this.popupObj.id);
       }
-    }
-    else {
+    } else {
       if (this.popup !== undefined) {
         this.popup.hide();
-        this.body.emitter.emit('hidePopup');
+        this.body.emitter.emit("hidePopup");
       }
     }
   }
 
-
   /**
    * Check if the popup must be hidden, which is the case when the mouse is no
    * longer hovering on the object
+   *
    * @param {{x:number, y:number}} pointer
    * @private
    */
- _checkHidePopup(pointer) {
+  _checkHidePopup(pointer) {
     const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
 
     let stillOnObj = false;
-    if (this.popup.popupTargetType === 'node') {
+    if (this.popup.popupTargetType === "node") {
       if (this.body.nodes[this.popup.popupTargetId] !== undefined) {
-        stillOnObj = this.body.nodes[this.popup.popupTargetId].isOverlappingWith(pointerObj);
+        stillOnObj =
+          this.body.nodes[this.popup.popupTargetId].isOverlappingWith(
+            pointerObj
+          );
 
         // if the mouse is still one the node, we have to check if it is not also on one that is drawn on top of it.
         // we initially only check stillOnObj because this is much faster.
         if (stillOnObj === true) {
           const overNode = this.selectionHandler.getNodeAt(pointer);
-          stillOnObj = overNode === undefined ? false : overNode.id === this.popup.popupTargetId;
+          stillOnObj =
+            overNode === undefined
+              ? false
+              : overNode.id === this.popup.popupTargetId;
         }
       }
-    }
-    else {
+    } else {
       if (this.selectionHandler.getNodeAt(pointer) === undefined) {
         if (this.body.edges[this.popup.popupTargetId] !== undefined) {
-          stillOnObj = this.body.edges[this.popup.popupTargetId].isOverlappingWith(pointerObj);
+          stillOnObj =
+            this.body.edges[this.popup.popupTargetId].isOverlappingWith(
+              pointerObj
+            );
         }
       }
     }
-
 
     if (stillOnObj === false) {
       this.popupObj = undefined;
       this.popup.hide();
-      this.body.emitter.emit('hidePopup');
+      this.body.emitter.emit("hidePopup");
     }
   }
 }
+
+/******************************************************************************
+Copyright (c) Microsoft Corporation.
+
+Permission to use, copy, modify, and/or distribute this software for any
+purpose with or without fee is hereby granted.
+
+THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH
+REGARD TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY
+AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT,
+INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM
+LOSS OF USE, DATA OR PROFITS, WHETHER IN AN ACTION OF CONTRACT, NEGLIGENCE OR
+OTHER TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR
+PERFORMANCE OF THIS SOFTWARE.
+***************************************************************************** */
+/* global Reflect, Promise, SuppressedError, Symbol */
+
+function __classPrivateFieldGet(receiver, state, kind, f) {
+  if (kind === "a" && !f)
+    throw new TypeError("Private accessor was defined without a getter");
+  if (
+    typeof state === "function"
+      ? receiver !== state || !f
+      : !state.has(receiver)
+  )
+    throw new TypeError(
+      "Cannot read private member from an object whose class did not declare it"
+    );
+  return kind === "m"
+    ? f
+    : kind === "a"
+    ? f.call(receiver)
+    : f
+    ? f.value
+    : state.get(receiver);
+}
+
+function __classPrivateFieldSet(receiver, state, value, kind, f) {
+  if (kind === "m") throw new TypeError("Private method is not writable");
+  if (kind === "a" && !f)
+    throw new TypeError("Private accessor was defined without a setter");
+  if (
+    typeof state === "function"
+      ? receiver !== state || !f
+      : !state.has(receiver)
+  )
+    throw new TypeError(
+      "Cannot write private member to an object whose class did not declare it"
+    );
+  return (
+    kind === "a"
+      ? f.call(receiver, value)
+      : f
+      ? (f.value = value)
+      : state.set(receiver, value),
+    value
+  );
+}
+
+typeof SuppressedError === "function"
+  ? SuppressedError
+  : function (error, suppressed, message) {
+      var e = new Error(message);
+      return (
+        (e.name = "SuppressedError"),
+        (e.error = error),
+        (e.suppressed = suppressed),
+        e
+      );
+    };
+
+var _SingleTypeSelectionAccumulator_previousSelection,
+  _SingleTypeSelectionAccumulator_selection,
+  _SelectionAccumulator_nodes,
+  _SelectionAccumulator_edges,
+  _SelectionAccumulator_commitHandler;
+/**
+ * @param prev
+ * @param next
+ */
+function diffSets(prev, next) {
+  const diff = new Set();
+  for (const item of next) {
+    if (!prev.has(item)) {
+      diff.add(item);
+    }
+  }
+  return diff;
+}
+class SingleTypeSelectionAccumulator {
+  constructor() {
+    _SingleTypeSelectionAccumulator_previousSelection.set(this, new Set());
+    _SingleTypeSelectionAccumulator_selection.set(this, new Set());
+  }
+  get size() {
+    return __classPrivateFieldGet(
+      this,
+      _SingleTypeSelectionAccumulator_selection,
+      "f"
+    ).size;
+  }
+  add(...items) {
+    for (const item of items) {
+      __classPrivateFieldGet(
+        this,
+        _SingleTypeSelectionAccumulator_selection,
+        "f"
+      ).add(item);
+    }
+  }
+  delete(...items) {
+    for (const item of items) {
+      __classPrivateFieldGet(
+        this,
+        _SingleTypeSelectionAccumulator_selection,
+        "f"
+      ).delete(item);
+    }
+  }
+  clear() {
+    __classPrivateFieldGet(
+      this,
+      _SingleTypeSelectionAccumulator_selection,
+      "f"
+    ).clear();
+  }
+  getSelection() {
+    return [
+      ...__classPrivateFieldGet(
+        this,
+        _SingleTypeSelectionAccumulator_selection,
+        "f"
+      ),
+    ];
+  }
+  getChanges() {
+    return {
+      added: [
+        ...diffSets(
+          __classPrivateFieldGet(
+            this,
+            _SingleTypeSelectionAccumulator_previousSelection,
+            "f"
+          ),
+          __classPrivateFieldGet(
+            this,
+            _SingleTypeSelectionAccumulator_selection,
+            "f"
+          )
+        ),
+      ],
+      deleted: [
+        ...diffSets(
+          __classPrivateFieldGet(
+            this,
+            _SingleTypeSelectionAccumulator_selection,
+            "f"
+          ),
+          __classPrivateFieldGet(
+            this,
+            _SingleTypeSelectionAccumulator_previousSelection,
+            "f"
+          )
+        ),
+      ],
+      previous: [
+        ...new Set(
+          __classPrivateFieldGet(
+            this,
+            _SingleTypeSelectionAccumulator_previousSelection,
+            "f"
+          )
+        ),
+      ],
+      current: [
+        ...new Set(
+          __classPrivateFieldGet(
+            this,
+            _SingleTypeSelectionAccumulator_selection,
+            "f"
+          )
+        ),
+      ],
+    };
+  }
+  commit() {
+    const changes = this.getChanges();
+    __classPrivateFieldSet(
+      this,
+      _SingleTypeSelectionAccumulator_previousSelection,
+      __classPrivateFieldGet(
+        this,
+        _SingleTypeSelectionAccumulator_selection,
+        "f"
+      ),
+      "f"
+    );
+    __classPrivateFieldSet(
+      this,
+      _SingleTypeSelectionAccumulator_selection,
+      new Set(
+        __classPrivateFieldGet(
+          this,
+          _SingleTypeSelectionAccumulator_previousSelection,
+          "f"
+        )
+      ),
+      "f"
+    );
+    for (const item of changes.added) {
+      item.select();
+    }
+    for (const item of changes.deleted) {
+      item.unselect();
+    }
+    return changes;
+  }
+}
+(_SingleTypeSelectionAccumulator_previousSelection = new WeakMap()),
+  (_SingleTypeSelectionAccumulator_selection = new WeakMap());
+class SelectionAccumulator {
+  constructor(commitHandler = () => {}) {
+    _SelectionAccumulator_nodes.set(this, new SingleTypeSelectionAccumulator());
+    _SelectionAccumulator_edges.set(this, new SingleTypeSelectionAccumulator());
+    _SelectionAccumulator_commitHandler.set(this, void 0);
+    __classPrivateFieldSet(
+      this,
+      _SelectionAccumulator_commitHandler,
+      commitHandler,
+      "f"
+    );
+  }
+  get sizeNodes() {
+    return __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").size;
+  }
+  get sizeEdges() {
+    return __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").size;
+  }
+  getNodes() {
+    return __classPrivateFieldGet(
+      this,
+      _SelectionAccumulator_nodes,
+      "f"
+    ).getSelection();
+  }
+  getEdges() {
+    return __classPrivateFieldGet(
+      this,
+      _SelectionAccumulator_edges,
+      "f"
+    ).getSelection();
+  }
+  addNodes(...nodes) {
+    __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").add(
+      ...nodes
+    );
+  }
+  addEdges(...edges) {
+    __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").add(
+      ...edges
+    );
+  }
+  deleteNodes(node) {
+    __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").delete(node);
+  }
+  deleteEdges(edge) {
+    __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").delete(edge);
+  }
+  clear() {
+    __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").clear();
+    __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").clear();
+  }
+  commit(...rest) {
+    const summary = {
+      nodes: __classPrivateFieldGet(
+        this,
+        _SelectionAccumulator_nodes,
+        "f"
+      ).commit(),
+      edges: __classPrivateFieldGet(
+        this,
+        _SelectionAccumulator_edges,
+        "f"
+      ).commit(),
+    };
+    __classPrivateFieldGet(this, _SelectionAccumulator_commitHandler, "f").call(
+      this,
+      summary,
+      ...rest
+    );
+    return summary;
+  }
+}
+(_SelectionAccumulator_nodes = new WeakMap()),
+  (_SelectionAccumulator_edges = new WeakMap()),
+  (_SelectionAccumulator_commitHandler = new WeakMap());
 
 /**
  * The handler for selections
  */
 class SelectionHandler {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Canvas} canvas
    */
   constructor(body, canvas) {
     this.body = body;
     this.canvas = canvas;
-    this.selectionObj = { nodes: [], edges: [] };
+    // TODO: Consider firing an event on any change to the selection, not
+    // only those caused by clicks and taps. It would be easy to implement
+    // now and (at least to me) it seems like something that could be
+    // quite useful.
+    this._selectionAccumulator = new SelectionAccumulator();
     this.hoverObj = { nodes: {}, edges: {} };
 
     this.options = {};
@@ -16855,7 +17920,7 @@ class SelectionHandler {
       multiselect: false,
       selectable: true,
       selectConnectedEdges: true,
-      hoverConnectedEdges: true
+      hoverConnectedEdges: true,
     };
     Object.assign(this.options, this.defaultOptions);
 
@@ -16864,18 +17929,21 @@ class SelectionHandler {
     });
   }
 
-
   /**
    *
-   * @param {Object} [options]
+   * @param {object} [options]
    */
   setOptions(options) {
     if (options !== undefined) {
-      const fields = ['multiselect', 'hoverConnectedEdges', 'selectable', 'selectConnectedEdges'];
+      const fields = [
+        "multiselect",
+        "hoverConnectedEdges",
+        "selectable",
+        "selectConnectedEdges",
+      ];
       selectiveDeepExtend(fields, this.options, options);
     }
   }
-
 
   /**
    * handles the selection part of the tap;
@@ -16913,8 +17981,7 @@ class SelectionHandler {
         selectionChanged = true;
         if (obj.isSelected() === true) {
           this.deselectObject(obj);
-        }
-        else {
+        } else {
           this.selectObject(obj);
         }
 
@@ -16923,7 +17990,6 @@ class SelectionHandler {
     }
     return selectionChanged;
   }
-
 
   /**
    * Create an object containing the standard fields for an event.
@@ -16936,15 +18002,14 @@ class SelectionHandler {
   _initBaseEvent(event, pointer) {
     const properties = {};
 
-    properties['pointer'] = {
+    properties["pointer"] = {
       DOM: { x: pointer.x, y: pointer.y },
-      canvas: this.canvas.DOMtoCanvas(pointer)
+      canvas: this.canvas.DOMtoCanvas(pointer),
     };
-    properties['event'] = event;
+    properties["event"] = event;
 
     return properties;
   }
-
 
   /**
    * Generate an event which the user can catch.
@@ -16955,27 +18020,32 @@ class SelectionHandler {
    * @param {string} eventType                          Name of event to send
    * @param {Event}  event
    * @param {{x: number, y: number}} pointer            Object with the x and y screen coordinates of the mouse
-   * @param {Object|undefined} oldSelection             If present, selection state before event occured
+   * @param {object | undefined} oldSelection             If present, selection state before event occured
    * @param {boolean|undefined} [emptySelection=false]  Indicate if selection data should be passed
    */
-  _generateClickEvent(eventType, event, pointer, oldSelection, emptySelection = false) {
+  generateClickEvent(
+    eventType,
+    event,
+    pointer,
+    oldSelection,
+    emptySelection = false
+  ) {
     const properties = this._initBaseEvent(event, pointer);
 
     if (emptySelection === true) {
       properties.nodes = [];
       properties.edges = [];
-    }
-    else {
+    } else {
       const tmp = this.getSelection();
       properties.nodes = tmp.nodes;
       properties.edges = tmp.edges;
     }
 
     if (oldSelection !== undefined) {
-      properties['previousSelection'] = oldSelection;
+      properties["previousSelection"] = oldSelection;
     }
 
-    if (eventType == 'click') {
+    if (eventType == "click") {
       // For the time being, restrict this functionality to
       // just the click event.
       properties.items = this.getClickedItems(pointer);
@@ -16990,7 +18060,7 @@ class SelectionHandler {
 
   /**
    *
-   * @param {Object} obj
+   * @param {object} obj
    * @param {boolean} [highlightEdges=this.options.selectConnectedEdges]
    * @returns {boolean}
    */
@@ -16998,11 +18068,12 @@ class SelectionHandler {
     if (obj !== undefined) {
       if (obj instanceof Node) {
         if (highlightEdges === true) {
-          this._selectConnectedEdges(obj);
+          this._selectionAccumulator.addEdges(...obj.edges);
         }
+        this._selectionAccumulator.addNodes(obj);
+      } else {
+        this._selectionAccumulator.addEdges(obj);
       }
-      obj.select();
-      this._addToSelection(obj);
       return true;
     }
     return false;
@@ -17010,7 +18081,7 @@ class SelectionHandler {
 
   /**
    *
-   * @param {Object} obj
+   * @param {object} obj
    */
   deselectObject(obj) {
     if (obj.isSelected() === true) {
@@ -17019,12 +18090,11 @@ class SelectionHandler {
     }
   }
 
-
-
   /**
    * retrieve all nodes overlapping with given object
-   * @param {Object} object  An object with parameters left, top, right, bottom
-   * @return {number[]}   An array with id's of the overlapping nodes
+   *
+   * @param {object} object  An object with parameters left, top, right, bottom
+   * @returns {number[]}   An array with id's of the overlapping nodes
    * @private
    */
   _getAllNodesOverlappingWith(object) {
@@ -17039,7 +18109,6 @@ class SelectionHandler {
     return overlappingNodes;
   }
 
-
   /**
    * Return a position object in canvasspace from a single point in screenspace
    *
@@ -17053,17 +18122,16 @@ class SelectionHandler {
       left: canvasPos.x - 1,
       top: canvasPos.y + 1,
       right: canvasPos.x + 1,
-      bottom: canvasPos.y - 1
+      bottom: canvasPos.y - 1,
     };
   }
-
 
   /**
    * Get the top node at the passed point (like a click)
    *
    * @param {{x: number, y: number}} pointer
    * @param {boolean} [returnNode=true]
-   * @return {Node | undefined} node
+   * @returns {Node | undefined} node
    */
   getNodeAt(pointer, returnNode = true) {
     // we first check if this is an navigation controls element
@@ -17074,20 +18142,18 @@ class SelectionHandler {
     if (overlappingNodes.length > 0) {
       if (returnNode === true) {
         return this.body.nodes[overlappingNodes[overlappingNodes.length - 1]];
-      }
-      else {
+      } else {
         return overlappingNodes[overlappingNodes.length - 1];
       }
-    }
-    else {
+    } else {
       return undefined;
     }
   }
 
-
   /**
    * retrieve all edges overlapping with given object, selector is around center
-   * @param {Object} object  An object with parameters left, top, right, bottom
+   *
+   * @param {object} object  An object with parameters left, top, right, bottom
    * @param {number[]} overlappingEdges An array with id's of the overlapping nodes
    * @private
    */
@@ -17101,11 +18167,11 @@ class SelectionHandler {
     }
   }
 
-
   /**
    * retrieve all nodes overlapping with given object
-   * @param {Object} object  An object with parameters left, top, right, bottom
-   * @return {number[]}   An array with id's of the overlapping nodes
+   *
+   * @param {object} object  An object with parameters left, top, right, bottom
+   * @returns {number[]}   An array with id's of the overlapping nodes
    * @private
    */
   _getAllEdgesOverlappingWith(object) {
@@ -17114,13 +18180,12 @@ class SelectionHandler {
     return overlappingEdges;
   }
 
-
   /**
    * Get the edges nearest to the passed point (like a click)
    *
    * @param {{x: number, y: number}} pointer
    * @param {boolean} [returnEdge=true]
-   * @return {Edge | undefined} node
+   * @returns {Edge | undefined} node
    */
   getEdgeAt(pointer, returnEdge = true) {
     // Iterate over edges, pick closest within 10
@@ -17136,7 +18201,14 @@ class SelectionHandler {
         const yFrom = edge.from.y;
         const xTo = edge.to.x;
         const yTo = edge.to.y;
-        const dist = edge.edgeType.getDistanceToEdge(xFrom, yFrom, xTo, yTo, canvasPos.x, canvasPos.y);
+        const dist = edge.edgeType.getDistanceToEdge(
+          xFrom,
+          yFrom,
+          xTo,
+          yTo,
+          canvasPos.x,
+          canvasPos.y
+        );
         if (dist < mindist) {
           overlappingEdge = edgeId;
           mindist = dist;
@@ -17146,218 +18218,66 @@ class SelectionHandler {
     if (overlappingEdge !== null) {
       if (returnEdge === true) {
         return this.body.edges[overlappingEdge];
-      }
-      else {
+      } else {
         return overlappingEdge;
       }
-    }
-    else {
+    } else {
       return undefined;
     }
   }
 
-
   /**
    * Add object to the selection array.
    *
-   * @param {Object} obj
-   * @private
-   */
-  _addToSelection(obj) {
-    if (obj instanceof Node) {
-      this.selectionObj.nodes[obj.id] = obj;
-    }
-    else {
-      this.selectionObj.edges[obj.id] = obj;
-    }
-  }
-
-  /**
-   * Add object to the selection array.
-   *
-   * @param {Object} obj
+   * @param {object} obj
    * @private
    */
   _addToHover(obj) {
     if (obj instanceof Node) {
       this.hoverObj.nodes[obj.id] = obj;
-    }
-    else {
+    } else {
       this.hoverObj.edges[obj.id] = obj;
     }
   }
 
-
   /**
    * Remove a single option from selection.
    *
-   * @param {Object} obj
+   * @param {object} obj
    * @private
    */
   _removeFromSelection(obj) {
     if (obj instanceof Node) {
-      delete this.selectionObj.nodes[obj.id];
-      this._unselectConnectedEdges(obj);
-    }
-    else {
-      delete this.selectionObj.edges[obj.id];
+      this._selectionAccumulator.deleteNodes(obj);
+      this._selectionAccumulator.deleteEdges(...obj.edges);
+    } else {
+      this._selectionAccumulator.deleteEdges(obj);
     }
   }
 
   /**
-   * Unselect all. The selectionObj is useful for this.
+   * Unselect all nodes and edges.
    */
   unselectAll() {
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        this.selectionObj.nodes[nodeId].unselect();
-      }
-    }
-    for (const edgeId in this.selectionObj.edges) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-        this.selectionObj.edges[edgeId].unselect();
-      }
-    }
-
-    this.selectionObj = { nodes: {}, edges: {} };
+    this._selectionAccumulator.clear();
   }
-
 
   /**
    * return the number of selected nodes
    *
    * @returns {number}
-   * @private
    */
-  _getSelectedNodeCount() {
-    let count = 0;
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        count += 1;
-      }
-    }
-    return count;
+  getSelectedNodeCount() {
+    return this._selectionAccumulator.sizeNodes;
   }
-
-  /**
-   * return the selected node
-   *
-   * @returns {number}
-   * @private
-   */
-  _getSelectedNode() {
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        return this.selectionObj.nodes[nodeId];
-      }
-    }
-    return undefined;
-  }
-
-  /**
-   * return the selected edge
-   *
-   * @returns {number}
-   * @private
-   */
-  _getSelectedEdge() {
-    for (const edgeId in this.selectionObj.edges) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-        return this.selectionObj.edges[edgeId];
-      }
-    }
-    return undefined;
-  }
-
 
   /**
    * return the number of selected edges
    *
    * @returns {number}
-   * @private
    */
-  _getSelectedEdgeCount() {
-    let count = 0;
-    for (const edgeId in this.selectionObj.edges) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-        count += 1;
-      }
-    }
-    return count;
-  }
-
-
-  /**
-   * return the number of selected objects.
-   *
-   * @returns {number}
-   * @private
-   */
-  _getSelectedObjectCount() {
-    let count = 0;
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        count += 1;
-      }
-    }
-    for (const edgeId in this.selectionObj.edges) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-        count += 1;
-      }
-    }
-    return count;
-  }
-
-  /**
-   * Check if anything is selected
-   *
-   * @returns {boolean}
-   * @private
-   */
-  _selectionIsEmpty() {
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        return false;
-      }
-    }
-    for (const edgeId in this.selectionObj.edges) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-
-  /**
-   * check if one of the selected nodes is a cluster.
-   *
-   * @returns {boolean}
-   * @private
-   */
-  _clusterInSelection() {
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        if (this.selectionObj.nodes[nodeId].clusterSize > 1) {
-          return true;
-        }
-      }
-    }
-    return false;
-  }
-
-  /**
-   * select the edges connected to the node that is being selected
-   *
-   * @param {Node} node
-   * @private
-   */
-  _selectConnectedEdges(node) {
-    for (let i = 0; i < node.edges.length; i++) {
-      const edge = node.edges[i];
-      edge.select();
-      this._addToSelection(edge);
-    }
+  getSelectedEdgeCount() {
+    return this._selectionAccumulator.sizeEdges;
   }
 
   /**
@@ -17373,22 +18293,6 @@ class SelectionHandler {
       this._addToHover(edge);
     }
   }
-
-
-  /**
-   * unselect the edges connected to the node that is being selected
-   *
-   * @param {Node} node
-   * @private
-   */
-  _unselectConnectedEdges(node) {
-    for (let i = 0; i < node.edges.length; i++) {
-      const edge = node.edges[i];
-      edge.unselect();
-      this._removeFromSelection(edge);
-    }
-  }
-
 
   /**
    * Remove the highlight from a node or edge, in response to mouse movement
@@ -17406,14 +18310,12 @@ class SelectionHandler {
       if (object instanceof Node) {
         properties.node = object.id;
         this.body.emitter.emit("blurNode", properties);
-      }
-      else {
+      } else {
         properties.edge = object.id;
         this.body.emitter.emit("blurEdge", properties);
       }
     }
   }
-
 
   /**
    * Create the highlight for a node or edge, in response to mouse movement
@@ -17435,8 +18337,7 @@ class SelectionHandler {
       if (object instanceof Node) {
         properties.node = object.id;
         this.body.emitter.emit("hoverNode", properties);
-      }
-      else {
+      } else {
         properties.edge = object.id;
         this.body.emitter.emit("hoverEdge", properties);
       }
@@ -17444,7 +18345,6 @@ class SelectionHandler {
 
     return hoverChanged;
   }
-
 
   /**
    * Perform actions in response to a mouse movement.
@@ -17462,7 +18362,11 @@ class SelectionHandler {
     // remove all node hover highlights
     for (const nodeId in this.hoverObj.nodes) {
       if (Object.prototype.hasOwnProperty.call(this.hoverObj.nodes, nodeId)) {
-        if (object === undefined || (object instanceof Node && object.id != nodeId) || object instanceof Edge) {
+        if (
+          object === undefined ||
+          (object instanceof Node && object.id != nodeId) ||
+          object instanceof Edge
+        ) {
           this.emitBlurEvent(event, pointer, this.hoverObj.nodes[nodeId]);
           delete this.hoverObj.nodes[nodeId];
           hoverChanged = true;
@@ -17481,7 +18385,11 @@ class SelectionHandler {
         }
         // if the blur remains the same and the object is undefined (mouse off) or another
         // edge has been hovered, or another node has been hovered we blur the edge.
-        else if (object === undefined || (object instanceof Edge && object.id != edgeId) || (object instanceof Node && !object.hover)) {
+        else if (
+          object === undefined ||
+          (object instanceof Edge && object.id != edgeId) ||
+          (object instanceof Node && !object.hover)
+        ) {
           this.emitBlurEvent(event, pointer, this.hoverObj.edges[edgeId]);
           delete this.hoverObj.edges[edgeId];
           hoverChanged = true;
@@ -17492,8 +18400,14 @@ class SelectionHandler {
     if (object !== undefined) {
       const hoveredEdgesCount = Object.keys(this.hoverObj.edges).length;
       const hoveredNodesCount = Object.keys(this.hoverObj.nodes).length;
-      const newOnlyHoveredEdge = object instanceof Edge && hoveredEdgesCount === 0 && hoveredNodesCount === 0;
-      const newOnlyHoveredNode = object instanceof Node && hoveredEdgesCount === 0 && hoveredNodesCount === 0;
+      const newOnlyHoveredEdge =
+        object instanceof Edge &&
+        hoveredEdgesCount === 0 &&
+        hoveredNodesCount === 0;
+      const newOnlyHoveredNode =
+        object instanceof Node &&
+        hoveredEdgesCount === 0 &&
+        hoveredNodesCount === 0;
 
       if (hoverChanged || newOnlyHoveredEdge || newOnlyHoveredNode) {
         hoverChanged = this.emitHoverEvent(event, pointer, object);
@@ -17505,78 +18419,144 @@ class SelectionHandler {
     }
 
     if (hoverChanged === true) {
-      this.body.emitter.emit('_requestRedraw');
+      this.body.emitter.emit("_requestRedraw");
     }
   }
 
-
-
+  /**
+   * Commit the selection changes but don't emit any events.
+   */
+  commitWithoutEmitting() {
+    this._selectionAccumulator.commit();
+  }
 
   /**
+   * Select and deselect nodes depending current selection change.
    *
-   * retrieve the currently selected objects
-   * @return {{nodes: Array.<string>, edges: Array.<string>}} selection
+   * For changing nodes, select/deselect events are fired.
+   *
+   * NOTE: For a given edge, if one connecting node is deselected and with the
+   * same click the other node is selected, no events for the edge will fire. It
+   * was selected and it will remain selected.
+   *
+   * @param {{x: number, y: number}} pointer - The x and y coordinates of the
+   * click, tap, dragend… that triggered this.
+   * @param {UIEvent} event - The event that triggered this.
+   */
+  commitAndEmit(pointer, event) {
+    let selected = false;
+
+    const selectionChanges = this._selectionAccumulator.commit();
+    const previousSelection = {
+      nodes: selectionChanges.nodes.previous,
+      edges: selectionChanges.edges.previous,
+    };
+
+    if (selectionChanges.edges.deleted.length > 0) {
+      this.generateClickEvent(
+        "deselectEdge",
+        event,
+        pointer,
+        previousSelection
+      );
+      selected = true;
+    }
+
+    if (selectionChanges.nodes.deleted.length > 0) {
+      this.generateClickEvent(
+        "deselectNode",
+        event,
+        pointer,
+        previousSelection
+      );
+      selected = true;
+    }
+
+    if (selectionChanges.nodes.added.length > 0) {
+      this.generateClickEvent("selectNode", event, pointer);
+      selected = true;
+    }
+
+    if (selectionChanges.edges.added.length > 0) {
+      this.generateClickEvent("selectEdge", event, pointer);
+      selected = true;
+    }
+
+    // fire the select event if anything has been selected or deselected
+    if (selected === true) {
+      // select or unselect
+      this.generateClickEvent("select", event, pointer);
+    }
+  }
+
+  /**
+   * Retrieve the currently selected node and edge ids.
+   *
+   * @returns {{nodes: Array.<string>, edges: Array.<string>}} Arrays with the
+   * ids of the selected nodes and edges.
    */
   getSelection() {
-    const nodeIds = this.getSelectedNodes();
-    const edgeIds = this.getSelectedEdges();
-    return { nodes: nodeIds, edges: edgeIds };
+    return {
+      nodes: this.getSelectedNodeIds(),
+      edges: this.getSelectedEdgeIds(),
+    };
   }
 
   /**
+   * Retrieve the currently selected nodes.
    *
-   * retrieve the currently selected nodes
-   * @return {string[]} selection    An array with the ids of the
-   *                                            selected nodes.
+   * @returns {Array} An array with selected nodes.
    */
   getSelectedNodes() {
-    const idArray = [];
-    if (this.options.selectable === true) {
-      for (const nodeId in this.selectionObj.nodes) {
-        if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-          idArray.push(this.selectionObj.nodes[nodeId].id);
-        }
-      }
-    }
-    return idArray;
+    return this._selectionAccumulator.getNodes();
   }
 
   /**
+   * Retrieve the currently selected edges.
    *
-   * retrieve the currently selected edges
-   * @return {Array} selection    An array with the ids of the
-   *                                            selected nodes.
+   * @returns {Array} An array with selected edges.
    */
   getSelectedEdges() {
-    const idArray = [];
-    if (this.options.selectable === true) {
-      for (const edgeId in this.selectionObj.edges) {
-        if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-          idArray.push(this.selectionObj.edges[edgeId].id);
-        }
-      }
-    }
-    return idArray;
+    return this._selectionAccumulator.getEdges();
+  }
+
+  /**
+   * Retrieve the currently selected node ids.
+   *
+   * @returns {Array} An array with the ids of the selected nodes.
+   */
+  getSelectedNodeIds() {
+    return this._selectionAccumulator.getNodes().map((node) => node.id);
+  }
+
+  /**
+   * Retrieve the currently selected edge ids.
+   *
+   * @returns {Array} An array with the ids of the selected edges.
+   */
+  getSelectedEdgeIds() {
+    return this._selectionAccumulator.getEdges().map((edge) => edge.id);
   }
 
   /**
    * Updates the current selection
+   *
    * @param {{nodes: Array.<string>, edges: Array.<string>}} selection
-   * @param {Object} options                                 Options
+   * @param {object} options                                 Options
    */
   setSelection(selection, options = {}) {
-    let i, id;
+    if (!selection || (!selection.nodes && !selection.edges)) {
+      throw new TypeError(
+        "Selection must be an object with nodes and/or edges properties"
+      );
+    }
 
-    if (!selection || (!selection.nodes && !selection.edges))
-      throw 'Selection must be an object with nodes and/or edges properties';
     // first unselect any selected node, if option is true or undefined
     if (options.unselectAll || options.unselectAll === undefined) {
       this.unselectAll();
     }
     if (selection.nodes) {
-      for (i = 0; i < selection.nodes.length; i++) {
-        id = selection.nodes[i];
-
+      for (const id of selection.nodes) {
         const node = this.body.nodes[id];
         if (!node) {
           throw new RangeError('Node with id "' + id + '" not found');
@@ -17587,9 +18567,7 @@ class SelectionHandler {
     }
 
     if (selection.edges) {
-      for (i = 0; i < selection.edges.length; i++) {
-        id = selection.edges[i];
-
+      for (const id of selection.edges) {
         const edge = this.body.edges[id];
         if (!edge) {
           throw new RangeError('Edge with id "' + id + '" not found');
@@ -17597,57 +18575,54 @@ class SelectionHandler {
         this.selectObject(edge);
       }
     }
-    this.body.emitter.emit('_requestRedraw');
+    this.body.emitter.emit("_requestRedraw");
+    this._selectionAccumulator.commit();
   }
-
 
   /**
    * select zero or more nodes with the option to highlight edges
+   *
    * @param {number[] | string[]} selection     An array with the ids of the
    *                                            selected nodes.
    * @param {boolean} [highlightEdges]
    */
   selectNodes(selection, highlightEdges = true) {
-    if (!selection || (selection.length === undefined))
-      throw 'Selection must be an array with ids';
+    if (!selection || selection.length === undefined)
+      throw "Selection must be an array with ids";
 
     this.setSelection({ nodes: selection }, { highlightEdges: highlightEdges });
   }
 
-
   /**
    * select zero or more edges
+   *
    * @param {number[] | string[]} selection     An array with the ids of the
    *                                            selected nodes.
    */
   selectEdges(selection) {
-    if (!selection || (selection.length === undefined))
-      throw 'Selection must be an array with ids';
+    if (!selection || selection.length === undefined)
+      throw "Selection must be an array with ids";
 
     this.setSelection({ edges: selection });
   }
 
   /**
    * Validate the selection: remove ids of nodes which no longer exist
+   *
    * @private
    */
   updateSelection() {
-    for (const nodeId in this.selectionObj.nodes) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.nodes, nodeId)) {
-        if (!Object.prototype.hasOwnProperty.call(this.body.nodes, nodeId)) {
-          delete this.selectionObj.nodes[nodeId];
-        }
+    for (const node in this._selectionAccumulator.getNodes()) {
+      if (!Object.prototype.hasOwnProperty.call(this.body.nodes, node.id)) {
+        this._selectionAccumulator.deleteNodes(node);
       }
     }
-    for (const edgeId in this.selectionObj.edges) {
-      if (Object.prototype.hasOwnProperty.call(this.selectionObj.edges, edgeId)) {
-        if (!Object.prototype.hasOwnProperty.call(this.body.edges, edgeId)) {
-          delete this.selectionObj.edges[edgeId];
-        }
+    for (const edge in this._selectionAccumulator.getEdges()) {
+      if (!Object.prototype.hasOwnProperty.call(this.body.edges, edge.id)) {
+        this._selectionAccumulator.deleteEdges(edge);
       }
     }
   }
-
 
   /**
    * Determine all the visual elements clicked which are on the given point.
@@ -17706,7 +18681,6 @@ class SelectionHandler {
  * Strategy pattern for usage of direction methods for hierarchical layouts.
  */
 
-
 /**
  * Interface definition for direction strategy classes.
  *
@@ -17728,7 +18702,9 @@ class SelectionHandler {
  * @private
  */
 class DirectionInterface {
-  /** @ignore **/
+  /**
+   * @ignore
+   */
   abstract() {
     throw new Error("Can't instantiate abstract class!");
   }
@@ -17739,7 +18715,7 @@ class DirectionInterface {
    *   "'param' is assigned a value but never used"
    *
    * @ignore
-   **/
+   */
   fake_use() {
     // Do nothing special
   }
@@ -17750,19 +18726,22 @@ class DirectionInterface {
    *
    * The value should be perpendicular to the actual direction of the layout.
    *
-   * @return {string} Direction, either 'vertical' or 'horizontal'
+   * @returns {string} Direction, either 'vertical' or 'horizontal'
    */
-  curveType() { return this.abstract(); }
-
+  curveType() {
+    return this.abstract();
+  }
 
   /**
    * Return the value of the coordinate that is not fixed for this direction.
    *
    * @param {Node} node The node to read
-   * @return {number} Value of the unfixed coordinate
+   * @returns {number} Value of the unfixed coordinate
    */
-  getPosition(node) { this.fake_use(node); return this.abstract(); }
-
+  getPosition(node) {
+    this.fake_use(node);
+    return this.abstract();
+  }
 
   /**
    * Set the value of the coordinate that is not fixed for this direction.
@@ -17771,8 +18750,10 @@ class DirectionInterface {
    * @param {number} position
    * @param {number} [level] if specified, the hierarchy level that this node should be fixed to
    */
-  setPosition(node, position, level = undefined) { this.fake_use(node, position, level); this.abstract(); }
-
+  setPosition(node, position, level = undefined) {
+    this.fake_use(node, position, level);
+    this.abstract();
+  }
 
   /**
    * Get the width of a tree.
@@ -17781,15 +18762,17 @@ class DirectionInterface {
    * only among themselves. In essence, it is a sub-network.
    *
    * @param {number} index The index number of a tree
-   * @return {number} the width of a tree in the view coordinates
+   * @returns {number} the width of a tree in the view coordinates
    */
-  getTreeSize(index) { this.fake_use(index); return this.abstract(); }
-
+  getTreeSize(index) {
+    this.fake_use(index);
+    return this.abstract();
+  }
 
   /**
    * Sort array of nodes on the unfixed coordinates.
    *
-   * **Note:** chrome has non-stable sorting implementation, which
+   * Note:** chrome has non-stable sorting implementation, which
    * has a tendency to change the order of the array items,
    * even if the custom sort function returns 0.
    *
@@ -17800,8 +18783,10 @@ class DirectionInterface {
    *
    * @param {Array.<Node>} nodeArray array of nodes to sort
    */
-  sort(nodeArray) { this.fake_use(nodeArray); this.abstract(); }
-
+  sort(nodeArray) {
+    this.fake_use(nodeArray);
+    this.abstract();
+  }
 
   /**
    * Assign the fixed coordinate of the node to the given level
@@ -17809,49 +18794,53 @@ class DirectionInterface {
    * @param {Node} node The node to adjust
    * @param {number} level The level to fix to
    */
-  fix(node, level) { this.fake_use(node, level); this.abstract(); }
-
+  fix(node, level) {
+    this.fake_use(node, level);
+    this.abstract();
+  }
 
   /**
-   * Add an offset to the unfixed coordinate of the given node. 
+   * Add an offset to the unfixed coordinate of the given node.
    *
    * @param {NodeId} nodeId Id of the node to adjust
    * @param {number} diff Offset to add to the unfixed coordinate
    */
-  shift(nodeId, diff) { this.fake_use(nodeId, diff); this.abstract(); }
+  shift(nodeId, diff) {
+    this.fake_use(nodeId, diff);
+    this.abstract();
+  }
 }
-
 
 /**
  * Vertical Strategy
  *
  * Coordinate `y` is fixed on levels, coordinate `x` is unfixed.
  *
- * @extends DirectionInterface
+ * @augments DirectionInterface
  * @private
  */
 class VerticalStrategy extends DirectionInterface {
   /**
    * Constructor
    *
-   * @param {Object} layout reference to the parent LayoutEngine instance.
+   * @param {object} layout reference to the parent LayoutEngine instance.
    */
   constructor(layout) {
     super();
     this.layout = layout;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   curveType() {
-    return 'horizontal';
+    return "horizontal";
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   getPosition(node) {
     return node.x;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   setPosition(node, position, level = undefined) {
     if (level !== undefined) {
       this.layout.hierarchical.addToOrdering(node, level);
@@ -17859,62 +18848,64 @@ class VerticalStrategy extends DirectionInterface {
     node.x = position;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   getTreeSize(index) {
-    const res = this.layout.hierarchical.getTreeSize(this.layout.body.nodes, index);
-    return {min: res.min_x, max: res.max_x};
+    const res = this.layout.hierarchical.getTreeSize(
+      this.layout.body.nodes,
+      index
+    );
+    return { min: res.min_x, max: res.max_x };
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   sort(nodeArray) {
-    sort(nodeArray, function(a, b) {
+    nodeArray.sort(function (a, b) {
       return a.x - b.x;
     });
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   fix(node, level) {
     node.y = this.layout.options.hierarchical.levelSeparation * level;
     node.options.fixed.y = true;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   shift(nodeId, diff) {
     this.layout.body.nodes[nodeId].x += diff;
   }
 }
-
 
 /**
  * Horizontal Strategy
  *
  * Coordinate `x` is fixed on levels, coordinate `y` is unfixed.
  *
- * @extends DirectionInterface
+ * @augments DirectionInterface
  * @private
  */
 class HorizontalStrategy extends DirectionInterface {
   /**
    * Constructor
    *
-   * @param {Object} layout reference to the parent LayoutEngine instance.
+   * @param {object} layout reference to the parent LayoutEngine instance.
    */
   constructor(layout) {
     super();
     this.layout = layout;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   curveType() {
-    return 'vertical';
+    return "vertical";
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   getPosition(node) {
     return node.y;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   setPosition(node, position, level = undefined) {
     if (level !== undefined) {
       this.layout.hierarchical.addToOrdering(node, level);
@@ -17922,26 +18913,29 @@ class HorizontalStrategy extends DirectionInterface {
     node.y = position;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   getTreeSize(index) {
-    const res = this.layout.hierarchical.getTreeSize(this.layout.body.nodes, index);
-    return {min: res.min_y, max: res.max_y};
+    const res = this.layout.hierarchical.getTreeSize(
+      this.layout.body.nodes,
+      index
+    );
+    return { min: res.min_y, max: res.max_y };
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   sort(nodeArray) {
-    sort(nodeArray, function(a, b) {
+    nodeArray.sort(function (a, b) {
       return a.y - b.y;
     });
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   fix(node, level) {
     node.x = this.layout.options.hierarchical.levelSeparation * level;
     node.options.fixed.x = true;
   }
 
-  /** @inheritdoc */
+  /** @inheritDoc */
   shift(nodeId, diff) {
     this.layout.body.nodes[nodeId].y += diff;
   }
@@ -17952,71 +18946,72 @@ class HorizontalStrategy extends DirectionInterface {
  *
  * @param nodes - Visible nodes of the graph.
  * @param levels - If present levels will be added to it, if not a new object will be created.
- *
  * @returns Populated node levels.
  */
 function fillLevelsByDirectionCyclic(nodes, levels) {
-    const edges = new Set();
-    nodes.forEach((node) => {
-        node.edges.forEach((edge) => {
-            if (edge.connected) {
-                edges.add(edge);
-            }
-        });
+  const edges = new Set();
+  nodes.forEach((node) => {
+    node.edges.forEach((edge) => {
+      if (edge.connected) {
+        edges.add(edge);
+      }
     });
-    edges.forEach((edge) => {
-        const fromId = edge.from.id;
-        const toId = edge.to.id;
-        if (levels[fromId] == null) {
-            levels[fromId] = 0;
-        }
-        if (levels[toId] == null || levels[fromId] >= levels[toId]) {
-            levels[toId] = levels[fromId] + 1;
-        }
-    });
-    return levels;
+  });
+  edges.forEach((edge) => {
+    const fromId = edge.from.id;
+    const toId = edge.to.id;
+    if (levels[fromId] == null) {
+      levels[fromId] = 0;
+    }
+    if (levels[toId] == null || levels[fromId] >= levels[toId]) {
+      levels[toId] = levels[fromId] + 1;
+    }
+  });
+  return levels;
 }
 /**
  * Assign levels to nodes according to their positions in the hierarchy. Leaves will be lined up at the bottom and all other nodes as close to their children as possible.
  *
  * @param nodes - Visible nodes of the graph.
- * @param levels - If present levels will be added to it, if not a new object will be created.
- *
  * @returns Populated node levels.
  */
-function fillLevelsByDirectionLeaves(nodes, levels = Object.create(null)) {
-    return fillLevelsByDirection(
+function fillLevelsByDirectionLeaves(nodes) {
+  return fillLevelsByDirection(
     // Pick only leaves (nodes without children).
-    (node) => node.edges
+    (node) =>
+      node.edges
         // Take only visible nodes into account.
         .filter((edge) => nodes.has(edge.toId))
         // Check that all edges lead to this node (leaf).
-        .every((edge) => edge.to === node), 
+        .every((edge) => edge.to === node),
     // Use the lowest level.
-    (newLevel, oldLevel) => oldLevel > newLevel, 
+    (newLevel, oldLevel) => oldLevel > newLevel,
     // Go against the direction of the edges.
-    "from", nodes, levels);
+    "from",
+    nodes
+  );
 }
 /**
  * Assign levels to nodes according to their positions in the hierarchy. Roots will be lined up at the top and all nodes as close to their parents as possible.
  *
  * @param nodes - Visible nodes of the graph.
- * @param levels - If present levels will be added to it, if not a new object will be created.
- *
  * @returns Populated node levels.
  */
-function fillLevelsByDirectionRoots(nodes, levels = Object.create(null)) {
-    return fillLevelsByDirection(
+function fillLevelsByDirectionRoots(nodes) {
+  return fillLevelsByDirection(
     // Pick only roots (nodes without parents).
-    (node) => node.edges
+    (node) =>
+      node.edges
         // Take only visible nodes into account.
         .filter((edge) => nodes.has(edge.toId))
         // Check that all edges lead from this node (root).
-        .every((edge) => edge.from === node), 
+        .every((edge) => edge.from === node),
     // Use the highest level.
-    (newLevel, oldLevel) => oldLevel < newLevel, 
+    (newLevel, oldLevel) => oldLevel < newLevel,
     // Go in the direction of the edges.
-    "to", nodes, levels);
+    "to",
+    nodes
+  );
 }
 /**
  * Assign levels to nodes according to their positions in the hierarchy.
@@ -18025,63 +19020,78 @@ function fillLevelsByDirectionRoots(nodes, levels = Object.create(null)) {
  * @param shouldLevelBeReplaced - Checks and returns true if the level of given node should be updated to the new value.
  * @param direction - Wheter the graph should be traversed in the direction of the edges `"to"` or in the other way `"from"`.
  * @param nodes - Visible nodes of the graph.
- * @param levels - If present levels will be added to it, if not a new object will be created.
- *
  * @returns Populated node levels.
  */
-function fillLevelsByDirection(isEntryNode, shouldLevelBeReplaced, direction, nodes, levels) {
-    const limit = nodes.size;
-    const edgeIdProp = (direction + "Id");
-    const newLevelDiff = direction === "to" ? 1 : -1;
-    for (const [entryNodeId, entryNode] of nodes) {
-        if (
+function fillLevelsByDirection(
+  isEntryNode,
+  shouldLevelBeReplaced,
+  direction,
+  nodes
+) {
+  const levels = Object.create(null);
+  // If acyclic, the graph can be walked through with (most likely way) fewer
+  // steps than the number bellow. The exact value isn't too important as long
+  // as it's quick to compute (doesn't impact acyclic graphs too much), is
+  // higher than the number of steps actually needed (doesn't cut off before
+  // acyclic graph is walked through) and prevents infinite loops (cuts off for
+  // cyclic graphs).
+  const limit = [...nodes.values()].reduce(
+    (acc, node) => acc + 1 + node.edges.length,
+    0
+  );
+  const edgeIdProp = direction + "Id";
+  const newLevelDiff = direction === "to" ? 1 : -1;
+  for (const [entryNodeId, entryNode] of nodes) {
+    if (
+      // Skip if the node is not visible.
+      !nodes.has(entryNodeId) ||
+      // Skip if the node is not an entry node.
+      !isEntryNode(entryNode)
+    ) {
+      continue;
+    }
+    // Line up all the entry nodes on level 0.
+    levels[entryNodeId] = 0;
+    const stack = [entryNode];
+    let done = 0;
+    let node;
+    while ((node = stack.pop())) {
+      if (!nodes.has(entryNodeId)) {
         // Skip if the node is not visible.
-        !nodes.has(entryNodeId) ||
-            // Skip if the node is not an entry node.
-            !isEntryNode(entryNode)) {
-            continue;
-        }
-        // Line up all the entry nodes on level 0.
-        levels[entryNodeId] = 0;
-        const stack = [entryNode];
-        let done = 0;
-        let node;
-        while ((node = stack.pop())) {
-            if (!nodes.has(entryNodeId)) {
-                // Skip if the node is not visible.
-                continue;
-            }
-            const newLevel = levels[node.id] + newLevelDiff;
-            node.edges
-                .filter((edge) => 
+        continue;
+      }
+      const newLevel = levels[node.id] + newLevelDiff;
+      node.edges
+        .filter(
+          (edge) =>
             // Ignore disconnected edges.
             edge.connected &&
-                // Ignore circular edges.
-                edge.to !== edge.from &&
-                // Ignore edges leading to the node that's currently being processed.
-                edge[direction] !== node &&
-                // Ignore edges connecting to an invisible node.
-                nodes.has(edge.toId) &&
-                // Ignore edges connecting from an invisible node.
-                nodes.has(edge.fromId))
-                .forEach((edge) => {
-                const targetNodeId = edge[edgeIdProp];
-                const oldLevel = levels[targetNodeId];
-                if (oldLevel == null || shouldLevelBeReplaced(newLevel, oldLevel)) {
-                    levels[targetNodeId] = newLevel;
-                    stack.push(edge[direction]);
-                }
-            });
-            if (done > limit) {
-                // This would run forever on a cyclic graph.
-                return fillLevelsByDirectionCyclic(nodes, levels);
-            }
-            else {
-                ++done;
-            }
-        }
+            // Ignore circular edges.
+            edge.to !== edge.from &&
+            // Ignore edges leading to the node that's currently being processed.
+            edge[direction] !== node &&
+            // Ignore edges connecting to an invisible node.
+            nodes.has(edge.toId) &&
+            // Ignore edges connecting from an invisible node.
+            nodes.has(edge.fromId)
+        )
+        .forEach((edge) => {
+          const targetNodeId = edge[edgeIdProp];
+          const oldLevel = levels[targetNodeId];
+          if (oldLevel == null || shouldLevelBeReplaced(newLevel, oldLevel)) {
+            levels[targetNodeId] = newLevel;
+            stack.push(edge[direction]);
+          }
+        });
+      if (done > limit) {
+        // This would run forever on a cyclic graph.
+        return fillLevelsByDirectionCyclic(nodes, levels);
+      } else {
+        ++done;
+      }
     }
-    return levels;
+  }
+  return levels;
 }
 
 /**
@@ -18116,7 +19126,6 @@ function fillLevelsByDirection(isEntryNode, shouldLevelBeReplaced, direction, no
  * on non-hierarchical networks as well. The converse is also possible.
  */
 
-
 /**
  * Container for derived data on current network, relating to hierarchy.
  *
@@ -18127,16 +19136,16 @@ class HierarchicalStatus {
    * @ignore
    */
   constructor() {
-    this.childrenReference = {};     // child id's per node id
-    this.parentReference = {};       // parent id's per node id
-    this.trees = {};                 // tree id per node id; i.e. to which tree does given node id belong
+    this.childrenReference = {}; // child id's per node id
+    this.parentReference = {}; // parent id's per node id
+    this.trees = {}; // tree id per node id; i.e. to which tree does given node id belong
 
-    this.distributionOrdering = {};  // The nodes per level, in the display order
-    this.levels = {};                // hierarchy level per node id
-    this.distributionIndex = {};     // The position of the node in the level sorting order, per node id.
+    this.distributionOrdering = {}; // The nodes per level, in the display order
+    this.levels = {}; // hierarchy level per node id
+    this.distributionIndex = {}; // The position of the node in the level sorting order, per node id.
 
-    this.isTree = false;             // True if current network is a formal tree 
-    this.treeIndex = -1;             // Highest tree id in current network.
+    this.isTree = false; // True if current network is a formal tree
+    this.treeIndex = -1; // Highest tree id in current network.
   }
 
   /**
@@ -18157,7 +19166,6 @@ class HierarchicalStatus {
     this.parentReference[childNodeId].push(parentNodeId);
   }
 
-
   /**
    * Check if the current state is for a formal tree or formal forest.
    *
@@ -18176,30 +19184,29 @@ class HierarchicalStatus {
     this.isTree = true;
   }
 
-
   /**
    * Return the number of separate trees in the current network.
+   *
    * @returns {number}
    */
   numTrees() {
-    return (this.treeIndex + 1);  // This assumes the indexes are assigned consecitively
+    return this.treeIndex + 1; // This assumes the indexes are assigned consecitively
   }
-
 
   /**
    * Assign a tree id to a node
+   *
    * @param {Node} node
    * @param {string|number} treeId
    */
   setTreeIndex(node, treeId) {
-    if (treeId === undefined) return;  // Don't bother
+    if (treeId === undefined) return; // Don't bother
 
     if (this.trees[node.id] === undefined) {
       this.trees[node.id] = treeId;
       this.treeIndex = Math.max(treeId, this.treeIndex);
     }
   }
-
 
   /**
    * Ensure level for given id is defined.
@@ -18214,11 +19221,11 @@ class HierarchicalStatus {
     }
   }
 
-
   /**
    * get the maximum level of a branch.
    *
    * TODO: Never entered; find a test case to test this!
+   *
    * @param {Node.id} nodeId
    * @returns {number}
    */
@@ -18234,7 +19241,7 @@ class HierarchicalStatus {
         const children = this.childrenReference[nodeId];
         if (children.length > 0) {
           for (let i = 0; i < children.length; i++) {
-            level = Math.max(level,_getMaxLevel(children[i]));
+            level = Math.max(level, _getMaxLevel(children[i]));
           }
         }
       }
@@ -18244,7 +19251,6 @@ class HierarchicalStatus {
 
     return _getMaxLevel(nodeId);
   }
-
 
   /**
    *
@@ -18261,7 +19267,6 @@ class HierarchicalStatus {
       this.levels[nodeB.id] = this.levels[nodeA.id] + 1;
     }
   }
-
 
   /**
    * Small util method to set the minimum levels of the nodes to zero.
@@ -18288,7 +19293,6 @@ class HierarchicalStatus {
       }
     }
   }
-
 
   /**
    * Get the min and max xy-coordinates of a given tree
@@ -18319,17 +19323,16 @@ class HierarchicalStatus {
       min_x: min_x,
       max_x: max_x,
       min_y: min_y,
-      max_y: max_y
+      max_y: max_y,
     };
   }
-
 
   /**
    * Check if two nodes have the same parent(s)
    *
    * @param {Node} node1
    * @param {Node} node2
-   * @return {boolean} true if the two nodes have a same ancestor node, false otherwise
+   * @returns {boolean} true if the two nodes have a same ancestor node, false otherwise
    */
   hasSameParent(node1, node2) {
     const parents1 = this.parentReference[node1.id];
@@ -18348,18 +19351,16 @@ class HierarchicalStatus {
     return false;
   }
 
-
   /**
    * Check if two nodes are in the same tree.
    *
    * @param {Node} node1
    * @param {Node} node2
-   * @return {Boolean} true if this is so, false otherwise
+   * @returns {boolean} true if this is so, false otherwise
    */
   inSameSubNetwork(node1, node2) {
-    return (this.trees[node1.id] === this.trees[node2.id]);
+    return this.trees[node1.id] === this.trees[node2.id];
   }
-
 
   /**
    * Get a list of the distinct levels in the current network
@@ -18369,7 +19370,6 @@ class HierarchicalStatus {
   getLevels() {
     return Object.keys(this.distributionOrdering);
   }
-
 
   /**
    * Add a node to the ordering per level
@@ -18394,7 +19394,8 @@ class HierarchicalStatus {
 
     if (!isPresent) {
       this.distributionOrdering[level].push(node);
-      this.distributionIndex[node.id] = this.distributionOrdering[level].length - 1;
+      this.distributionIndex[node.id] =
+        this.distributionOrdering[level].length - 1;
     }
   }
 }
@@ -18404,7 +19405,7 @@ class HierarchicalStatus {
  */
 class LayoutEngine {
   /**
-   * @param {Object} body
+   * @param {object} body
    */
   constructor(body) {
     this.body = body;
@@ -18415,23 +19416,23 @@ class LayoutEngine {
 
     this.setPhysics = false;
     this.options = {};
-    this.optionsBackup = {physics:{}};
+    this.optionsBackup = { physics: {} };
 
     this.defaultOptions = {
       randomSeed: undefined,
       improvedLayout: true,
       clusterThreshold: 150,
       hierarchical: {
-        enabled:false,
+        enabled: false,
         levelSeparation: 150,
         nodeSpacing: 100,
         treeSpacing: 200,
         blockShifting: true,
         edgeMinimization: true,
         parentCentralization: true,
-        direction: 'UD',   // UD, DU, LR, RL
-        sortMethod: 'hubsize' // hubsize, directed
-      }
+        direction: "UD", // UD, DU, LR, RL
+        sortMethod: "hubsize", // hubsize, directed
+      },
     };
     Object.assign(this.options, this.defaultOptions);
     this.bindEventListeners();
@@ -18441,16 +19442,16 @@ class LayoutEngine {
    * Binds event listeners
    */
   bindEventListeners() {
-    this.body.emitter.on('_dataChanged', () => {
+    this.body.emitter.on("_dataChanged", () => {
       this.setupHierarchicalLayout();
     });
-    this.body.emitter.on('_dataLoaded', () => {
+    this.body.emitter.on("_dataLoaded", () => {
       this.layoutNetwork();
     });
-    this.body.emitter.on('_resetHierarchicalLayout', () => {
+    this.body.emitter.on("_resetHierarchicalLayout", () => {
       this.setupHierarchicalLayout();
     });
-    this.body.emitter.on('_adjustEdgesForHierarchicalLayout', () => {
+    this.body.emitter.on("_adjustEdgesForHierarchicalLayout", () => {
       if (this.options.hierarchical.enabled !== true) {
         return;
       }
@@ -18458,22 +19459,26 @@ class LayoutEngine {
       const type = this.direction.curveType();
 
       // force all edges into static smooth curves.
-      this.body.emitter.emit('_forceDisableDynamicCurves', type, false);
+      this.body.emitter.emit("_forceDisableDynamicCurves", type, false);
     });
   }
 
   /**
    *
-   * @param {Object} options
-   * @param {Object} allOptions
-   * @returns {Object}
+   * @param {object} options
+   * @param {object} allOptions
+   * @returns {object}
    */
   setOptions(options, allOptions) {
     if (options !== undefined) {
       const hierarchical = this.options.hierarchical;
       const prevHierarchicalState = hierarchical.enabled;
-      selectiveDeepExtend(["randomSeed", "improvedLayout", "clusterThreshold"],this.options, options);
-      mergeOptions(this.options, options, 'hierarchical');
+      selectiveDeepExtend(
+        ["randomSeed", "improvedLayout", "clusterThreshold"],
+        this.options,
+        options
+      );
+      mergeOptions(this.options, options, "hierarchical");
 
       if (options.randomSeed !== undefined) {
         this._resetRNG(options.randomSeed);
@@ -18482,16 +19487,18 @@ class LayoutEngine {
       if (hierarchical.enabled === true) {
         if (prevHierarchicalState === true) {
           // refresh the overridden options for nodes and edges.
-          this.body.emitter.emit('refresh', true);
+          this.body.emitter.emit("refresh", true);
         }
 
         // make sure the level separation is the right way up
-        if (hierarchical.direction === 'RL' || hierarchical.direction === 'DU') {
+        if (
+          hierarchical.direction === "RL" ||
+          hierarchical.direction === "DU"
+        ) {
           if (hierarchical.levelSeparation > 0) {
             hierarchical.levelSeparation *= -1;
           }
-        }
-        else {
+        } else {
           if (hierarchical.levelSeparation < 0) {
             hierarchical.levelSeparation *= -1;
           }
@@ -18499,16 +19506,15 @@ class LayoutEngine {
 
         this.setDirectionStrategy();
 
-        this.body.emitter.emit('_resetHierarchicalLayout');
+        this.body.emitter.emit("_resetHierarchicalLayout");
         // because the hierarchical system needs it's own physics and smooth curve settings,
         // we adapt the other options if needed.
         return this.adaptAllOptionsForHierarchicalLayout(allOptions);
-      }
-      else {
+      } else {
         if (prevHierarchicalState === true) {
           // refresh the overridden options for nodes and edges.
-          this.body.emitter.emit('refresh');
-          return deepExtend(allOptions,this.optionsBackup);
+          this.body.emitter.emit("refresh");
+          return deepExtend(allOptions, this.optionsBackup);
         }
       }
     }
@@ -18527,8 +19533,8 @@ class LayoutEngine {
 
   /**
    *
-   * @param {Object} allOptions
-   * @returns {Object}
+   * @param {object} allOptions
+   * @returns {object}
    */
   adaptAllOptionsForHierarchicalLayout(allOptions) {
     if (this.options.hierarchical.enabled === true) {
@@ -18537,20 +19543,23 @@ class LayoutEngine {
       // set the physics
       if (allOptions.physics === undefined || allOptions.physics === true) {
         allOptions.physics = {
-          enabled: backupPhysics.enabled === undefined ? true : backupPhysics.enabled,
-          solver :'hierarchicalRepulsion'
+          enabled:
+            backupPhysics.enabled === undefined ? true : backupPhysics.enabled,
+          solver: "hierarchicalRepulsion",
         };
-        backupPhysics.enabled = backupPhysics.enabled === undefined ? true : backupPhysics.enabled;
-        backupPhysics.solver = backupPhysics.solver || 'barnesHut';
-      }
-      else if (typeof allOptions.physics === 'object') {
-        backupPhysics.enabled = allOptions.physics.enabled === undefined ? true : allOptions.physics.enabled;
-        backupPhysics.solver  = allOptions.physics.solver  || 'barnesHut';
-        allOptions.physics.solver = 'hierarchicalRepulsion';
-      }
-      else if (allOptions.physics !== false) {
-        backupPhysics.solver ='barnesHut';
-        allOptions.physics = {solver:'hierarchicalRepulsion'};
+        backupPhysics.enabled =
+          backupPhysics.enabled === undefined ? true : backupPhysics.enabled;
+        backupPhysics.solver = backupPhysics.solver || "barnesHut";
+      } else if (typeof allOptions.physics === "object") {
+        backupPhysics.enabled =
+          allOptions.physics.enabled === undefined
+            ? true
+            : allOptions.physics.enabled;
+        backupPhysics.solver = allOptions.physics.solver || "barnesHut";
+        allOptions.physics.solver = "hierarchicalRepulsion";
+      } else if (allOptions.physics !== false) {
+        backupPhysics.solver = "barnesHut";
+        allOptions.physics = { solver: "hierarchicalRepulsion" };
       }
 
       // get the type of static smooth curve in case it is required
@@ -18559,50 +19568,60 @@ class LayoutEngine {
       // disable smooth curves if nothing is defined. If smooth curves have been turned on,
       // turn them into static smooth curves.
       if (allOptions.edges === undefined) {
-        this.optionsBackup.edges = {smooth:{enabled:true, type:'dynamic'}};
-        allOptions.edges = {smooth: false};
-      }
-      else if (allOptions.edges.smooth === undefined) {
-        this.optionsBackup.edges = {smooth:{enabled:true, type:'dynamic'}};
+        this.optionsBackup.edges = {
+          smooth: { enabled: true, type: "dynamic" },
+        };
+        allOptions.edges = { smooth: false };
+      } else if (allOptions.edges.smooth === undefined) {
+        this.optionsBackup.edges = {
+          smooth: { enabled: true, type: "dynamic" },
+        };
         allOptions.edges.smooth = false;
-      }
-      else {
-        if (typeof allOptions.edges.smooth === 'boolean') {
-          this.optionsBackup.edges = {smooth:allOptions.edges.smooth};
-          allOptions.edges.smooth = {enabled: allOptions.edges.smooth, type:type};
-        }
-        else {
-          const smooth =  allOptions.edges.smooth;
+      } else {
+        if (typeof allOptions.edges.smooth === "boolean") {
+          this.optionsBackup.edges = { smooth: allOptions.edges.smooth };
+          allOptions.edges.smooth = {
+            enabled: allOptions.edges.smooth,
+            type: type,
+          };
+        } else {
+          const smooth = allOptions.edges.smooth;
 
           // allow custom types except for dynamic
-          if (smooth.type !== undefined && smooth.type !== 'dynamic') {
+          if (smooth.type !== undefined && smooth.type !== "dynamic") {
             type = smooth.type;
           }
 
           // TODO: this is options merging; see if the standard routines can be used here.
           this.optionsBackup.edges = {
             smooth: {
-              enabled       : smooth.enabled        === undefined ? true     : smooth.enabled,
-              type          : smooth.type           === undefined ? 'dynamic': smooth.type,
-              roundness     : smooth.roundness      === undefined ? 0.5      : smooth.roundness,
-              forceDirection: smooth.forceDirection === undefined ? false    : smooth.forceDirection
-            }
+              enabled: smooth.enabled === undefined ? true : smooth.enabled,
+              type: smooth.type === undefined ? "dynamic" : smooth.type,
+              roundness:
+                smooth.roundness === undefined ? 0.5 : smooth.roundness,
+              forceDirection:
+                smooth.forceDirection === undefined
+                  ? false
+                  : smooth.forceDirection,
+            },
           };
-
 
           // NOTE: Copying an object to self; this is basically setting defaults for undefined variables
           allOptions.edges.smooth = {
-            enabled       : smooth.enabled        === undefined ? true : smooth.enabled,
-            type          : type,
-            roundness     : smooth.roundness      === undefined ? 0.5  : smooth.roundness,
-            forceDirection: smooth.forceDirection === undefined ? false: smooth.forceDirection
+            enabled: smooth.enabled === undefined ? true : smooth.enabled,
+            type: type,
+            roundness: smooth.roundness === undefined ? 0.5 : smooth.roundness,
+            forceDirection:
+              smooth.forceDirection === undefined
+                ? false
+                : smooth.forceDirection,
           };
         }
       }
 
       // Force all edges into static smooth curves.
       // Only applies to edges that do not use the global options for smooth.
-      this.body.emitter.emit('_forceDisableDynamicCurves', type);
+      this.body.emitter.emit("_forceDisableDynamicCurves", type);
     }
 
     return allOptions;
@@ -18629,13 +19648,15 @@ class LayoutEngine {
     }
   }
 
-
   /**
    * Use Kamada Kawai to position nodes. This is quite a heavy algorithm so if there are a lot of nodes we
    * cluster them first to reduce the amount.
    */
   layoutNetwork() {
-    if (this.options.hierarchical.enabled !== true && this.options.improvedLayout === true) {
+    if (
+      this.options.hierarchical.enabled !== true &&
+      this.options.improvedLayout === true
+    ) {
       const indices = this.body.nodeIndices;
 
       // first check if we should Kamada Kawai to layout. The threshold is if less than half of the visible
@@ -18667,19 +19688,19 @@ class LayoutEngine {
         // All settings here are performance related, except when noted otherwise.
         //
         const clusterOptions = {
-          clusterNodeProperties:{
-            shape: 'ellipse',       // Bugfix: avoid type 'image', no images supplied
-            label: '',              // avoid label handling
-            group: '',              // avoid group handling
-            font: {multi: false},   // avoid font propagation
+          clusterNodeProperties: {
+            shape: "ellipse", // Bugfix: avoid type 'image', no images supplied
+            label: "", // avoid label handling
+            group: "", // avoid group handling
+            font: { multi: false }, // avoid font propagation
           },
-          clusterEdgeProperties:{
-            label: '',              // avoid label handling
-            font: {multi: false},   // avoid font propagation
+          clusterEdgeProperties: {
+            label: "", // avoid label handling
+            font: { multi: false }, // avoid font propagation
             smooth: {
-              enabled: false        // avoid drawing penalty for complex edges
-            }
-          }
+              enabled: false, // avoid drawing penalty for complex edges
+            },
+          },
         };
 
         // if there are a lot of nodes, we cluster before we run the algorithm.
@@ -18695,31 +19716,40 @@ class LayoutEngine {
             // if there are many nodes we do a hubsize cluster
             if (level % 3 === 0) {
               this.body.modules.clustering.clusterBridges(clusterOptions);
-            }
-            else {
+            } else {
               this.body.modules.clustering.clusterOutliers(clusterOptions);
             }
             const after = indices.length;
             if (before == after && level % 3 !== 0) {
               this._declusterAll();
               this.body.emitter.emit("_layoutFailed");
-              console.info("This network could not be positioned by this version of the improved layout algorithm."
-                        +  " Please disable improvedLayout for better performance.");
+              console.info(
+                "This network could not be positioned by this version of the improved layout algorithm." +
+                  " Please disable improvedLayout for better performance."
+              );
               return;
             }
             //console.timeEnd("clustering")
             //console.log(before,level,after);
           }
           // increase the size of the edges
-          this.body.modules.kamadaKawai.setOptions({springLength: Math.max(150, 2 * startLength)});
+          this.body.modules.kamadaKawai.setOptions({
+            springLength: Math.max(150, 2 * startLength),
+          });
         }
-        if (level > MAX_LEVELS){
-          console.info("The clustering didn't succeed within the amount of interations allowed,"
-                     + " progressing with partial result.");
+        if (level > MAX_LEVELS) {
+          console.info(
+            "The clustering didn't succeed within the amount of interations allowed," +
+              " progressing with partial result."
+          );
         }
 
         // position the system for these nodes and edges
-        this.body.modules.kamadaKawai.solve(indices, this.body.edgeIndices, true);
+        this.body.modules.kamadaKawai.solve(
+          indices,
+          this.body.edgeIndices,
+          true
+        );
 
         // shift to center point
         this._shiftToCenter();
@@ -18730,8 +19760,8 @@ class LayoutEngine {
           // Only perturb the nodes that aren't fixed
           const node = this.body.nodes[indices[i]];
           if (node.predefinedPosition === false) {
-            node.x += (0.5 - this._rng())*offset;
-            node.y += (0.5 - this._rng())*offset;
+            node.x += (0.5 - this._rng()) * offset;
+            node.y += (0.5 - this._rng()) * offset;
           }
         }
 
@@ -18746,10 +19776,14 @@ class LayoutEngine {
 
   /**
    * Move all the nodes towards to the center so gravitational pull wil not move the nodes away from view
+   *
    * @private
    */
   _shiftToCenter() {
-    const range = NetworkUtil.getRangeCore(this.body.nodes, this.body.nodeIndices);
+    const range = NetworkUtil.getRangeCore(
+      this.body.nodes,
+      this.body.nodeIndices
+    );
     const center = NetworkUtil.findCenter(range);
     for (let i = 0; i < this.body.nodeIndices.length; i++) {
       const node = this.body.nodes[this.body.nodeIndices[i]];
@@ -18760,6 +19794,7 @@ class LayoutEngine {
 
   /**
    * Expands all clusters
+   *
    * @private
    */
   _declusterAll() {
@@ -18769,11 +19804,15 @@ class LayoutEngine {
       for (let i = 0; i < this.body.nodeIndices.length; i++) {
         if (this.body.nodes[this.body.nodeIndices[i]].isCluster === true) {
           clustersPresent = true;
-          this.body.modules.clustering.openCluster(this.body.nodeIndices[i], {}, false);
+          this.body.modules.clustering.openCluster(
+            this.body.nodeIndices[i],
+            {},
+            false
+          );
         }
       }
       if (clustersPresent === true) {
-        this.body.emitter.emit('_dataChanged');
+        this.body.emitter.emit("_dataChanged");
       }
     }
   }
@@ -18793,7 +19832,10 @@ class LayoutEngine {
    * @private
    */
   setupHierarchicalLayout() {
-    if (this.options.hierarchical.enabled === true && this.body.nodeIndices.length > 0) {
+    if (
+      this.options.hierarchical.enabled === true &&
+      this.body.nodeIndices.length > 0
+    ) {
       // get the size of the largest hubs and check if the user has defined a level for a node.
       let node, nodeId;
       let definedLevel = false;
@@ -18807,8 +19849,7 @@ class LayoutEngine {
           if (node.options.level !== undefined) {
             definedLevel = true;
             this.hierarchical.levels[nodeId] = node.options.level;
-          }
-          else {
+          } else {
             undefinedLevel = true;
           }
         }
@@ -18816,24 +19857,22 @@ class LayoutEngine {
 
       // if the user defined some levels but not all, alert and run without hierarchical layout
       if (undefinedLevel === true && definedLevel === true) {
-        throw new Error('To use the hierarchical layout, nodes require either no predefined levels'
-                      + ' or levels have to be defined for all nodes.');
-      }
-      else {
+        throw new Error(
+          "To use the hierarchical layout, nodes require either no predefined levels" +
+            " or levels have to be defined for all nodes."
+        );
+      } else {
         // define levels if undefined by the users. Based on hubsize.
         if (undefinedLevel === true) {
           const sortMethod = this.options.hierarchical.sortMethod;
-          if (sortMethod === 'hubsize') {
+          if (sortMethod === "hubsize") {
             this._determineLevelsByHubsize();
-          }
-          else if (sortMethod === 'directed') {
+          } else if (sortMethod === "directed") {
             this._determineLevelsDirected();
-          }
-          else if (sortMethod === 'custom') {
+          } else if (sortMethod === "custom") {
             this._determineLevelsCustomCallback();
           }
         }
-
 
         // fallback for cases where there are nodes but no edges
         for (const nodeId in this.body.nodes) {
@@ -18872,7 +19911,7 @@ class LayoutEngine {
       const treeSizes = getTreeSizes();
       let shiftBy = 0;
       for (let i = 0; i < treeSizes.length - 1; i++) {
-        const diff = treeSizes[i].max - treeSizes[i+1].min;
+        const diff = treeSizes[i].max - treeSizes[i + 1].min;
         shiftBy += diff + this.options.hierarchical.treeSpacing;
         shiftTree(i + 1, shiftBy);
       }
@@ -18899,7 +19938,6 @@ class LayoutEngine {
       }
       return treeWidths;
     };
-
 
     // get a map of all nodes in this branch
     const getBranchNodes = (source, map) => {
@@ -18931,7 +19969,10 @@ class LayoutEngine {
           const position = this.direction.getPosition(node);
 
           // get the space around the node.
-          const [minSpaceNode, maxSpaceNode] = this._getSpaceAroundNode(node,branchMap);
+          const [minSpaceNode, maxSpaceNode] = this._getSpaceAroundNode(
+            node,
+            branchMap
+          );
           minSpace = Math.min(minSpaceNode, minSpace);
           maxSpace = Math.min(maxSpaceNode, maxSpace);
 
@@ -18946,7 +19987,6 @@ class LayoutEngine {
       return [min, max, minSpace, maxSpace];
     };
 
-
     // check what the maximum level is these nodes have in common.
     const getCollisionLevel = (node1, node2) => {
       const maxLevel1 = this.hierarchical.getMaxLevel(node1.id);
@@ -18954,11 +19994,10 @@ class LayoutEngine {
       return Math.min(maxLevel1, maxLevel2);
     };
 
-
     /**
      * Condense elements. These can be nodes or branches depending on the callback.
      *
-     * @param {function} callback
+     * @param {Function} callback
      * @param {Array.<number>} levels
      * @param {*} centerParents
      */
@@ -18971,11 +20010,14 @@ class LayoutEngine {
         if (levelNodes.length > 1) {
           for (let j = 0; j < levelNodes.length - 1; j++) {
             const node1 = levelNodes[j];
-            const node2 = levelNodes[j+1];
+            const node2 = levelNodes[j + 1];
 
             // NOTE: logic maintained as it was; if nodes have same ancestor,
             //       then of course they are in the same sub-network.
-            if (hier.hasSameParent(node1, node2) && hier.inSameSubNetwork(node1, node2) ) {
+            if (
+              hier.hasSameParent(node1, node2) &&
+              hier.inSameSubNetwork(node1, node2)
+            ) {
               callback(node1, node2, centerParents);
             }
           }
@@ -18983,180 +20025,191 @@ class LayoutEngine {
       }
     };
 
-
     // callback for shifting branches
     const branchShiftCallback = (node1, node2, centerParent = false) => {
       //window.CALLBACKS.push(() => {
-        const pos1 = this.direction.getPosition(node1);
-        const pos2 = this.direction.getPosition(node2);
-        const diffAbs = Math.abs(pos2 - pos1);
-        const nodeSpacing =  this.options.hierarchical.nodeSpacing;
-        //console.log("NOW CHECKING:", node1.id, node2.id, diffAbs);
-        if (diffAbs > nodeSpacing) {
-          const branchNodes1 = {};
-          const branchNodes2 = {};
+      const pos1 = this.direction.getPosition(node1);
+      const pos2 = this.direction.getPosition(node2);
+      const diffAbs = Math.abs(pos2 - pos1);
+      const nodeSpacing = this.options.hierarchical.nodeSpacing;
+      //console.log("NOW CHECKING:", node1.id, node2.id, diffAbs);
+      if (diffAbs > nodeSpacing) {
+        const branchNodes1 = {};
+        const branchNodes2 = {};
 
-          getBranchNodes(node1, branchNodes1);
-          getBranchNodes(node2, branchNodes2);
+        getBranchNodes(node1, branchNodes1);
+        getBranchNodes(node2, branchNodes2);
 
-          // check the largest distance between the branches
-          const maxLevel = getCollisionLevel(node1, node2);
-          const branchNodeBoundary1 = getBranchBoundary(branchNodes1, maxLevel);
-          const branchNodeBoundary2 = getBranchBoundary(branchNodes2, maxLevel);
-          const max1 = branchNodeBoundary1[1];
-          const min2 = branchNodeBoundary2[0];
-          const minSpace2 = branchNodeBoundary2[2];
+        // check the largest distance between the branches
+        const maxLevel = getCollisionLevel(node1, node2);
+        const branchNodeBoundary1 = getBranchBoundary(branchNodes1, maxLevel);
+        const branchNodeBoundary2 = getBranchBoundary(branchNodes2, maxLevel);
+        const max1 = branchNodeBoundary1[1];
+        const min2 = branchNodeBoundary2[0];
+        const minSpace2 = branchNodeBoundary2[2];
 
-          //console.log(node1.id, getBranchBoundary(branchNodes1, maxLevel), node2.id,
-          //            getBranchBoundary(branchNodes2, maxLevel), maxLevel);
-          const diffBranch = Math.abs(max1 - min2);
-          if (diffBranch > nodeSpacing) {
-            let offset = max1 - min2 + nodeSpacing;
-            if (offset < -minSpace2 + nodeSpacing) {
-              offset = -minSpace2 + nodeSpacing;
-              //console.log("RESETTING OFFSET", max1 - min2 + this.options.hierarchical.nodeSpacing, -minSpace2, offset);
-            }
-            if (offset < 0) {
-              //console.log("SHIFTING", node2.id, offset);
-              this._shiftBlock(node2.id, offset);
-              stillShifting = true;
-
-              if (centerParent === true)
-                this._centerParent(node2);
-            }
+        //console.log(node1.id, getBranchBoundary(branchNodes1, maxLevel), node2.id,
+        //            getBranchBoundary(branchNodes2, maxLevel), maxLevel);
+        const diffBranch = Math.abs(max1 - min2);
+        if (diffBranch > nodeSpacing) {
+          let offset = max1 - min2 + nodeSpacing;
+          if (offset < -minSpace2 + nodeSpacing) {
+            offset = -minSpace2 + nodeSpacing;
+            //console.log("RESETTING OFFSET", max1 - min2 + this.options.hierarchical.nodeSpacing, -minSpace2, offset);
           }
+          if (offset < 0) {
+            //console.log("SHIFTING", node2.id, offset);
+            this._shiftBlock(node2.id, offset);
+            stillShifting = true;
 
+            if (centerParent === true) this._centerParent(node2);
+          }
         }
-        //this.body.emitter.emit("_redraw");})
+      }
+      //this.body.emitter.emit("_redraw");})
     };
 
     const minimizeEdgeLength = (iterations, node) => {
       //window.CALLBACKS.push(() => {
       //  console.log("ts",node.id);
-        const nodeId = node.id;
-        const allEdges = node.edges;
-        const nodeLevel = this.hierarchical.levels[node.id];
+      const nodeId = node.id;
+      const allEdges = node.edges;
+      const nodeLevel = this.hierarchical.levels[node.id];
 
-        // gather constants
-        const C2 = this.options.hierarchical.levelSeparation * this.options.hierarchical.levelSeparation;
-        const referenceNodes = {};
-        const aboveEdges = [];
-        for (let i = 0; i < allEdges.length; i++) {
-          const edge = allEdges[i];
-          if (edge.toId != edge.fromId) {
-            const otherNode = edge.toId == nodeId ? edge.from : edge.to;
-            referenceNodes[allEdges[i].id] = otherNode;
-            if (this.hierarchical.levels[otherNode.id] < nodeLevel) {
-              aboveEdges.push(edge);
-            }
+      // gather constants
+      const C2 =
+        this.options.hierarchical.levelSeparation *
+        this.options.hierarchical.levelSeparation;
+      const referenceNodes = {};
+      const aboveEdges = [];
+      for (let i = 0; i < allEdges.length; i++) {
+        const edge = allEdges[i];
+        if (edge.toId != edge.fromId) {
+          const otherNode = edge.toId == nodeId ? edge.from : edge.to;
+          referenceNodes[allEdges[i].id] = otherNode;
+          if (this.hierarchical.levels[otherNode.id] < nodeLevel) {
+            aboveEdges.push(edge);
           }
         }
+      }
 
-        // differentiated sum of lengths based on only moving one node over one axis
-        const getFx = (point, edges) => {
-          let sum = 0;
-          for (let i = 0; i < edges.length; i++) {
-            if (referenceNodes[edges[i].id] !== undefined) {
-              const a = this.direction.getPosition(referenceNodes[edges[i].id]) - point;
-              sum += a / Math.sqrt(a * a + C2);
-            }
+      // differentiated sum of lengths based on only moving one node over one axis
+      const getFx = (point, edges) => {
+        let sum = 0;
+        for (let i = 0; i < edges.length; i++) {
+          if (referenceNodes[edges[i].id] !== undefined) {
+            const a =
+              this.direction.getPosition(referenceNodes[edges[i].id]) - point;
+            sum += a / Math.sqrt(a * a + C2);
           }
-          return sum;
-        };
+        }
+        return sum;
+      };
 
-        // doubly differentiated sum of lengths based on only moving one node over one axis
-        const getDFx = (point, edges) => {
-          let sum = 0;
-          for (let i = 0; i < edges.length; i++) {
-            if (referenceNodes[edges[i].id] !== undefined) {
-              const a = this.direction.getPosition(referenceNodes[edges[i].id]) - point;
-              sum -= (C2 * Math.pow(a * a + C2, -1.5));
-            }
+      // doubly differentiated sum of lengths based on only moving one node over one axis
+      const getDFx = (point, edges) => {
+        let sum = 0;
+        for (let i = 0; i < edges.length; i++) {
+          if (referenceNodes[edges[i].id] !== undefined) {
+            const a =
+              this.direction.getPosition(referenceNodes[edges[i].id]) - point;
+            sum -= C2 * Math.pow(a * a + C2, -1.5);
           }
-          return sum;
-        };
+        }
+        return sum;
+      };
 
-        const getGuess = (iterations, edges) => {
-          let guess = this.direction.getPosition(node);
-          // Newton's method for optimization
-          const guessMap = {};
-          for (let i = 0; i < iterations; i++) {
-            const fx = getFx(guess, edges);
-            const dfx = getDFx(guess, edges);
+      const getGuess = (iterations, edges) => {
+        let guess = this.direction.getPosition(node);
+        // Newton's method for optimization
+        const guessMap = {};
+        for (let i = 0; i < iterations; i++) {
+          const fx = getFx(guess, edges);
+          const dfx = getDFx(guess, edges);
 
-            // we limit the movement to avoid instability.
-            const limit = 40;
-            const ratio = Math.max(-limit, Math.min(limit, Math.round(fx/dfx)));
-            guess = guess - ratio;
-            // reduce duplicates
-            if (guessMap[guess] !== undefined) {
-              break;
-            }
-            guessMap[guess] = i;
+          // we limit the movement to avoid instability.
+          const limit = 40;
+          const ratio = Math.max(-limit, Math.min(limit, Math.round(fx / dfx)));
+          guess = guess - ratio;
+          // reduce duplicates
+          if (guessMap[guess] !== undefined) {
+            break;
           }
-          return guess;
-        };
+          guessMap[guess] = i;
+        }
+        return guess;
+      };
 
-        const moveBranch = (guess) => {
-          // position node if there is space
-          const nodePosition = this.direction.getPosition(node);
+      const moveBranch = (guess) => {
+        // position node if there is space
+        const nodePosition = this.direction.getPosition(node);
 
-          // check movable area of the branch
-          if (branches[node.id] === undefined) {
-            const branchNodes = {};
-            getBranchNodes(node, branchNodes);
-            branches[node.id] = branchNodes;
-          }
-          const branchBoundary = getBranchBoundary(branches[node.id]);
-          const minSpaceBranch = branchBoundary[2];
-          const maxSpaceBranch = branchBoundary[3];
+        // check movable area of the branch
+        if (branches[node.id] === undefined) {
+          const branchNodes = {};
+          getBranchNodes(node, branchNodes);
+          branches[node.id] = branchNodes;
+        }
+        const branchBoundary = getBranchBoundary(branches[node.id]);
+        const minSpaceBranch = branchBoundary[2];
+        const maxSpaceBranch = branchBoundary[3];
 
-          const diff = guess - nodePosition;
+        const diff = guess - nodePosition;
 
-          // check if we are allowed to move the node:
-          let branchOffset = 0;
-          if (diff > 0) {
-            branchOffset = Math.min(diff, maxSpaceBranch - this.options.hierarchical.nodeSpacing);
-          }
-          else if (diff < 0) {
-            branchOffset = -Math.min(-diff, minSpaceBranch - this.options.hierarchical.nodeSpacing);
-          }
+        // check if we are allowed to move the node:
+        let branchOffset = 0;
+        if (diff > 0) {
+          branchOffset = Math.min(
+            diff,
+            maxSpaceBranch - this.options.hierarchical.nodeSpacing
+          );
+        } else if (diff < 0) {
+          branchOffset = -Math.min(
+            -diff,
+            minSpaceBranch - this.options.hierarchical.nodeSpacing
+          );
+        }
 
-          if (branchOffset != 0) {
-            //console.log("moving branch:",branchOffset, maxSpaceBranch, minSpaceBranch)
-            this._shiftBlock(node.id, branchOffset);
-            //this.body.emitter.emit("_redraw");
-            stillShifting = true;
-          }
-        };
+        if (branchOffset != 0) {
+          //console.log("moving branch:",branchOffset, maxSpaceBranch, minSpaceBranch)
+          this._shiftBlock(node.id, branchOffset);
+          //this.body.emitter.emit("_redraw");
+          stillShifting = true;
+        }
+      };
 
-        const moveNode = (guess) => {
-          const nodePosition = this.direction.getPosition(node);
+      const moveNode = (guess) => {
+        const nodePosition = this.direction.getPosition(node);
 
-          // position node if there is space
-          const [minSpace, maxSpace] = this._getSpaceAroundNode(node);
-          const diff = guess - nodePosition;
-          // check if we are allowed to move the node:
-          let newPosition = nodePosition;
-          if (diff > 0) {
-            newPosition = Math.min(nodePosition + (maxSpace - this.options.hierarchical.nodeSpacing), guess);
-          }
-          else if (diff < 0) {
-            newPosition = Math.max(nodePosition - (minSpace - this.options.hierarchical.nodeSpacing), guess);
-          }
+        // position node if there is space
+        const [minSpace, maxSpace] = this._getSpaceAroundNode(node);
+        const diff = guess - nodePosition;
+        // check if we are allowed to move the node:
+        let newPosition = nodePosition;
+        if (diff > 0) {
+          newPosition = Math.min(
+            nodePosition + (maxSpace - this.options.hierarchical.nodeSpacing),
+            guess
+          );
+        } else if (diff < 0) {
+          newPosition = Math.max(
+            nodePosition - (minSpace - this.options.hierarchical.nodeSpacing),
+            guess
+          );
+        }
 
-          if (newPosition !== nodePosition) {
-            //console.log("moving Node:",diff, minSpace, maxSpace);
-            this.direction.setPosition(node, newPosition);
-            //this.body.emitter.emit("_redraw");
-            stillShifting = true;
-          }
-        };
+        if (newPosition !== nodePosition) {
+          //console.log("moving Node:",diff, minSpace, maxSpace);
+          this.direction.setPosition(node, newPosition);
+          //this.body.emitter.emit("_redraw");
+          stillShifting = true;
+        }
+      };
 
-        let guess = getGuess(iterations, aboveEdges);
-        moveBranch(guess);
-        guess = getGuess(iterations, allEdges);
-        moveNode(guess);
+      let guess = getGuess(iterations, aboveEdges);
+      moveBranch(guess);
+      guess = getGuess(iterations, allEdges);
+      moveNode(guess);
       //})
     };
 
@@ -19236,6 +20289,7 @@ class LayoutEngine {
   /**
    * This gives the space around the node. IF a map is supplied, it will only check against nodes NOT in the map.
    * This is used to only get the distances to nodes outside of a branch.
+   *
    * @param {Node} node
    * @param {{Node.id: vis.Node}} map
    * @returns {number[]}
@@ -19255,7 +20309,10 @@ class LayoutEngine {
       let maxSpace = 1e9;
       if (index !== 0) {
         const prevNode = ordering[index - 1];
-        if ((useMap === true && map[prevNode.id] === undefined) || useMap === false) {
+        if (
+          (useMap === true && map[prevNode.id] === undefined) ||
+          useMap === false
+        ) {
           const prevPos = this.direction.getPosition(prevNode);
           minSpace = position - prevPos;
         }
@@ -19263,22 +20320,24 @@ class LayoutEngine {
 
       if (index != ordering.length - 1) {
         const nextNode = ordering[index + 1];
-        if ((useMap === true && map[nextNode.id] === undefined) || useMap === false) {
+        if (
+          (useMap === true && map[nextNode.id] === undefined) ||
+          useMap === false
+        ) {
           const nextPos = this.direction.getPosition(nextNode);
           maxSpace = Math.min(maxSpace, nextPos - position);
         }
       }
 
       return [minSpace, maxSpace];
-    }
-    else {
+    } else {
       return [0, 0];
     }
   }
 
-
   /**
    * We use this method to center a parent node and check if it does not cross other nodes when it does.
+   *
    * @param {Node} node
    * @private
    */
@@ -19297,8 +20356,13 @@ class LayoutEngine {
           const position = this.direction.getPosition(parentNode);
           const [minSpace, maxSpace] = this._getSpaceAroundNode(parentNode);
           const diff = position - newPosition;
-          if ((diff < 0 && Math.abs(diff) < maxSpace - this.options.hierarchical.nodeSpacing) ||
-              (diff > 0 && Math.abs(diff) < minSpace - this.options.hierarchical.nodeSpacing)) {
+          if (
+            (diff < 0 &&
+              Math.abs(diff) <
+                maxSpace - this.options.hierarchical.nodeSpacing) ||
+            (diff > 0 &&
+              Math.abs(diff) < minSpace - this.options.hierarchical.nodeSpacing)
+          ) {
             this.direction.setPosition(parentNode, newPosition);
           }
         }
@@ -19306,11 +20370,10 @@ class LayoutEngine {
     }
   }
 
-
   /**
    * This function places the nodes on the canvas based on the hierarchial distribution.
    *
-   * @param {Object} distribution | obtained by the function this._getDistribution()
+   * @param {object} distribution | obtained by the function this._getDistribution()
    * @private
    */
   _placeNodesByHierarchy(distribution) {
@@ -19332,7 +20395,7 @@ class LayoutEngine {
             // We get the X or Y values we need and store them in pos and previousPos.
             // The get and set make sure we get X or Y
             if (handledNodeCount > 0) {
-              pos = this.direction.getPosition(nodeArray[i-1]) + spacing;
+              pos = this.direction.getPosition(nodeArray[i - 1]) + spacing;
             }
             this.direction.setPosition(node, pos, level);
             this._validatePositionAndContinue(node, level, pos);
@@ -19343,7 +20406,6 @@ class LayoutEngine {
       }
     }
   }
-
 
   /**
    * This is a recursively called function to enumerate the branches from the largest hubs and place the nodes
@@ -19375,7 +20437,10 @@ class LayoutEngine {
       const childNode = childNodes[i];
       const childNodeLevel = this.hierarchical.levels[childNode.id];
       // check if the child node is below the parent node and if it has already been positioned.
-      if (childNodeLevel > parentLevel && this.positionedNodes[childNode.id] === undefined) {
+      if (
+        childNodeLevel > parentLevel &&
+        this.positionedNodes[childNode.id] === undefined
+      ) {
         // get the amount of space required for this node. If parent the width is based on the amount of children.
         const spacing = this.options.hierarchical.nodeSpacing;
         let pos;
@@ -19385,12 +20450,11 @@ class LayoutEngine {
         if (i === 0) {
           pos = this.direction.getPosition(this.body.nodes[parentId]);
         } else {
-          pos = this.direction.getPosition(childNodes[i-1]) + spacing;
+          pos = this.direction.getPosition(childNodes[i - 1]) + spacing;
         }
         this.direction.setPosition(childNode, pos, childNodeLevel);
         this._validatePositionAndContinue(childNode, childNodeLevel, pos);
-      }
-      else {
+      } else {
         return;
       }
     }
@@ -19400,10 +20464,10 @@ class LayoutEngine {
     this.direction.setPosition(this.body.nodes[parentId], center, parentLevel);
   }
 
-
   /**
    * This method checks for overlap and if required shifts the branch. It also keeps records of positioned nodes.
    * Finally it will call _placeBranchNodes to place the branch nodes.
+   *
    * @param {Node} node
    * @param {number} level
    * @param {number} pos
@@ -19416,15 +20480,20 @@ class LayoutEngine {
 
     // if overlap has been detected, we shift the branch
     if (this.lastNodeOnLevel[level] !== undefined) {
-      const previousPos = this.direction.getPosition(this.body.nodes[this.lastNodeOnLevel[level]]);
+      const previousPos = this.direction.getPosition(
+        this.body.nodes[this.lastNodeOnLevel[level]]
+      );
       if (pos - previousPos < this.options.hierarchical.nodeSpacing) {
-        const diff = (previousPos + this.options.hierarchical.nodeSpacing) - pos;
-        const sharedParent = this._findCommonParent(this.lastNodeOnLevel[level], node.id);
+        const diff = previousPos + this.options.hierarchical.nodeSpacing - pos;
+        const sharedParent = this._findCommonParent(
+          this.lastNodeOnLevel[level],
+          node.id
+        );
         this._shiftBlock(sharedParent.withChild, diff);
       }
     }
 
-    this.lastNodeOnLevel[level] = node.id;  // store change in position.
+    this.lastNodeOnLevel[level] = node.id; // store change in position.
     this.positionedNodes[node.id] = true;
     this._placeBranchNodes(node.id, level);
   }
@@ -19432,6 +20501,7 @@ class LayoutEngine {
   /**
    * Receives an array with node indices and returns an array with the actual node references.
    * Used for sorting based on node properties.
+   *
    * @param {Array.<Node.id>} idArray
    * @returns {Array.<Node>}
    */
@@ -19446,7 +20516,7 @@ class LayoutEngine {
   /**
    * This function get the distribution of levels based on hubsize
    *
-   * @returns {Object}
+   * @returns {object}
    * @private
    */
   _getDistribution() {
@@ -19459,7 +20529,10 @@ class LayoutEngine {
     for (nodeId in this.body.nodes) {
       if (Object.prototype.hasOwnProperty.call(this.body.nodes, nodeId)) {
         node = this.body.nodes[nodeId];
-        const level = this.hierarchical.levels[nodeId] === undefined ? 0 : this.hierarchical.levels[nodeId];
+        const level =
+          this.hierarchical.levels[nodeId] === undefined
+            ? 0
+            : this.hierarchical.levels[nodeId];
         this.direction.fix(node, level);
         if (distribution[level] === undefined) {
           distribution[level] = {};
@@ -19469,7 +20542,6 @@ class LayoutEngine {
     }
     return distribution;
   }
-
 
   /**
    * Return the active (i.e. visible) edges for this node
@@ -19481,7 +20553,7 @@ class LayoutEngine {
   _getActiveEdges(node) {
     const result = [];
 
-    forEach(node.edges, (edge) => { 
+    forEach(node.edges, (edge) => {
       if (this.body.edgeIndices.indexOf(edge.id) !== -1) {
         result.push(edge);
       }
@@ -19489,7 +20561,6 @@ class LayoutEngine {
 
     return result;
   }
-
 
   /**
    * Get the hubsizes for all active nodes.
@@ -19501,7 +20572,7 @@ class LayoutEngine {
     const hubSizes = {};
     const nodeIds = this.body.nodeIndices;
 
-    forEach(nodeIds, (nodeId) => { 
+    forEach(nodeIds, (nodeId) => {
       const node = this.body.nodes[nodeId];
       const hubSize = this._getActiveEdges(node).length;
       hubSizes[hubSize] = true;
@@ -19509,17 +20580,16 @@ class LayoutEngine {
 
     // Make an array of the size sorted descending
     const result = [];
-    forEach(hubSizes, (size) => { 
+    forEach(hubSizes, (size) => {
       result.push(Number(size));
     });
 
-    TimSort.sort(result, function(a, b) {
+    result.sort(function (a, b) {
       return b - a;
     });
 
     return result;
   }
-
 
   /**
    * this function allocates nodes in levels based on the recursive branching from the largest hubs.
@@ -19533,11 +20603,11 @@ class LayoutEngine {
 
     const hubSizes = this._getHubSizes();
 
-    for (let i = 0; i < hubSizes.length; ++i ) {
+    for (let i = 0; i < hubSizes.length; ++i) {
       const hubSize = hubSizes[i];
       if (hubSize === 0) break;
 
-      forEach(this.body.nodeIndices, (nodeId) => { 
+      forEach(this.body.nodeIndices, (nodeId) => {
         const node = this.body.nodes[nodeId];
 
         if (hubSize === this._getActiveEdges(node).length) {
@@ -19546,7 +20616,6 @@ class LayoutEngine {
       });
     }
   }
-
 
   /**
    * TODO: release feature
@@ -19558,21 +20627,22 @@ class LayoutEngine {
     const minLevel = 100000;
 
     // TODO: this should come from options.
-    const customCallback = function(nodeA, nodeB, edge) {  // eslint-disable-line no-unused-vars
-
-    };
+    // eslint-disable-next-line no-unused-vars -- This should eventually be implemented with these parameters used.
+    const customCallback = function (nodeA, nodeB, edge) {};
 
     // TODO: perhaps move to HierarchicalStatus.
     //       But I currently don't see the point, this method is not used.
     const levelByDirection = (nodeA, nodeB, edge) => {
       let levelA = this.hierarchical.levels[nodeA.id];
       // set initial level
-      if (levelA === undefined) { levelA = this.hierarchical.levels[nodeA.id] = minLevel;}
+      if (levelA === undefined) {
+        levelA = this.hierarchical.levels[nodeA.id] = minLevel;
+      }
 
       const diff = customCallback(
-        NetworkUtil.cloneOptions(nodeA,'node'),
-        NetworkUtil.cloneOptions(nodeB,'node'),
-        NetworkUtil.cloneOptions(edge,'edge')
+        NetworkUtil.cloneOptions(nodeA, "node"),
+        NetworkUtil.cloneOptions(nodeB, "node"),
+        NetworkUtil.cloneOptions(edge, "edge")
       );
 
       this.hierarchical.levels[nodeB.id] = levelA + diff;
@@ -19592,25 +20662,27 @@ class LayoutEngine {
       acc.set(id, this.body.nodes[id]);
       return acc;
     }, new Map());
-    const levels = this.hierarchical.levels;
 
     if (this.options.hierarchical.shakeTowards === "roots") {
-      this.hierarchical.levels = fillLevelsByDirectionRoots(nodes, levels);
+      this.hierarchical.levels = fillLevelsByDirectionRoots(nodes);
     } else {
-      this.hierarchical.levels = fillLevelsByDirectionLeaves(nodes, levels);
+      this.hierarchical.levels = fillLevelsByDirectionLeaves(nodes);
     }
 
     this.hierarchical.setMinLevelToZero(this.body.nodes);
   }
 
-
   /**
    * Update the bookkeeping of parent and child.
+   *
    * @private
    */
   _generateMap() {
     const fillInRelations = (parentNode, childNode) => {
-      if (this.hierarchical.levels[childNode.id] > this.hierarchical.levels[parentNode.id]) {
+      if (
+        this.hierarchical.levels[childNode.id] >
+        this.hierarchical.levels[parentNode.id]
+      ) {
         this.hierarchical.addRelation(parentNode.id, childNode.id);
       }
     };
@@ -19619,14 +20691,14 @@ class LayoutEngine {
     this.hierarchical.checkIfTree();
   }
 
-
   /**
    * Crawl over the entire network and use a callback on each node couple that is connected to each other.
-   * @param {function} [callback=function(){}]          | will receive nodeA, nodeB and the connecting edge. A and B are distinct.
+   *
+   * @param {Function} [callback=function(){}]          | will receive nodeA, nodeB and the connecting edge. A and B are distinct.
    * @param {Node.id} startingNodeId
    * @private
    */
-  _crawlNetwork(callback = function() {}, startingNodeId) {
+  _crawlNetwork(callback = function () {}, startingNodeId) {
     const progress = {};
 
     const crawler = (node, tree) => {
@@ -19639,14 +20711,15 @@ class LayoutEngine {
         for (let i = 0; i < edges.length; i++) {
           const edge = edges[i];
           if (edge.connected === true) {
-            if (edge.toId == node.id) {         // Not '===' because id's can be string and numeric
+            if (edge.toId == node.id) {
+              // Not '===' because id's can be string and numeric
               childNode = edge.from;
-            }
-            else {
+            } else {
               childNode = edge.to;
             }
 
-            if (node.id != childNode.id) {      // Not '!==' because id's can be string and numeric
+            if (node.id != childNode.id) {
+              // Not '!==' because id's can be string and numeric
               callback(node, childNode, edge);
               crawler(childNode, tree);
             }
@@ -19655,10 +20728,9 @@ class LayoutEngine {
       }
     };
 
-
     if (startingNodeId === undefined) {
       // Crawl over all nodes
-      let treeIndex = 0;      // Serves to pass a unique id for the current distinct tree
+      let treeIndex = 0; // Serves to pass a unique id for the current distinct tree
 
       for (let i = 0; i < this.body.nodeIndices.length; i++) {
         const nodeId = this.body.nodeIndices[i];
@@ -19669,8 +20741,7 @@ class LayoutEngine {
           treeIndex += 1;
         }
       }
-    }
-    else {
+    } else {
       // Crawl from the given starting node
       const node = this.body.nodes[startingNodeId];
       if (node === undefined) {
@@ -19681,9 +20752,9 @@ class LayoutEngine {
     }
   }
 
-
   /**
    * Shift a branch a certain distance
+   *
    * @param {Node.id} parentId
    * @param {number} diff
    * @private
@@ -19707,18 +20778,18 @@ class LayoutEngine {
     shifter(parentId);
   }
 
-
   /**
    * Find a common parent between branches.
+   *
    * @param {Node.id} childA
    * @param {Node.id} childB
    * @returns {{foundParent, withChild}}
    * @private
    */
-  _findCommonParent(childA,childB) {
+  _findCommonParent(childA, childB) {
     const parents = {};
-    const iterateParents = (parents,child) => {
-      const parentRef =  this.hierarchical.parentReference[child];
+    const iterateParents = (parents, child) => {
+      const parentRef = this.hierarchical.parentReference[child];
       if (parentRef !== undefined) {
         for (let i = 0; i < parentRef.length; i++) {
           const parent = parentRef[i];
@@ -19728,12 +20799,12 @@ class LayoutEngine {
       }
     };
     const findParent = (parents, child) => {
-      const parentRef =  this.hierarchical.parentReference[child];
+      const parentRef = this.hierarchical.parentReference[child];
       if (parentRef !== undefined) {
         for (let i = 0; i < parentRef.length; i++) {
           const parent = parentRef[i];
           if (parents[parent] !== undefined) {
-            return {foundParent:parent, withChild:child};
+            return { foundParent: parent, withChild: child };
           }
           const branch = findParent(parents, parent);
           if (branch.foundParent !== null) {
@@ -19741,13 +20812,12 @@ class LayoutEngine {
           }
         }
       }
-      return {foundParent:null, withChild:child};
+      return { foundParent: null, withChild: child };
     };
 
     iterateParents(parents, childA);
     return findParent(parents, childB);
   }
-
 
   /**
    * Set the strategy pattern for handling the coordinates given the current direction.
@@ -19761,23 +20831,24 @@ class LayoutEngine {
    * @private
    */
   setDirectionStrategy() {
-    const isVertical = (this.options.hierarchical.direction === 'UD'
-                   || this.options.hierarchical.direction === 'DU');
+    const isVertical =
+      this.options.hierarchical.direction === "UD" ||
+      this.options.hierarchical.direction === "DU";
 
-    if(isVertical) {
-      this.direction = new VerticalStrategy(this); 
+    if (isVertical) {
+      this.direction = new VerticalStrategy(this);
     } else {
-      this.direction = new HorizontalStrategy(this); 
+      this.direction = new HorizontalStrategy(this);
     }
   }
-
 
   /**
    * Determine the center position of a branch from the passed list of child nodes
    *
    * This takes into account the positions of all the child nodes.
+   *
    * @param {Array.<Node|vis.Node.id>} childNodes  Array of either child nodes or node id's
-   * @return {number}
+   * @returns {number}
    * @private
    */
   _getCenterPosition(childNodes) {
@@ -19809,7 +20880,7 @@ class LayoutEngine {
  */
 class ManipulationSystem {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {Canvas} canvas
    * @param {SelectionHandler} selectionHandler
    * @param {InteractionHandler} interactionHandler
@@ -19822,15 +20893,15 @@ class ManipulationSystem {
 
     this.editMode = false;
     this.manipulationDiv = undefined;
-    this.editModeDiv     = undefined;
-    this.closeDiv        = undefined;
+    this.editModeDiv = undefined;
+    this.closeDiv = undefined;
 
-    this.manipulationHammers = [];
+    this._domEventListenerCleanupQueue = [];
     this.temporaryUIFunctions = {};
     this.temporaryEventFunctions = [];
 
     this.touchTime = 0;
-    this.temporaryIds = {nodes: [], edges:[]};
+    this.temporaryIds = { nodes: [], edges: [] };
     this.guiEnabled = false;
     this.inMode = false;
     this.selectedControlNode = undefined;
@@ -19845,32 +20916,37 @@ class ManipulationSystem {
       editEdge: true,
       deleteNode: true,
       deleteEdge: true,
-      controlNodeStyle:{
-        shape:'dot',
-        size:6,
-        color: {background: '#ff0000', border: '#3c3c3c', highlight: {background: '#07f968', border: '#3c3c3c'}},
+      controlNodeStyle: {
+        shape: "dot",
+        size: 6,
+        color: {
+          background: "#ff0000",
+          border: "#3c3c3c",
+          highlight: { background: "#07f968", border: "#3c3c3c" },
+        },
         borderWidth: 2,
-        borderWidthSelected: 2
-      }
+        borderWidthSelected: 2,
+      },
     };
     Object.assign(this.options, this.defaultOptions);
 
-    this.body.emitter.on('destroy',     () => {this._clean();});
-    this.body.emitter.on('_dataChanged',this._restore.bind(this));
-    this.body.emitter.on('_resetData',  this._restore.bind(this));
+    this.body.emitter.on("destroy", () => {
+      this._clean();
+    });
+    this.body.emitter.on("_dataChanged", this._restore.bind(this));
+    this.body.emitter.on("_resetData", this._restore.bind(this));
   }
-
 
   /**
    * If something changes in the data during editing, switch back to the initial datamanipulation state and close all edit modes.
+   *
    * @private
    */
   _restore() {
     if (this.inMode !== false) {
       if (this.options.initiallyActive === true) {
         this.enableEditMode();
-      }
-      else {
+      } else {
         this.disableEditMode();
       }
     }
@@ -19879,21 +20955,28 @@ class ManipulationSystem {
   /**
    * Set the Options
    *
-   * @param {Object} options
-   * @param {Object} allOptions
-   * @param {Object} globalOptions
+   * @param {object} options
+   * @param {object} allOptions
+   * @param {object} globalOptions
    */
   setOptions(options, allOptions, globalOptions) {
     if (allOptions !== undefined) {
-      if (allOptions.locale !== undefined)  {this.options.locale = allOptions.locale;}   else {this.options.locale = globalOptions.locale;}
-      if (allOptions.locales !== undefined) {this.options.locales = allOptions.locales;} else {this.options.locales = globalOptions.locales;}
+      if (allOptions.locale !== undefined) {
+        this.options.locale = allOptions.locale;
+      } else {
+        this.options.locale = globalOptions.locale;
+      }
+      if (allOptions.locales !== undefined) {
+        this.options.locales = allOptions.locales;
+      } else {
+        this.options.locales = globalOptions.locales;
+      }
     }
 
     if (options !== undefined) {
-      if (typeof options === 'boolean') {
+      if (typeof options === "boolean") {
         this.options.enabled = options;
-      }
-      else {
+      } else {
         this.options.enabled = true;
         deepExtend(this.options, options);
       }
@@ -19904,7 +20987,6 @@ class ManipulationSystem {
     }
   }
 
-
   /**
    * Enable or disable edit-mode. Draws the DOM required and cleans up after itself.
    *
@@ -19913,12 +20995,10 @@ class ManipulationSystem {
   toggleEditMode() {
     if (this.editMode === true) {
       this.disableEditMode();
-    }
-    else {
+    } else {
       this.enableEditMode();
     }
   }
-
 
   /**
    * Enables Edit Mode
@@ -19928,9 +21008,9 @@ class ManipulationSystem {
 
     this._clean();
     if (this.guiEnabled === true) {
-      this.manipulationDiv.style.display = 'block';
-      this.closeDiv.style.display = 'block';
-      this.editModeDiv.style.display = 'none';
+      this.manipulationDiv.style.display = "block";
+      this.closeDiv.style.display = "block";
+      this.editModeDiv.style.display = "none";
       this.showManipulatorToolbar();
     }
   }
@@ -19943,9 +21023,9 @@ class ManipulationSystem {
 
     this._clean();
     if (this.guiEnabled === true) {
-      this.manipulationDiv.style.display = 'none';
-      this.closeDiv.style.display = 'none';
-      this.editModeDiv.style.display = 'block';
+      this.manipulationDiv.style.display = "none";
+      this.closeDiv.style.display = "none";
+      this.editModeDiv.style.display = "block";
       this._createEditButton();
     }
   }
@@ -19966,15 +21046,14 @@ class ManipulationSystem {
     if (this.guiEnabled === true) {
       // a _restore will hide these menus
       this.editMode = true;
-      this.manipulationDiv.style.display = 'block';
-      this.closeDiv.style.display = 'block';
+      this.manipulationDiv.style.display = "block";
+      this.closeDiv.style.display = "block";
 
-      const selectedNodeCount  = this.selectionHandler._getSelectedNodeCount();
-      const selectedEdgeCount  = this.selectionHandler._getSelectedEdgeCount();
+      const selectedNodeCount = this.selectionHandler.getSelectedNodeCount();
+      const selectedEdgeCount = this.selectionHandler.getSelectedEdgeCount();
       const selectedTotalCount = selectedNodeCount + selectedEdgeCount;
       const locale = this.options.locales[this.options.locale];
       let needSeperator = false;
-
 
       if (this.options.addNode !== false) {
         this._createAddNodeButton(locale);
@@ -19989,15 +21068,21 @@ class ManipulationSystem {
         this._createAddEdgeButton(locale);
       }
 
-      if (selectedNodeCount === 1 && typeof this.options.editNode === 'function') {
+      if (
+        selectedNodeCount === 1 &&
+        typeof this.options.editNode === "function"
+      ) {
         if (needSeperator === true) {
           this._createSeperator(2);
         } else {
           needSeperator = true;
         }
         this._createEditNodeButton(locale);
-      }
-      else if (selectedEdgeCount === 1 && selectedNodeCount === 0 && this.options.editEdge !== false) {
+      } else if (
+        selectedEdgeCount === 1 &&
+        selectedNodeCount === 0 &&
+        this.options.editEdge !== false
+      ) {
         if (needSeperator === true) {
           this._createSeperator(3);
         } else {
@@ -20013,8 +21098,10 @@ class ManipulationSystem {
             this._createSeperator(4);
           }
           this._createDeleteButton(locale);
-        }
-        else if (selectedNodeCount === 0 && this.options.deleteEdge !== false) {
+        } else if (
+          selectedNodeCount === 0 &&
+          this.options.deleteEdge !== false
+        ) {
           if (needSeperator === true) {
             this._createSeperator(4);
           }
@@ -20023,17 +21110,18 @@ class ManipulationSystem {
       }
 
       // bind the close button
-      this._bindHammerToDiv(this.closeDiv, this.toggleEditMode.bind(this));
+      this._bindElementEvents(this.closeDiv, this.toggleEditMode.bind(this));
 
       // refresh this bar based on what has been selected
-      this._temporaryBindEvent('select', this.showManipulatorToolbar.bind(this));
+      this._temporaryBindEvent(
+        "select",
+        this.showManipulatorToolbar.bind(this)
+      );
     }
 
     // redraw to show any possible changes
-    this.body.emitter.emit('_redraw');
-
+    this.body.emitter.emit("_redraw");
   }
-
 
   /**
    * Create the toolbar for adding Nodes
@@ -20047,19 +21135,21 @@ class ManipulationSystem {
     // restore the state of any bound functions or events, remove control nodes, restore physics
     this._clean();
 
-    this.inMode = 'addNode';
+    this.inMode = "addNode";
     if (this.guiEnabled === true) {
       const locale = this.options.locales[this.options.locale];
       this.manipulationDOM = {};
       this._createBackButton(locale);
       this._createSeperator();
-      this._createDescription(locale['addDescription'] || this.options.locales['en']['addDescription']);
+      this._createDescription(
+        locale["addDescription"] || this.options.locales["en"]["addDescription"]
+      );
 
       // bind the close button
-      this._bindHammerToDiv(this.closeDiv, this.toggleEditMode.bind(this));
+      this._bindElementEvents(this.closeDiv, this.toggleEditMode.bind(this));
     }
 
-    this._temporaryBindEvent('click', this._performAddNode.bind(this));
+    this._temporaryBindEvent("click", this._performAddNode.bind(this));
   }
 
   /**
@@ -20073,10 +21163,10 @@ class ManipulationSystem {
 
     // restore the state of any bound functions or events, remove control nodes, restore physics
     this._clean();
-    const node = this.selectionHandler._getSelectedNode();
+    const node = this.selectionHandler.getSelectedNodes()[0];
     if (node !== undefined) {
-      this.inMode = 'editNode';
-      if (typeof this.options.editNode === 'function') {
+      this.inMode = "editNode";
+      if (typeof this.options.editNode === "function") {
         if (node.isCluster !== true) {
           const data = deepExtend({}, node.options, false);
           data.x = node.x;
@@ -20084,29 +21174,36 @@ class ManipulationSystem {
 
           if (this.options.editNode.length === 2) {
             this.options.editNode(data, (finalizedData) => {
-              if (finalizedData !== null && finalizedData !== undefined && this.inMode === 'editNode') { // if for whatever reason the mode has changes (due to dataset change) disregard the callback) {
+              if (
+                finalizedData !== null &&
+                finalizedData !== undefined &&
+                this.inMode === "editNode"
+              ) {
+                // if for whatever reason the mode has changes (due to dataset change) disregard the callback) {
                 this.body.data.nodes.getDataSet().update(finalizedData);
               }
               this.showManipulatorToolbar();
             });
+          } else {
+            throw new Error(
+              "The function for edit does not support two arguments (data, callback)"
+            );
           }
-          else {
-            throw new Error('The function for edit does not support two arguments (data, callback)');
-          }
+        } else {
+          alert(
+            this.options.locales[this.options.locale]["editClusterError"] ||
+              this.options.locales["en"]["editClusterError"]
+          );
         }
-        else {
-          alert(this.options.locales[this.options.locale]['editClusterError'] || this.options.locales['en']['editClusterError']);
-        }
+      } else {
+        throw new Error(
+          "No function has been configured to handle the editing of nodes."
+        );
       }
-      else {
-        throw new Error('No function has been configured to handle the editing of nodes.');
-      }
-    }
-    else {
+    } else {
       this.showManipulatorToolbar();
     }
   }
-
 
   /**
    * create the toolbar to connect nodes
@@ -20120,25 +21217,28 @@ class ManipulationSystem {
     // restore the state of any bound functions or events, remove control nodes, restore physics
     this._clean();
 
-    this.inMode = 'addEdge';
+    this.inMode = "addEdge";
     if (this.guiEnabled === true) {
       const locale = this.options.locales[this.options.locale];
       this.manipulationDOM = {};
       this._createBackButton(locale);
       this._createSeperator();
-      this._createDescription(locale['edgeDescription'] || this.options.locales['en']['edgeDescription']);
+      this._createDescription(
+        locale["edgeDescription"] ||
+          this.options.locales["en"]["edgeDescription"]
+      );
 
       // bind the close button
-      this._bindHammerToDiv(this.closeDiv, this.toggleEditMode.bind(this));
+      this._bindElementEvents(this.closeDiv, this.toggleEditMode.bind(this));
     }
 
     // temporarily overload functions
-    this._temporaryBindUI('onTouch',    this._handleConnect.bind(this));
-    this._temporaryBindUI('onDragEnd',  this._finishConnect.bind(this));
-    this._temporaryBindUI('onDrag',     this._dragControlNode.bind(this));
-    this._temporaryBindUI('onRelease',  this._finishConnect.bind(this));
-    this._temporaryBindUI('onDragStart',this._dragStartEdge.bind(this));
-    this._temporaryBindUI('onHold', () => {});
+    this._temporaryBindUI("onTouch", this._handleConnect.bind(this));
+    this._temporaryBindUI("onDragEnd", this._finishConnect.bind(this));
+    this._temporaryBindUI("onDrag", this._dragControlNode.bind(this));
+    this._temporaryBindUI("onRelease", this._finishConnect.bind(this));
+    this._temporaryBindUI("onDragStart", this._dragStartEdge.bind(this));
+    this._temporaryBindUI("onHold", () => {});
   }
 
   /**
@@ -20153,9 +21253,12 @@ class ManipulationSystem {
     // restore the state of any bound functions or events, remove control nodes, restore physics
     this._clean();
 
-    this.inMode = 'editEdge';
-    if (typeof this.options.editEdge === 'object' && typeof this.options.editEdge.editWithoutDrag === "function") {
-      this.edgeBeingEditedId = this.selectionHandler.getSelectedEdges()[0];
+    this.inMode = "editEdge";
+    if (
+      typeof this.options.editEdge === "object" &&
+      typeof this.options.editEdge.editWithoutDrag === "function"
+    ) {
+      this.edgeBeingEditedId = this.selectionHandler.getSelectedEdgeIds()[0];
       if (this.edgeBeingEditedId !== undefined) {
         const edge = this.body.edges[this.edgeBeingEditedId];
         this._performEditEdge(edge.from.id, edge.to.id);
@@ -20167,13 +21270,16 @@ class ManipulationSystem {
       this.manipulationDOM = {};
       this._createBackButton(locale);
       this._createSeperator();
-      this._createDescription(locale['editEdgeDescription'] || this.options.locales['en']['editEdgeDescription']);
+      this._createDescription(
+        locale["editEdgeDescription"] ||
+          this.options.locales["en"]["editEdgeDescription"]
+      );
 
       // bind the close button
-      this._bindHammerToDiv(this.closeDiv, this.toggleEditMode.bind(this));
+      this._bindElementEvents(this.closeDiv, this.toggleEditMode.bind(this));
     }
 
-    this.edgeBeingEditedId = this.selectionHandler.getSelectedEdges()[0];
+    this.edgeBeingEditedId = this.selectionHandler.getSelectedEdgeIds()[0];
     if (this.edgeBeingEditedId !== undefined) {
       const edge = this.body.edges[this.edgeBeingEditedId];
 
@@ -20190,17 +21296,20 @@ class ManipulationSystem {
       this.body.nodeIndices.push(controlNodeTo.id);
 
       // temporarily overload UI functions, cleaned up automatically because of _temporaryBindUI
-      this._temporaryBindUI('onTouch', this._controlNodeTouch.bind(this));    // used to get the position
-      this._temporaryBindUI('onTap', () => {});                             // disabled
-      this._temporaryBindUI('onHold', () => {});                             // disabled
-      this._temporaryBindUI('onDragStart', this._controlNodeDragStart.bind(this));// used to select control node
-      this._temporaryBindUI('onDrag', this._controlNodeDrag.bind(this));     // used to drag control node
-      this._temporaryBindUI('onDragEnd', this._controlNodeDragEnd.bind(this));  // used to connect or revert control nodes
-      this._temporaryBindUI('onMouseMove', () => {});                             // disabled
+      this._temporaryBindUI("onTouch", this._controlNodeTouch.bind(this)); // used to get the position
+      this._temporaryBindUI("onTap", () => {}); // disabled
+      this._temporaryBindUI("onHold", () => {}); // disabled
+      this._temporaryBindUI(
+        "onDragStart",
+        this._controlNodeDragStart.bind(this)
+      ); // used to select control node
+      this._temporaryBindUI("onDrag", this._controlNodeDrag.bind(this)); // used to drag control node
+      this._temporaryBindUI("onDragEnd", this._controlNodeDragEnd.bind(this)); // used to connect or revert control nodes
+      this._temporaryBindUI("onMouseMove", () => {}); // disabled
 
       // create function to position control nodes correctly on movement
       // automatically cleaned up because we use the temporary bind
-      this._temporaryBindEvent('beforeDrawing', (ctx) => {
+      this._temporaryBindEvent("beforeDrawing", (ctx) => {
         const positions = edge.edgeType.findBorderPositions(ctx);
         if (controlNodeFrom.selected === false) {
           controlNodeFrom.x = positions.from.x;
@@ -20212,9 +21321,8 @@ class ManipulationSystem {
         }
       });
 
-      this.body.emitter.emit('_redraw');
-    }
-    else {
+      this.body.emitter.emit("_redraw");
+    } else {
       this.showManipulatorToolbar();
     }
   }
@@ -20231,63 +21339,67 @@ class ManipulationSystem {
     // restore the state of any bound functions or events, remove control nodes, restore physics
     this._clean();
 
-    this.inMode = 'delete';
-    const selectedNodes = this.selectionHandler.getSelectedNodes();
-    const selectedEdges = this.selectionHandler.getSelectedEdges();
+    this.inMode = "delete";
+    const selectedNodes = this.selectionHandler.getSelectedNodeIds();
+    const selectedEdges = this.selectionHandler.getSelectedEdgeIds();
     let deleteFunction = undefined;
     if (selectedNodes.length > 0) {
       for (let i = 0; i < selectedNodes.length; i++) {
         if (this.body.nodes[selectedNodes[i]].isCluster === true) {
-          alert(this.options.locales[this.options.locale]['deleteClusterError'] || this.options.locales['en']['deleteClusterError']);
+          alert(
+            this.options.locales[this.options.locale]["deleteClusterError"] ||
+              this.options.locales["en"]["deleteClusterError"]
+          );
           return;
         }
       }
 
-      if (typeof this.options.deleteNode === 'function') {
+      if (typeof this.options.deleteNode === "function") {
         deleteFunction = this.options.deleteNode;
       }
-    }
-    else if (selectedEdges.length > 0) {
-      if (typeof this.options.deleteEdge === 'function') {
+    } else if (selectedEdges.length > 0) {
+      if (typeof this.options.deleteEdge === "function") {
         deleteFunction = this.options.deleteEdge;
       }
     }
 
-    if (typeof deleteFunction === 'function') {
-      const data = {nodes: selectedNodes, edges: selectedEdges};
+    if (typeof deleteFunction === "function") {
+      const data = { nodes: selectedNodes, edges: selectedEdges };
       if (deleteFunction.length === 2) {
         deleteFunction(data, (finalizedData) => {
-          if (finalizedData !== null && finalizedData !== undefined && this.inMode === 'delete') { // if for whatever reason the mode has changes (due to dataset change) disregard the callback) {
+          if (
+            finalizedData !== null &&
+            finalizedData !== undefined &&
+            this.inMode === "delete"
+          ) {
+            // if for whatever reason the mode has changes (due to dataset change) disregard the callback) {
             this.body.data.edges.getDataSet().remove(finalizedData.edges);
             this.body.data.nodes.getDataSet().remove(finalizedData.nodes);
-            this.body.emitter.emit('startSimulation');
+            this.body.emitter.emit("startSimulation");
             this.showManipulatorToolbar();
-          }
-          else {
-            this.body.emitter.emit('startSimulation');
+          } else {
+            this.body.emitter.emit("startSimulation");
             this.showManipulatorToolbar();
           }
         });
+      } else {
+        throw new Error(
+          "The function for delete does not support two arguments (data, callback)"
+        );
       }
-      else {
-        throw new Error('The function for delete does not support two arguments (data, callback)')
-      }
-    }
-    else {
+    } else {
       this.body.data.edges.getDataSet().remove(selectedEdges);
       this.body.data.nodes.getDataSet().remove(selectedNodes);
-      this.body.emitter.emit('startSimulation');
+      this.body.emitter.emit("startSimulation");
       this.showManipulatorToolbar();
     }
   }
-
-
-
 
   //********************************************** PRIVATE ***************************************//
 
   /**
    * draw or remove the DOM
+   *
    * @private
    */
   _setup() {
@@ -20298,12 +21410,10 @@ class ManipulationSystem {
       this._createWrappers();
       if (this.editMode === false) {
         this._createEditButton();
-      }
-      else {
+      } else {
         this.showManipulatorToolbar();
       }
-    }
-    else {
+    } else {
       this._removeManipulationDOM();
 
       // disable the gui
@@ -20311,48 +21421,49 @@ class ManipulationSystem {
     }
   }
 
-
   /**
    * create the div overlays that contain the DOM
+   *
    * @private
    */
   _createWrappers() {
     // load the manipulator HTML elements. All styling done in css.
     if (this.manipulationDiv === undefined) {
-      this.manipulationDiv = document.createElement('div');
-      this.manipulationDiv.className = 'vis-manipulation';
+      this.manipulationDiv = document.createElement("div");
+      this.manipulationDiv.className = "vis-manipulation";
       if (this.editMode === true) {
-        this.manipulationDiv.style.display = 'block';
-      }
-      else {
-        this.manipulationDiv.style.display = 'none';
+        this.manipulationDiv.style.display = "block";
+      } else {
+        this.manipulationDiv.style.display = "none";
       }
       this.canvas.frame.appendChild(this.manipulationDiv);
     }
 
     // container for the edit button.
     if (this.editModeDiv === undefined) {
-      this.editModeDiv = document.createElement('div');
-      this.editModeDiv.className = 'vis-edit-mode';
+      this.editModeDiv = document.createElement("div");
+      this.editModeDiv.className = "vis-edit-mode";
       if (this.editMode === true) {
-        this.editModeDiv.style.display = 'none';
-      }
-      else {
-        this.editModeDiv.style.display = 'block';
+        this.editModeDiv.style.display = "none";
+      } else {
+        this.editModeDiv.style.display = "block";
       }
       this.canvas.frame.appendChild(this.editModeDiv);
     }
 
-
     // container for the close div button
     if (this.closeDiv === undefined) {
-      this.closeDiv = document.createElement('div');
-      this.closeDiv.className = 'vis-close';
+      this.closeDiv = document.createElement("button");
+      this.closeDiv.className = "vis-close";
+      this.closeDiv.setAttribute(
+        "aria-label",
+        this.options.locales[this.options.locale]?.["close"] ??
+          this.options.locales["en"]["close"]
+      );
       this.closeDiv.style.display = this.manipulationDiv.style.display;
       this.canvas.frame.appendChild(this.closeDiv);
     }
   }
-
 
   /**
    * generate a new target node. Used for creating new edges and editing edges
@@ -20362,10 +21473,10 @@ class ManipulationSystem {
    * @returns {Node}
    * @private
    */
-  _getNewTargetNode(x,y) {
+  _getNewTargetNode(x, y) {
     const controlNodeStyle = deepExtend({}, this.options.controlNodeStyle);
 
-    controlNodeStyle.id = 'targetNode' + v4();
+    controlNodeStyle.id = "targetNode" + v4();
     controlNodeStyle.hidden = false;
     controlNodeStyle.physics = false;
     controlNodeStyle.x = x;
@@ -20373,11 +21484,10 @@ class ManipulationSystem {
 
     // we have to define the bounding box in order for the nodes to be drawn immediately
     const node = this.body.functions.createNode(controlNodeStyle);
-    node.shape.boundingBox = {left: x, right:x, top:y, bottom:y};
+    node.shape.boundingBox = { left: x, right: x, top: y, bottom: y };
 
     return node;
   }
-
 
   /**
    * Create the edit button
@@ -20392,19 +21502,22 @@ class ManipulationSystem {
     // empty the editModeDiv
     recursiveDOMDelete(this.editModeDiv);
 
-
     // create the contents for the editMode button
     const locale = this.options.locales[this.options.locale];
-    const button = this._createButton('editMode', 'vis-button vis-edit vis-edit-mode', locale['edit'] || this.options.locales['en']['edit']);
+    const button = this._createButton(
+      "editMode",
+      "vis-edit vis-edit-mode",
+      locale["edit"] || this.options.locales["en"]["edit"]
+    );
     this.editModeDiv.appendChild(button);
 
     // bind a hammer listener to the button, calling the function toggleEditMode.
-    this._bindHammerToDiv(button, this.toggleEditMode.bind(this));
+    this._bindElementEvents(button, this.toggleEditMode.bind(this));
   }
-
 
   /**
    * this function cleans up after everything this module does. Temporary elements, functions and events are removed, physics restored, hammers removed.
+   *
    * @private
    */
   _clean() {
@@ -20417,7 +21530,7 @@ class ManipulationSystem {
       recursiveDOMDelete(this.manipulationDiv);
 
       // removes all the bindings and overloads
-      this._cleanManipulatorHammers();
+      this._cleanupDOMEventListeners();
     }
 
     // remove temporary nodes and edges
@@ -20430,27 +21543,24 @@ class ManipulationSystem {
     this._unbindTemporaryEvents();
 
     // restore the physics if required
-    this.body.emitter.emit('restorePhysics');
+    this.body.emitter.emit("restorePhysics");
   }
-
 
   /**
    * Each dom element has it's own hammer. They are stored in this.manipulationHammers. This cleans them up.
+   *
    * @private
    */
-  _cleanManipulatorHammers() {
-    // _clean hammer bindings
-    if (this.manipulationHammers.length != 0) {
-      for (let i = 0; i < this.manipulationHammers.length; i++) {
-        this.manipulationHammers[i].destroy();
-      }
-      this.manipulationHammers = [];
+  _cleanupDOMEventListeners() {
+    // _clean DOM event listener bindings
+    for (const callback of this._domEventListenerCleanupQueue.splice(0)) {
+      callback();
     }
   }
 
-
   /**
    * Remove all DOM elements created by this module.
+   *
    * @private
    */
   _removeManipulationDOM() {
@@ -20463,9 +21573,15 @@ class ManipulationSystem {
     recursiveDOMDelete(this.closeDiv);
 
     // remove the manipulation divs
-    if (this.manipulationDiv) {this.canvas.frame.removeChild(this.manipulationDiv);}
-    if (this.editModeDiv)     {this.canvas.frame.removeChild(this.editModeDiv);}
-    if (this.closeDiv)        {this.canvas.frame.removeChild(this.closeDiv);}
+    if (this.manipulationDiv) {
+      this.canvas.frame.removeChild(this.manipulationDiv);
+    }
+    if (this.editModeDiv) {
+      this.canvas.frame.removeChild(this.editModeDiv);
+    }
+    if (this.closeDiv) {
+      this.canvas.frame.removeChild(this.closeDiv);
+    }
 
     // set the references to undefined
     this.manipulationDiv = undefined;
@@ -20473,16 +21589,20 @@ class ManipulationSystem {
     this.closeDiv = undefined;
   }
 
-
   /**
    * create a seperator line. the index is to differentiate in the manipulation dom
+   *
    * @param {number} [index=1]
    * @private
    */
   _createSeperator(index = 1) {
-    this.manipulationDOM['seperatorLineDiv' + index] = document.createElement('div');
-    this.manipulationDOM['seperatorLineDiv' + index].className = 'vis-separator-line';
-    this.manipulationDiv.appendChild(this.manipulationDOM['seperatorLineDiv' + index]);
+    this.manipulationDOM["seperatorLineDiv" + index] =
+      document.createElement("div");
+    this.manipulationDOM["seperatorLineDiv" + index].className =
+      "vis-separator-line";
+    this.manipulationDiv.appendChild(
+      this.manipulationDOM["seperatorLineDiv" + index]
+    );
   }
 
   // ----------------------    DOM functions for buttons    --------------------------//
@@ -20493,9 +21613,13 @@ class ManipulationSystem {
    * @private
    */
   _createAddNodeButton(locale) {
-    const button = this._createButton('addNode', 'vis-button vis-add', locale['addNode'] || this.options.locales['en']['addNode']);
+    const button = this._createButton(
+      "addNode",
+      "vis-add",
+      locale["addNode"] || this.options.locales["en"]["addNode"]
+    );
     this.manipulationDiv.appendChild(button);
-    this._bindHammerToDiv(button, this.addNodeMode.bind(this));
+    this._bindElementEvents(button, this.addNodeMode.bind(this));
   }
 
   /**
@@ -20504,9 +21628,13 @@ class ManipulationSystem {
    * @private
    */
   _createAddEdgeButton(locale) {
-    const button = this._createButton('addEdge', 'vis-button vis-connect',  locale['addEdge'] || this.options.locales['en']['addEdge']);
+    const button = this._createButton(
+      "addEdge",
+      "vis-connect",
+      locale["addEdge"] || this.options.locales["en"]["addEdge"]
+    );
     this.manipulationDiv.appendChild(button);
-    this._bindHammerToDiv(button, this.addEdgeMode.bind(this));
+    this._bindElementEvents(button, this.addEdgeMode.bind(this));
   }
 
   /**
@@ -20515,9 +21643,13 @@ class ManipulationSystem {
    * @private
    */
   _createEditNodeButton(locale) {
-    const button = this._createButton('editNode', 'vis-button vis-edit', locale['editNode'] || this.options.locales['en']['editNode']);
+    const button = this._createButton(
+      "editNode",
+      "vis-edit",
+      locale["editNode"] || this.options.locales["en"]["editNode"]
+    );
     this.manipulationDiv.appendChild(button);
-    this._bindHammerToDiv(button, this.editNode.bind(this));
+    this._bindElementEvents(button, this.editNode.bind(this));
   }
 
   /**
@@ -20526,9 +21658,13 @@ class ManipulationSystem {
    * @private
    */
   _createEditEdgeButton(locale) {
-    const button = this._createButton('editEdge', 'vis-button vis-edit',  locale['editEdge'] || this.options.locales['en']['editEdge']);
+    const button = this._createButton(
+      "editEdge",
+      "vis-edit",
+      locale["editEdge"] || this.options.locales["en"]["editEdge"]
+    );
     this.manipulationDiv.appendChild(button);
-    this._bindHammerToDiv(button, this.editEdgeMode.bind(this));
+    this._bindElementEvents(button, this.editEdgeMode.bind(this));
   }
 
   /**
@@ -20539,13 +21675,17 @@ class ManipulationSystem {
   _createDeleteButton(locale) {
     let deleteBtnClass;
     if (this.options.rtl) {
-      deleteBtnClass = 'vis-button vis-delete-rtl';
+      deleteBtnClass = "vis-delete-rtl";
     } else {
-      deleteBtnClass = 'vis-button vis-delete';
+      deleteBtnClass = "vis-delete";
     }
-    const button = this._createButton('delete', deleteBtnClass, locale['del'] || this.options.locales['en']['del']);
+    const button = this._createButton(
+      "delete",
+      deleteBtnClass,
+      locale["del"] || this.options.locales["en"]["del"]
+    );
     this.manipulationDiv.appendChild(button);
-    this._bindHammerToDiv(button, this.deleteSelected.bind(this));
+    this._bindElementEvents(button, this.deleteSelected.bind(this));
   }
 
   /**
@@ -20554,9 +21694,13 @@ class ManipulationSystem {
    * @private
    */
   _createBackButton(locale) {
-    const button = this._createButton('back', 'vis-button vis-back', locale['back'] || this.options.locales['en']['back']);
+    const button = this._createButton(
+      "back",
+      "vis-back",
+      locale["back"] || this.options.locales["en"]["back"]
+    );
     this.manipulationDiv.appendChild(button);
-    this._bindHammerToDiv(button, this.showManipulatorToolbar.bind(this));
+    this._bindElementEvents(button, this.showManipulatorToolbar.bind(this));
   }
 
   /**
@@ -20568,15 +21712,16 @@ class ManipulationSystem {
    * @returns {HTMLElement}
    * @private
    */
-  _createButton(id, className, label, labelClassName = 'vis-label') {
-
-    this.manipulationDOM[id+'Div'] = document.createElement('div');
-    this.manipulationDOM[id+'Div'].className = className;
-    this.manipulationDOM[id+'Label'] = document.createElement('div');
-    this.manipulationDOM[id+'Label'].className = labelClassName;
-    this.manipulationDOM[id+'Label'].innerHTML = label;
-    this.manipulationDOM[id+'Div'].appendChild(this.manipulationDOM[id+'Label']);
-    return this.manipulationDOM[id+'Div'];
+  _createButton(id, className, label, labelClassName = "vis-label") {
+    this.manipulationDOM[id + "Div"] = document.createElement("button");
+    this.manipulationDOM[id + "Div"].className = "vis-button " + className;
+    this.manipulationDOM[id + "Label"] = document.createElement("div");
+    this.manipulationDOM[id + "Label"].className = labelClassName;
+    this.manipulationDOM[id + "Label"].innerText = label;
+    this.manipulationDOM[id + "Div"].appendChild(
+      this.manipulationDOM[id + "Label"]
+    );
+    return this.manipulationDOM[id + "Div"];
   }
 
   /**
@@ -20585,37 +21730,48 @@ class ManipulationSystem {
    * @private
    */
   _createDescription(label) {
-    this.manipulationDiv.appendChild(
-      this._createButton('description', 'vis-button vis-none', label)
-    );
+    this.manipulationDOM["descriptionLabel"] = document.createElement("div");
+    this.manipulationDOM["descriptionLabel"].className = "vis-none";
+    this.manipulationDOM["descriptionLabel"].innerText = label;
+    this.manipulationDiv.appendChild(this.manipulationDOM["descriptionLabel"]);
   }
 
   // -------------------------- End of DOM functions for buttons ------------------------------//
 
   /**
    * this binds an event until cleanup by the clean functions.
+   *
    * @param {Event}  event   The event
-   * @param {function} newFunction
+   * @param {Function} newFunction
    * @private
    */
   _temporaryBindEvent(event, newFunction) {
-    this.temporaryEventFunctions.push({event:event, boundFunction:newFunction});
+    this.temporaryEventFunctions.push({
+      event: event,
+      boundFunction: newFunction,
+    });
     this.body.emitter.on(event, newFunction);
   }
 
   /**
    * this overrides an UI function until cleanup by the clean function
+   *
    * @param {string} UIfunctionName
-   * @param {function} newFunction
+   * @param {Function} newFunction
    * @private
    */
   _temporaryBindUI(UIfunctionName, newFunction) {
     if (this.body.eventListeners[UIfunctionName] !== undefined) {
-      this.temporaryUIFunctions[UIfunctionName] = this.body.eventListeners[UIfunctionName];
+      this.temporaryUIFunctions[UIfunctionName] =
+        this.body.eventListeners[UIfunctionName];
       this.body.eventListeners[UIfunctionName] = newFunction;
-    }
-    else {
-      throw new Error('This UI function does not exist. Typo? You tried: ' + UIfunctionName + ' possible are: ' + JSON.stringify(Object.keys(this.body.eventListeners)));
+    } else {
+      throw new Error(
+        "This UI function does not exist. Typo? You tried: " +
+          UIfunctionName +
+          " possible are: " +
+          JSON.stringify(Object.keys(this.body.eventListeners))
+      );
     }
   }
 
@@ -20626,8 +21782,14 @@ class ManipulationSystem {
    */
   _unbindTemporaryUIs() {
     for (const functionName in this.temporaryUIFunctions) {
-      if (Object.prototype.hasOwnProperty.call(this.temporaryUIFunctions, functionName)) {
-        this.body.eventListeners[functionName] = this.temporaryUIFunctions[functionName];
+      if (
+        Object.prototype.hasOwnProperty.call(
+          this.temporaryUIFunctions,
+          functionName
+        )
+      ) {
+        this.body.eventListeners[functionName] =
+          this.temporaryUIFunctions[functionName];
         delete this.temporaryUIFunctions[functionName];
       }
     }
@@ -20636,6 +21798,7 @@ class ManipulationSystem {
 
   /**
    * Unbind the events created by _temporaryBindEvent
+   *
    * @private
    */
   _unbindTemporaryEvents() {
@@ -20651,17 +21814,31 @@ class ManipulationSystem {
    * Bind an hammer instance to a DOM element.
    *
    * @param {Element} domElement
-   * @param {function} boundFunction
+   * @param {Function} boundFunction
    */
-  _bindHammerToDiv(domElement, boundFunction) {
-    const hammer$1 = new hammer(domElement, {});
-    onTouch(hammer$1, boundFunction);
-    this.manipulationHammers.push(hammer$1);
-  }
+  _bindElementEvents(domElement, boundFunction) {
+    // Bind touch events.
+    const hammer = new Hammer(domElement, {});
+    onTouch(hammer, boundFunction);
+    this._domEventListenerCleanupQueue.push(() => {
+      hammer.destroy();
+    });
 
+    // Bind keyboard events.
+    const keyupListener = ({ keyCode, key }) => {
+      if (key === "Enter" || key === " " || keyCode === 13 || keyCode === 32) {
+        boundFunction();
+      }
+    };
+    domElement.addEventListener("keyup", keyupListener, false);
+    this._domEventListenerCleanupQueue.push(() => {
+      domElement.removeEventListener("keyup", keyupListener, false);
+    });
+  }
 
   /**
    * Neatly clean up temporary edges and nodes
+   *
    * @private
    */
   _cleanupTemporaryNodesAndEdges() {
@@ -20669,44 +21846,52 @@ class ManipulationSystem {
     for (let i = 0; i < this.temporaryIds.edges.length; i++) {
       this.body.edges[this.temporaryIds.edges[i]].disconnect();
       delete this.body.edges[this.temporaryIds.edges[i]];
-      const indexTempEdge = this.body.edgeIndices.indexOf(this.temporaryIds.edges[i]);
-      if (indexTempEdge !== -1) {this.body.edgeIndices.splice(indexTempEdge,1);}
+      const indexTempEdge = this.body.edgeIndices.indexOf(
+        this.temporaryIds.edges[i]
+      );
+      if (indexTempEdge !== -1) {
+        this.body.edgeIndices.splice(indexTempEdge, 1);
+      }
     }
 
     // _clean temporary nodes
     for (let i = 0; i < this.temporaryIds.nodes.length; i++) {
       delete this.body.nodes[this.temporaryIds.nodes[i]];
-      const indexTempNode = this.body.nodeIndices.indexOf(this.temporaryIds.nodes[i]);
-      if (indexTempNode !== -1) {this.body.nodeIndices.splice(indexTempNode,1);}
+      const indexTempNode = this.body.nodeIndices.indexOf(
+        this.temporaryIds.nodes[i]
+      );
+      if (indexTempNode !== -1) {
+        this.body.nodeIndices.splice(indexTempNode, 1);
+      }
     }
 
-    this.temporaryIds = {nodes: [], edges: []};
+    this.temporaryIds = { nodes: [], edges: [] };
   }
 
   // ------------------------------------------ EDIT EDGE FUNCTIONS -----------------------------------------//
 
   /**
    * the touch is used to get the position of the initial click
+   *
    * @param {Event}  event   The event
    * @private
    */
   _controlNodeTouch(event) {
     this.selectionHandler.unselectAll();
     this.lastTouch = this.body.functions.getPointer(event.center);
-    this.lastTouch.translation = Object.assign({},this.body.view.translation); // copy the object
+    this.lastTouch.translation = Object.assign({}, this.body.view.translation); // copy the object
   }
-
 
   /**
    * the drag start is used to mark one of the control nodes as selected.
-   * @param {Event}  event   The event
+   *
    * @private
    */
-  _controlNodeDragStart(event) {  // eslint-disable-line no-unused-vars
+  _controlNodeDragStart() {
     const pointer = this.lastTouch;
     const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
     const from = this.body.nodes[this.temporaryIds.nodes[0]];
-    const to   = this.body.nodes[this.temporaryIds.nodes[1]];
+    const to = this.body.nodes[this.temporaryIds.nodes[1]];
     const edge = this.body.edges[this.edgeBeingEditedId];
     this.selectedControlNode = undefined;
 
@@ -20716,8 +21901,7 @@ class ManipulationSystem {
     if (fromSelect === true) {
       this.selectedControlNode = from;
       edge.edgeType.from = from;
-    }
-    else if (toSelect === true) {
+    } else if (toSelect === true) {
       this.selectedControlNode = to;
       edge.edgeType.to = to;
     }
@@ -20727,31 +21911,31 @@ class ManipulationSystem {
       this.selectionHandler.selectObject(this.selectedControlNode);
     }
 
-    this.body.emitter.emit('_redraw');
+    this.body.emitter.emit("_redraw");
   }
 
   /**
    * dragging the control nodes or the canvas
+   *
    * @param {Event}  event   The event
    * @private
    */
   _controlNodeDrag(event) {
-    this.body.emitter.emit('disablePhysics');
+    this.body.emitter.emit("disablePhysics");
     const pointer = this.body.functions.getPointer(event.center);
     const pos = this.canvas.DOMtoCanvas(pointer);
     if (this.selectedControlNode !== undefined) {
       this.selectedControlNode.x = pos.x;
       this.selectedControlNode.y = pos.y;
-    }
-    else {
+    } else {
       this.interactionHandler.onDrag(event);
     }
-    this.body.emitter.emit('_redraw');
+    this.body.emitter.emit("_redraw");
   }
-
 
   /**
    * connecting or restoring the control nodes.
+   *
    * @param {Event}  event   The event
    * @private
    */
@@ -20766,9 +21950,10 @@ class ManipulationSystem {
 
     // we use the selection to find the node that is being dragged. We explicitly DEselect the control node here.
     this.selectionHandler.unselectAll();
-    const overlappingNodeIds = this.selectionHandler._getAllNodesOverlappingWith(pointerObj);
+    const overlappingNodeIds =
+      this.selectionHandler._getAllNodesOverlappingWith(pointerObj);
     let node = undefined;
-    for (let i = overlappingNodeIds.length-1; i >= 0; i--) {
+    for (let i = overlappingNodeIds.length - 1; i >= 0; i--) {
       if (overlappingNodeIds[i] !== this.selectedControlNode.id) {
         node = this.body.nodes[overlappingNodeIds[i]];
         break;
@@ -20777,29 +21962,27 @@ class ManipulationSystem {
     // perform the connection
     if (node !== undefined && this.selectedControlNode !== undefined) {
       if (node.isCluster === true) {
-        alert(this.options.locales[this.options.locale]['createEdgeError'] || this.options.locales['en']['createEdgeError']);
-      }
-      else {
+        alert(
+          this.options.locales[this.options.locale]["createEdgeError"] ||
+            this.options.locales["en"]["createEdgeError"]
+        );
+      } else {
         const from = this.body.nodes[this.temporaryIds.nodes[0]];
         if (this.selectedControlNode.id === from.id) {
           this._performEditEdge(node.id, edge.to.id);
-        }
-        else {
+        } else {
           this._performEditEdge(edge.from.id, node.id);
         }
       }
-    }
-    else {
+    } else {
       edge.updateEdgeType();
-      this.body.emitter.emit('restorePhysics');
+      this.body.emitter.emit("restorePhysics");
     }
 
-    this.body.emitter.emit('_redraw');
+    this.body.emitter.emit("_redraw");
   }
 
   // ------------------------------------ END OF EDIT EDGE FUNCTIONS -----------------------------------------//
-
-
 
   // ------------------------------------------- ADD EDGE FUNCTIONS -----------------------------------------//
   /**
@@ -20813,35 +21996,40 @@ class ManipulationSystem {
     // check to avoid double fireing of this function.
     if (new Date().valueOf() - this.touchTime > 100) {
       this.lastTouch = this.body.functions.getPointer(event.center);
-      this.lastTouch.translation = Object.assign({},this.body.view.translation); // copy the object
+      this.lastTouch.translation = Object.assign(
+        {},
+        this.body.view.translation
+      ); // copy the object
 
       this.interactionHandler.drag.pointer = this.lastTouch; // Drag pointer is not updated when adding edges
       this.interactionHandler.drag.translation = this.lastTouch.translation;
-      
+
       const pointer = this.lastTouch;
       const node = this.selectionHandler.getNodeAt(pointer);
 
       if (node !== undefined) {
         if (node.isCluster === true) {
-          alert(this.options.locales[this.options.locale]['createEdgeError'] || this.options.locales['en']['createEdgeError']);
-        }
-        else {
+          alert(
+            this.options.locales[this.options.locale]["createEdgeError"] ||
+              this.options.locales["en"]["createEdgeError"]
+          );
+        } else {
           // create a node the temporary line can look at
-          const targetNode = this._getNewTargetNode(node.x,node.y);
+          const targetNode = this._getNewTargetNode(node.x, node.y);
           this.body.nodes[targetNode.id] = targetNode;
           this.body.nodeIndices.push(targetNode.id);
 
           // create a temporary edge
           const connectionEdge = this.body.functions.createEdge({
-            id: 'connectionEdge' + v4(),
+            id: "connectionEdge" + v4(),
             from: node.id,
             to: targetNode.id,
             physics: false,
             smooth: {
               enabled: true,
-              type: 'continuous',
-              roundness: 0.5
-            }
+              type: "continuous",
+              roundness: 0.5,
+            },
           });
           this.body.edges[connectionEdge.id] = connectionEdge;
           this.body.edgeIndices.push(connectionEdge.id);
@@ -20870,7 +22058,8 @@ class ManipulationSystem {
     }
 
     // get the overlapping node but NOT the temporary node;
-    const overlappingNodeIds = this.selectionHandler._getAllNodesOverlappingWith(pointerObj);
+    const overlappingNodeIds =
+      this.selectionHandler._getAllNodesOverlappingWith(pointerObj);
     let node = undefined;
     for (let i = overlappingNodeIds.length - 1; i >= 0; i--) {
       // if the node id is NOT a temporary node, accept the node.
@@ -20879,25 +22068,27 @@ class ManipulationSystem {
         break;
       }
     }
-    
+
     event.controlEdge = { from: connectFromId, to: node ? node.id : undefined };
-    this.selectionHandler._generateClickEvent('controlNodeDragging', event, pointer);
+    this.selectionHandler.generateClickEvent(
+      "controlNodeDragging",
+      event,
+      pointer
+    );
 
     if (this.temporaryIds.nodes[0] !== undefined) {
       const targetNode = this.body.nodes[this.temporaryIds.nodes[0]]; // there is only one temp node in the add edge mode.
       targetNode.x = this.canvas._XconvertDOMtoCanvas(pointer.x);
       targetNode.y = this.canvas._YconvertDOMtoCanvas(pointer.y);
-      this.body.emitter.emit('_redraw');
-    }
-    else {
+      this.body.emitter.emit("_redraw");
+    } else {
       this.interactionHandler.onDrag(event);
     }
-
   }
-
 
   /**
    * Connect the new edge to the target if one exists, otherwise remove temp line
+   *
    * @param {Event}  event   The event
    * @private
    */
@@ -20912,9 +22103,10 @@ class ManipulationSystem {
     }
 
     // get the overlapping node but NOT the temporary node;
-    const overlappingNodeIds = this.selectionHandler._getAllNodesOverlappingWith(pointerObj);
+    const overlappingNodeIds =
+      this.selectionHandler._getAllNodesOverlappingWith(pointerObj);
     let node = undefined;
-    for (let i = overlappingNodeIds.length-1; i >= 0; i--) {
+    for (let i = overlappingNodeIds.length - 1; i >= 0; i--) {
       // if the node id is NOT a temporary node, accept the node.
       if (this.temporaryIds.nodes.indexOf(overlappingNodeIds[i]) === -1) {
         node = this.body.nodes[overlappingNodeIds[i]];
@@ -20928,22 +22120,30 @@ class ManipulationSystem {
     // perform the connection
     if (node !== undefined) {
       if (node.isCluster === true) {
-        alert(this.options.locales[this.options.locale]['createEdgeError'] || this.options.locales['en']['createEdgeError']);
-      }
-      else {
-        if (this.body.nodes[connectFromId] !== undefined && this.body.nodes[node.id] !== undefined) {
+        alert(
+          this.options.locales[this.options.locale]["createEdgeError"] ||
+            this.options.locales["en"]["createEdgeError"]
+        );
+      } else {
+        if (
+          this.body.nodes[connectFromId] !== undefined &&
+          this.body.nodes[node.id] !== undefined
+        ) {
           this._performAddEdge(connectFromId, node.id);
         }
       }
     }
 
     event.controlEdge = { from: connectFromId, to: node ? node.id : undefined };
-    this.selectionHandler._generateClickEvent('controlNodeDragEnd', event, pointer);
+    this.selectionHandler.generateClickEvent(
+      "controlNodeDragEnd",
+      event,
+      pointer
+    );
 
     // No need to do _generateclickevent('dragEnd') here, the regular dragEnd event fires.
-    this.body.emitter.emit('_redraw');
+    this.body.emitter.emit("_redraw");
   }
-
 
   /**
    *
@@ -20952,18 +22152,23 @@ class ManipulationSystem {
    */
   _dragStartEdge(event) {
     const pointer = this.lastTouch;
-    this.selectionHandler._generateClickEvent('dragStart', event, pointer, undefined, true);
+    this.selectionHandler.generateClickEvent(
+      "dragStart",
+      event,
+      pointer,
+      undefined,
+      true
+    );
   }
 
   // --------------------------------------- END OF ADD EDGE FUNCTIONS -------------------------------------//
-
 
   // ------------------------------ Performing all the actual data manipulation ------------------------//
 
   /**
    * Adds a node on the specified location
    *
-   * @param {Object} clickData
+   * @param {object} clickData
    * @private
    */
   _performAddNode(clickData) {
@@ -20971,29 +22176,33 @@ class ManipulationSystem {
       id: v4(),
       x: clickData.pointer.canvas.x,
       y: clickData.pointer.canvas.y,
-      label: 'new'
+      label: "new",
     };
 
-    if (typeof this.options.addNode === 'function') {
+    if (typeof this.options.addNode === "function") {
       if (this.options.addNode.length === 2) {
         this.options.addNode(defaultData, (finalizedData) => {
-          if (finalizedData !== null && finalizedData !== undefined && this.inMode === 'addNode') { // if for whatever reason the mode has changes (due to dataset change) disregard the callback
+          if (
+            finalizedData !== null &&
+            finalizedData !== undefined &&
+            this.inMode === "addNode"
+          ) {
+            // if for whatever reason the mode has changes (due to dataset change) disregard the callback
             this.body.data.nodes.getDataSet().add(finalizedData);
           }
           this.showManipulatorToolbar();
         });
-      }
-      else {
+      } else {
         this.showManipulatorToolbar();
-        throw new Error('The function for add does not support two arguments (data,callback)');
+        throw new Error(
+          "The function for add does not support two arguments (data,callback)"
+        );
       }
-    }
-    else {
+    } else {
       this.body.data.nodes.getDataSet().add(defaultData);
       this.showManipulatorToolbar();
     }
   }
-
 
   /**
    * connect two nodes with a new edge.
@@ -21003,22 +22212,27 @@ class ManipulationSystem {
    * @private
    */
   _performAddEdge(sourceNodeId, targetNodeId) {
-    const defaultData = {from: sourceNodeId, to: targetNodeId};
-    if (typeof this.options.addEdge === 'function') {
+    const defaultData = { from: sourceNodeId, to: targetNodeId };
+    if (typeof this.options.addEdge === "function") {
       if (this.options.addEdge.length === 2) {
         this.options.addEdge(defaultData, (finalizedData) => {
-          if (finalizedData !== null && finalizedData !== undefined && this.inMode === 'addEdge') { // if for whatever reason the mode has changes (due to dataset change) disregard the callback
+          if (
+            finalizedData !== null &&
+            finalizedData !== undefined &&
+            this.inMode === "addEdge"
+          ) {
+            // if for whatever reason the mode has changes (due to dataset change) disregard the callback
             this.body.data.edges.getDataSet().add(finalizedData);
             this.selectionHandler.unselectAll();
             this.showManipulatorToolbar();
           }
         });
+      } else {
+        throw new Error(
+          "The function for connect does not support two arguments (data,callback)"
+        );
       }
-      else {
-        throw new Error('The function for connect does not support two arguments (data,callback)');
-      }
-    }
-    else {
+    } else {
       this.body.data.edges.getDataSet().add(defaultData);
       this.selectionHandler.unselectAll();
       this.showManipulatorToolbar();
@@ -21037,1342 +22251,40 @@ class ManipulationSystem {
       id: this.edgeBeingEditedId,
       from: sourceNodeId,
       to: targetNodeId,
-      label: this.body.data.edges.get(this.edgeBeingEditedId).label
+      label: this.body.data.edges.get(this.edgeBeingEditedId).label,
     };
     let eeFunct = this.options.editEdge;
-    if (typeof eeFunct === 'object') {
+    if (typeof eeFunct === "object") {
       eeFunct = eeFunct.editWithoutDrag;
     }
-    if (typeof eeFunct === 'function') {
+    if (typeof eeFunct === "function") {
       if (eeFunct.length === 2) {
         eeFunct(defaultData, (finalizedData) => {
-          if (finalizedData === null || finalizedData === undefined || this.inMode !== 'editEdge') { // if for whatever reason the mode has changes (due to dataset change) disregard the callback) {
+          if (
+            finalizedData === null ||
+            finalizedData === undefined ||
+            this.inMode !== "editEdge"
+          ) {
+            // if for whatever reason the mode has changes (due to dataset change) disregard the callback) {
             this.body.edges[defaultData.id].updateEdgeType();
-            this.body.emitter.emit('_redraw');
+            this.body.emitter.emit("_redraw");
             this.showManipulatorToolbar();
-          }
-          else {
+          } else {
             this.body.data.edges.getDataSet().update(finalizedData);
             this.selectionHandler.unselectAll();
             this.showManipulatorToolbar();
           }
         });
+      } else {
+        throw new Error(
+          "The function for edit does not support two arguments (data, callback)"
+        );
       }
-      else {
-        throw new Error('The function for edit does not support two arguments (data, callback)');
-      }
-    }
-    else {
+    } else {
       this.body.data.edges.getDataSet().update(defaultData);
       this.selectionHandler.unselectAll();
       this.showManipulatorToolbar();
     }
-  }
-
-
-}
-
-const htmlColors = {black: '#000000', navy: '#000080', darkblue: '#00008B', mediumblue: '#0000CD', blue: '#0000FF', darkgreen: '#006400', green: '#008000', teal: '#008080', darkcyan: '#008B8B', deepskyblue: '#00BFFF', darkturquoise: '#00CED1', mediumspringgreen: '#00FA9A', lime: '#00FF00', springgreen: '#00FF7F', aqua: '#00FFFF', cyan: '#00FFFF', midnightblue: '#191970', dodgerblue: '#1E90FF', lightseagreen: '#20B2AA', forestgreen: '#228B22', seagreen: '#2E8B57', darkslategray: '#2F4F4F', limegreen: '#32CD32', mediumseagreen: '#3CB371', turquoise: '#40E0D0', royalblue: '#4169E1', steelblue: '#4682B4', darkslateblue: '#483D8B', mediumturquoise: '#48D1CC', indigo: '#4B0082', darkolivegreen: '#556B2F', cadetblue: '#5F9EA0', cornflowerblue: '#6495ED', mediumaquamarine: '#66CDAA', dimgray: '#696969', slateblue: '#6A5ACD', olivedrab: '#6B8E23', slategray: '#708090', lightslategray: '#778899', mediumslateblue: '#7B68EE', lawngreen: '#7CFC00', chartreuse: '#7FFF00', aquamarine: '#7FFFD4', maroon: '#800000', purple: '#800080', olive: '#808000', gray: '#808080', skyblue: '#87CEEB', lightskyblue: '#87CEFA', blueviolet: '#8A2BE2', darkred: '#8B0000', darkmagenta: '#8B008B', saddlebrown: '#8B4513', darkseagreen: '#8FBC8F', lightgreen: '#90EE90', mediumpurple: '#9370D8', darkviolet: '#9400D3', palegreen: '#98FB98', darkorchid: '#9932CC', yellowgreen: '#9ACD32', sienna: '#A0522D', brown: '#A52A2A', darkgray: '#A9A9A9', lightblue: '#ADD8E6', greenyellow: '#ADFF2F', paleturquoise: '#AFEEEE', lightsteelblue: '#B0C4DE', powderblue: '#B0E0E6', firebrick: '#B22222', darkgoldenrod: '#B8860B', mediumorchid: '#BA55D3', rosybrown: '#BC8F8F', darkkhaki: '#BDB76B', silver: '#C0C0C0', mediumvioletred: '#C71585', indianred: '#CD5C5C', peru: '#CD853F', chocolate: '#D2691E', tan: '#D2B48C', lightgrey: '#D3D3D3', palevioletred: '#D87093', thistle: '#D8BFD8', orchid: '#DA70D6', goldenrod: '#DAA520', crimson: '#DC143C', gainsboro: '#DCDCDC', plum: '#DDA0DD', burlywood: '#DEB887', lightcyan: '#E0FFFF', lavender: '#E6E6FA', darksalmon: '#E9967A', violet: '#EE82EE', palegoldenrod: '#EEE8AA', lightcoral: '#F08080', khaki: '#F0E68C', aliceblue: '#F0F8FF', honeydew: '#F0FFF0', azure: '#F0FFFF', sandybrown: '#F4A460', wheat: '#F5DEB3', beige: '#F5F5DC', whitesmoke: '#F5F5F5', mintcream: '#F5FFFA', ghostwhite: '#F8F8FF', salmon: '#FA8072', antiquewhite: '#FAEBD7', linen: '#FAF0E6', lightgoldenrodyellow: '#FAFAD2', oldlace: '#FDF5E6', red: '#FF0000', fuchsia: '#FF00FF', magenta: '#FF00FF', deeppink: '#FF1493', orangered: '#FF4500', tomato: '#FF6347', hotpink: '#FF69B4', coral: '#FF7F50', darkorange: '#FF8C00', lightsalmon: '#FFA07A', orange: '#FFA500', lightpink: '#FFB6C1', pink: '#FFC0CB', gold: '#FFD700', peachpuff: '#FFDAB9', navajowhite: '#FFDEAD', moccasin: '#FFE4B5', bisque: '#FFE4C4', mistyrose: '#FFE4E1', blanchedalmond: '#FFEBCD', papayawhip: '#FFEFD5', lavenderblush: '#FFF0F5', seashell: '#FFF5EE', cornsilk: '#FFF8DC', lemonchiffon: '#FFFACD', floralwhite: '#FFFAF0', snow: '#FFFAFA', yellow: '#FFFF00', lightyellow: '#FFFFE0', ivory: '#FFFFF0', white: '#FFFFFF'};
-
-/**
- * @param {number} [pixelRatio=1]
- */
-class ColorPicker {
-  /**
-   * @param {number} [pixelRatio=1]
-   */
-  constructor(pixelRatio = 1) {
-    this.pixelRatio = pixelRatio;
-    this.generated = false;
-    this.centerCoordinates = {x:289/2, y:289/2};
-    this.r = 289 * 0.49;
-    this.color = {r:255,g:255,b:255,a:1.0};
-    this.hueCircle = undefined;
-    this.initialColor = {r:255,g:255,b:255,a:1.0};
-    this.previousColor= undefined;
-    this.applied = false;
-
-    // bound by
-    this.updateCallback = () => {};
-    this.closeCallback = () => {};
-
-    // create all DOM elements
-    this._create();
-  }
-
-
-  /**
-   * this inserts the colorPicker into a div from the DOM
-   * @param {Element} container
-   */
-  insertTo(container) {
-    if (this.hammer !== undefined) {
-      this.hammer.destroy();
-      this.hammer = undefined;
-    }
-    this.container = container;
-    this.container.appendChild(this.frame);
-    this._bindHammer();
-
-    this._setSize();
-  }
-
-  /**
-   * the callback is executed on apply and save. Bind it to the application
-   * @param {function} callback
-   */
-  setUpdateCallback(callback) {
-    if (typeof callback === 'function') {
-      this.updateCallback = callback;
-    }
-    else {
-      throw new Error("Function attempted to set as colorPicker update callback is not a function.");
-    }
-  }
-
-  /**
-   * the callback is executed on apply and save. Bind it to the application
-   * @param {function} callback
-   */
-  setCloseCallback(callback) {
-    if (typeof callback === 'function') {
-      this.closeCallback = callback;
-    }
-    else {
-      throw new Error("Function attempted to set as colorPicker closing callback is not a function.");
-    }
-  }
-
-  /**
-   *
-   * @param {string} color
-   * @returns {String}
-   * @private
-   */
-  _isColorString(color) {
-    if (typeof color === 'string') {
-      return htmlColors[color];
-    }
-  }
-
-
-  /**
-   * Set the color of the colorPicker
-   * Supported formats:
-   * 'red'                   --> HTML color string
-   * '#ffffff'               --> hex string
-   * 'rgb(255,255,255)'      --> rgb string
-   * 'rgba(255,255,255,1.0)' --> rgba string
-   * {r:255,g:255,b:255}     --> rgb object
-   * {r:255,g:255,b:255,a:1.0} --> rgba object
-   * @param {string|Object} color
-   * @param {boolean} [setInitial=true]
-   */
-  setColor(color, setInitial = true) {
-    if (color === 'none') {
-      return;
-    }
-
-    let rgba;
-
-    // if a html color shorthand is used, convert to hex
-    const htmlColor = this._isColorString(color);
-    if (htmlColor !== undefined) {
-      color = htmlColor;
-    }
-
-    // check format
-    if (isString(color) === true) {
-      if (isValidRGB(color) === true) {
-        const rgbaArray = color.substr(4).substr(0, color.length - 5).split(',');
-        rgba = {r:rgbaArray[0], g:rgbaArray[1], b:rgbaArray[2], a:1.0};
-      }
-      else if (isValidRGBA(color) === true) {
-        const rgbaArray = color.substr(5).substr(0, color.length - 6).split(',');
-        rgba = {r:rgbaArray[0], g:rgbaArray[1], b:rgbaArray[2], a:rgbaArray[3]};
-      }
-      else if (isValidHex(color) === true) {
-        const rgbObj = hexToRGB(color);
-        rgba = {r:rgbObj.r, g:rgbObj.g, b:rgbObj.b, a:1.0};
-      }
-    }
-    else {
-      if (color instanceof Object) {
-        if (color.r !== undefined && color.g !== undefined && color.b !== undefined) {
-          const alpha = color.a !== undefined ? color.a : '1.0';
-          rgba = {r:color.r, g:color.g, b:color.b, a:alpha};
-        }
-      }
-    }
-
-    // set color
-    if (rgba === undefined) {
-      throw new Error("Unknown color passed to the colorPicker. Supported are strings: rgb, hex, rgba. Object: rgb ({r:r,g:g,b:b,[a:a]}). Supplied: " + JSON.stringify(color));
-    }
-    else {
-      this._setColor(rgba, setInitial);
-    }
-  }
-
-
-  /**
-   * this shows the color picker.
-   * The hue circle is constructed once and stored.
-   */
-  show() {
-    if (this.closeCallback !== undefined) {
-      this.closeCallback();
-      this.closeCallback = undefined;
-    }
-
-    this.applied = false;
-    this.frame.style.display = 'block';
-    this._generateHueCircle();
-  }
-
-  // ------------------------------------------ PRIVATE ----------------------------- //
-
-  /**
-   * Hide the picker. Is called by the cancel button.
-   * Optional boolean to store the previous color for easy access later on.
-   * @param {boolean} [storePrevious=true]
-   * @private
-   */
-  _hide(storePrevious = true) {
-    // store the previous color for next time;
-    if (storePrevious === true) {
-      this.previousColor = Object.assign({}, this.color);
-    }
-
-    if (this.applied === true) {
-      this.updateCallback(this.initialColor);
-    }
-
-    this.frame.style.display = 'none';
-
-    // call the closing callback, restoring the onclick method.
-    // this is in a setTimeout because it will trigger the show again before the click is done.
-    setTimeout(() => {
-      if (this.closeCallback !== undefined) {
-        this.closeCallback();
-        this.closeCallback = undefined;
-      }
-    },0);
-  }
-
-
-  /**
-   * bound to the save button. Saves and hides.
-   * @private
-   */
-  _save() {
-    this.updateCallback(this.color);
-    this.applied = false;
-    this._hide();
-  }
-
-
-  /**
-   * Bound to apply button. Saves but does not close. Is undone by the cancel button.
-   * @private
-   */
-  _apply() {
-    this.applied = true;
-    this.updateCallback(this.color);
-    this._updatePicker(this.color);
-  }
-
-
-  /**
-   * load the color from the previous session.
-   * @private
-   */
-  _loadLast() {
-    if (this.previousColor !== undefined) {
-      this.setColor(this.previousColor, false);
-    }
-    else {
-      alert("There is no last color to load...");
-    }
-  }
-
-
-  /**
-   * set the color, place the picker
-   * @param {Object} rgba
-   * @param {boolean} [setInitial=true]
-   * @private
-   */
-  _setColor(rgba, setInitial = true) {
-    // store the initial color
-    if (setInitial === true) {
-      this.initialColor = Object.assign({}, rgba);
-    }
-
-    this.color = rgba;
-    const hsv = RGBToHSV(rgba.r, rgba.g, rgba.b);
-
-    const angleConvert = 2 * Math.PI;
-    const radius = this.r * hsv.s;
-    const x = this.centerCoordinates.x + radius * Math.sin(angleConvert * hsv.h);
-    const y = this.centerCoordinates.y + radius * Math.cos(angleConvert * hsv.h);
-
-    this.colorPickerSelector.style.left = x - 0.5 * this.colorPickerSelector.clientWidth + 'px';
-    this.colorPickerSelector.style.top = y - 0.5 * this.colorPickerSelector.clientHeight + 'px';
-
-    this._updatePicker(rgba);
-  }
-
-
-  /**
-   * bound to opacity control
-   * @param {number} value
-   * @private
-   */
-  _setOpacity(value) {
-    this.color.a = value / 100;
-    this._updatePicker(this.color);
-  }
-
-
-  /**
-   * bound to brightness control
-   * @param {number} value
-   * @private
-   */
-  _setBrightness(value) {
-    const hsv = RGBToHSV(this.color.r, this.color.g, this.color.b);
-    hsv.v = value / 100;
-    const rgba = HSVToRGB(hsv.h, hsv.s, hsv.v);
-    rgba['a'] = this.color.a;
-    this.color = rgba;
-    this._updatePicker();
-  }
-
-
-  /**
-   * update the color picker. A black circle overlays the hue circle to mimic the brightness decreasing.
-   * @param {Object} rgba
-   * @private
-   */
-  _updatePicker(rgba = this.color) {
-    const hsv = RGBToHSV(rgba.r, rgba.g, rgba.b);
-    const ctx = this.colorPickerCanvas.getContext('2d');
-    if (this.pixelRation === undefined) {
-      this.pixelRatio = (window.devicePixelRatio || 1) / (ctx.webkitBackingStorePixelRatio ||
-      ctx.mozBackingStorePixelRatio ||
-      ctx.msBackingStorePixelRatio ||
-      ctx.oBackingStorePixelRatio ||
-      ctx.backingStorePixelRatio || 1);
-    }
-    ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
-
-    // clear the canvas
-    const w = this.colorPickerCanvas.clientWidth;
-    const h = this.colorPickerCanvas.clientHeight;
-    ctx.clearRect(0, 0, w, h);
-
-    ctx.putImageData(this.hueCircle, 0,0);
-    ctx.fillStyle = 'rgba(0,0,0,' + (1- hsv.v) + ')';
-    ctx.circle(this.centerCoordinates.x, this.centerCoordinates.y, this.r);
-    ctx.fill();
-
-    this.brightnessRange.value = 100 * hsv.v;
-    this.opacityRange.value    = 100 * rgba.a;
-
-    this.initialColorDiv.style.backgroundColor = 'rgba(' + this.initialColor.r + ',' + this.initialColor.g + ',' + this.initialColor.b + ',' + this.initialColor.a + ')';
-    this.newColorDiv.style.backgroundColor = 'rgba(' + this.color.r + ',' + this.color.g + ',' + this.color.b + ',' + this.color.a + ')';
-  }
-
-
-  /**
-   * used by create to set the size of the canvas.
-   * @private
-   */
-  _setSize() {
-    this.colorPickerCanvas.style.width = '100%';
-    this.colorPickerCanvas.style.height = '100%';
-
-    this.colorPickerCanvas.width = 289 * this.pixelRatio;
-    this.colorPickerCanvas.height = 289 * this.pixelRatio;
-  }
-
-
-  /**
-   * create all dom elements
-   * TODO: cleanup, lots of similar dom elements
-   * @private
-   */
-  _create() {
-    this.frame = document.createElement('div');
-    this.frame.className = 'vis-color-picker';
-
-    this.colorPickerDiv = document.createElement('div');
-    this.colorPickerSelector = document.createElement('div');
-    this.colorPickerSelector.className = 'vis-selector';
-    this.colorPickerDiv.appendChild(this.colorPickerSelector);
-
-    this.colorPickerCanvas = document.createElement('canvas');
-    this.colorPickerDiv.appendChild(this.colorPickerCanvas);
-
-    if (!this.colorPickerCanvas.getContext) {
-      const noCanvas = document.createElement( 'DIV' );
-      noCanvas.style.color = 'red';
-      noCanvas.style.fontWeight =  'bold' ;
-      noCanvas.style.padding =  '10px';
-      noCanvas.innerHTML =  'Error: your browser does not support HTML canvas';
-      this.colorPickerCanvas.appendChild(noCanvas);
-    }
-    else {
-      const ctx = this.colorPickerCanvas.getContext("2d");
-      this.pixelRatio = (window.devicePixelRatio || 1) / (ctx.webkitBackingStorePixelRatio ||
-      ctx.mozBackingStorePixelRatio ||
-      ctx.msBackingStorePixelRatio ||
-      ctx.oBackingStorePixelRatio ||
-      ctx.backingStorePixelRatio || 1);
-      this.colorPickerCanvas.getContext("2d").setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
-    }
-
-    this.colorPickerDiv.className = 'vis-color';
-
-    this.opacityDiv = document.createElement('div');
-    this.opacityDiv.className = 'vis-opacity';
-
-    this.brightnessDiv = document.createElement('div');
-    this.brightnessDiv.className = 'vis-brightness';
-
-    this.arrowDiv = document.createElement('div');
-    this.arrowDiv.className = 'vis-arrow';
-
-    this.opacityRange = document.createElement('input');
-    try {
-      this.opacityRange.type = 'range'; // Not supported on IE9
-      this.opacityRange.min = '0';
-      this.opacityRange.max = '100';
-    }
-    // TODO: Add some error handling and remove this lint exception
-    catch (err) {}  // eslint-disable-line no-empty
-    this.opacityRange.value = '100';
-    this.opacityRange.className = 'vis-range';
-
-    this.brightnessRange = document.createElement('input');
-    try {
-      this.brightnessRange.type = 'range'; // Not supported on IE9
-      this.brightnessRange.min = '0';
-      this.brightnessRange.max = '100';
-    }
-    // TODO: Add some error handling and remove this lint exception
-    catch (err) {}  // eslint-disable-line no-empty
-    this.brightnessRange.value = '100';
-    this.brightnessRange.className = 'vis-range';
-
-    this.opacityDiv.appendChild(this.opacityRange);
-    this.brightnessDiv.appendChild(this.brightnessRange);
-
-    const me = this;
-    this.opacityRange.onchange = function () {me._setOpacity(this.value);};
-    this.opacityRange.oninput  = function () {me._setOpacity(this.value);};
-    this.brightnessRange.onchange = function () {me._setBrightness(this.value);};
-    this.brightnessRange.oninput  = function () {me._setBrightness(this.value);};
-
-    this.brightnessLabel = document.createElement("div");
-    this.brightnessLabel.className = "vis-label vis-brightness";
-    this.brightnessLabel.innerHTML = 'brightness:';
-
-    this.opacityLabel = document.createElement("div");
-    this.opacityLabel.className = "vis-label vis-opacity";
-    this.opacityLabel.innerHTML = 'opacity:';
-
-    this.newColorDiv = document.createElement("div");
-    this.newColorDiv.className = "vis-new-color";
-    this.newColorDiv.innerHTML = 'new';
-
-    this.initialColorDiv = document.createElement("div");
-    this.initialColorDiv.className = "vis-initial-color";
-    this.initialColorDiv.innerHTML = 'initial';
-
-    this.cancelButton = document.createElement("div");
-    this.cancelButton.className = "vis-button vis-cancel";
-    this.cancelButton.innerHTML = 'cancel';
-    this.cancelButton.onclick = this._hide.bind(this, false);
-
-    this.applyButton = document.createElement("div");
-    this.applyButton.className = "vis-button vis-apply";
-    this.applyButton.innerHTML = 'apply';
-    this.applyButton.onclick = this._apply.bind(this);
-
-    this.saveButton = document.createElement("div");
-    this.saveButton.className = "vis-button vis-save";
-    this.saveButton.innerHTML = 'save';
-    this.saveButton.onclick = this._save.bind(this);
-
-    this.loadButton = document.createElement("div");
-    this.loadButton.className = "vis-button vis-load";
-    this.loadButton.innerHTML = 'load last';
-    this.loadButton.onclick = this._loadLast.bind(this);
-
-    this.frame.appendChild(this.colorPickerDiv);
-    this.frame.appendChild(this.arrowDiv);
-    this.frame.appendChild(this.brightnessLabel);
-    this.frame.appendChild(this.brightnessDiv);
-    this.frame.appendChild(this.opacityLabel);
-    this.frame.appendChild(this.opacityDiv);
-    this.frame.appendChild(this.newColorDiv);
-    this.frame.appendChild(this.initialColorDiv);
-
-    this.frame.appendChild(this.cancelButton);
-    this.frame.appendChild(this.applyButton);
-    this.frame.appendChild(this.saveButton);
-    this.frame.appendChild(this.loadButton);
-  }
-
-
-  /**
-   * bind hammer to the color picker
-   * @private
-   */
-  _bindHammer() {
-    this.drag = {};
-    this.pinch = {};
-    this.hammer = new hammer(this.colorPickerCanvas);
-    this.hammer.get('pinch').set({enable: true});
-
-    onTouch(this.hammer, (event) => {this._moveSelector(event);});
-    this.hammer.on('tap',       (event) => {this._moveSelector(event);});
-    this.hammer.on('panstart',  (event) => {this._moveSelector(event);});
-    this.hammer.on('panmove',   (event) => {this._moveSelector(event);});
-    this.hammer.on('panend',    (event) => {this._moveSelector(event);});
-  }
-
-
-  /**
-   * generate the hue circle. This is relatively heavy (200ms) and is done only once on the first time it is shown.
-   * @private
-   */
-  _generateHueCircle() {
-    if (this.generated === false) {
-      const ctx = this.colorPickerCanvas.getContext('2d');
-      if (this.pixelRation === undefined) {
-        this.pixelRatio = (window.devicePixelRatio || 1) / (ctx.webkitBackingStorePixelRatio ||
-        ctx.mozBackingStorePixelRatio ||
-        ctx.msBackingStorePixelRatio ||
-        ctx.oBackingStorePixelRatio ||
-        ctx.backingStorePixelRatio || 1);
-      }
-      ctx.setTransform(this.pixelRatio, 0, 0, this.pixelRatio, 0, 0);
-
-      // clear the canvas
-      const w = this.colorPickerCanvas.clientWidth;
-      const h = this.colorPickerCanvas.clientHeight;
-      ctx.clearRect(0, 0, w, h);
-
-
-      // draw hue circle
-      let x, y, hue, sat;
-      this.centerCoordinates = {x: w * 0.5, y: h * 0.5};
-      this.r = 0.49 * w;
-      const angleConvert = (2 * Math.PI) / 360;
-      const hfac = 1 / 360;
-      const sfac = 1 / this.r;
-      let rgb;
-      for (hue = 0; hue < 360; hue++) {
-        for (sat = 0; sat < this.r; sat++) {
-          x = this.centerCoordinates.x + sat * Math.sin(angleConvert * hue);
-          y = this.centerCoordinates.y + sat * Math.cos(angleConvert * hue);
-          rgb = HSVToRGB(hue * hfac, sat * sfac, 1);
-          ctx.fillStyle = 'rgb(' + rgb.r + ',' + rgb.g + ',' + rgb.b + ')';
-          ctx.fillRect(x - 0.5, y - 0.5, 2, 2);
-        }
-      }
-      ctx.strokeStyle = 'rgba(0,0,0,1)';
-      ctx.circle(this.centerCoordinates.x, this.centerCoordinates.y, this.r);
-      ctx.stroke();
-
-      this.hueCircle = ctx.getImageData(0,0,w,h);
-    }
-    this.generated = true;
-  }
-
-
-  /**
-   * move the selector. This is called by hammer functions.
-   *
-   * @param {Event}  event   The event
-   * @private
-   */
-  _moveSelector(event) {
-    const rect = this.colorPickerDiv.getBoundingClientRect();
-    const left = event.center.x - rect.left;
-    const top = event.center.y - rect.top;
-
-    const centerY = 0.5 * this.colorPickerDiv.clientHeight;
-    const centerX = 0.5 * this.colorPickerDiv.clientWidth;
-
-    const x = left - centerX;
-    const y = top - centerY;
-
-    const angle = Math.atan2(x,y);
-    const radius = 0.98 * Math.min(Math.sqrt(x * x + y * y), centerX);
-
-    const newTop = Math.cos(angle) * radius + centerY;
-    const newLeft = Math.sin(angle) * radius + centerX;
-
-    this.colorPickerSelector.style.top = newTop - 0.5 * this.colorPickerSelector.clientHeight + 'px';
-    this.colorPickerSelector.style.left = newLeft - 0.5 * this.colorPickerSelector.clientWidth + 'px';
-
-    // set color
-    let h = angle / (2 * Math.PI);
-    h = h < 0 ? h + 1 : h;
-    const s = radius / this.r;
-    const hsv = RGBToHSV(this.color.r, this.color.g, this.color.b);
-    hsv.h = h;
-    hsv.s = s;
-    const rgba = HSVToRGB(hsv.h, hsv.s, hsv.v);
-    rgba['a'] = this.color.a;
-    this.color = rgba;
-
-    // update previews
-    this.initialColorDiv.style.backgroundColor = 'rgba(' + this.initialColor.r + ',' + this.initialColor.g + ',' + this.initialColor.b + ',' + this.initialColor.a + ')';
-    this.newColorDiv.style.backgroundColor = 'rgba(' + this.color.r + ',' + this.color.g + ',' + this.color.b + ',' + this.color.a + ')';
-  }
-}
-
-/**
- * The way this works is for all properties of this.possible options, you can supply the property name in any form to list the options.
- * Boolean options are recognised as Boolean
- * Number options should be written as array: [default value, min value, max value, stepsize]
- * Colors should be written as array: ['color', '#ffffff']
- * Strings with should be written as array: [option1, option2, option3, ..]
- *
- * The options are matched with their counterparts in each of the modules and the values used in the configuration are
- */
-class Configurator {
-  /**
-   * @param {Object} parentModule        | the location where parentModule.setOptions() can be called
-   * @param {Object} defaultContainer    | the default container of the module
-   * @param {Object} configureOptions    | the fully configured and predefined options set found in allOptions.js
-   * @param {number} pixelRatio          | canvas pixel ratio
-   */
-  constructor(parentModule, defaultContainer, configureOptions, pixelRatio = 1) {
-    this.parent = parentModule;
-    this.changedOptions = [];
-    this.container = defaultContainer;
-    this.allowCreation = false;
-
-    this.options = {};
-    this.initialized = false;
-    this.popupCounter = 0;
-    this.defaultOptions = {
-      enabled: false,
-      filter: true,
-      container: undefined,
-      showButton: true
-    };
-    Object.assign(this.options, this.defaultOptions);
-
-    this.configureOptions = configureOptions;
-    this.moduleOptions = {};
-    this.domElements = [];
-    this.popupDiv = {};
-    this.popupLimit = 5;
-    this.popupHistory = {};
-    this.colorPicker = new ColorPicker(pixelRatio);
-    this.wrapper = undefined;
-  }
-
-
-  /**
-   * refresh all options.
-   * Because all modules parse their options by themselves, we just use their options. We copy them here.
-   *
-   * @param {Object} options
-   */
-  setOptions(options) {
-    if (options !== undefined) {
-      // reset the popup history because the indices may have been changed.
-      this.popupHistory = {};
-      this._removePopup();
-
-      let enabled = true;
-      if (typeof options === 'string') {
-        this.options.filter = options;
-      }
-      else if (options instanceof Array) {
-        this.options.filter = options.join();
-      }
-      else if (typeof options === 'object') {
-        if (options == null) {
-          throw new TypeError('options cannot be null');
-        }
-        if (options.container !== undefined) {
-          this.options.container = options.container;
-        }
-        if (options.filter !== undefined) {
-          this.options.filter = options.filter;
-        }
-        if (options.showButton !== undefined) {
-          this.options.showButton = options.showButton;
-        }
-        if (options.enabled !== undefined) {
-          enabled = options.enabled;
-        }
-      }
-      else if (typeof options === 'boolean') {
-        this.options.filter = true;
-        enabled = options;
-      }
-      else if (typeof options === 'function') {
-        this.options.filter = options;
-        enabled = true;
-      }
-      if (this.options.filter === false) {
-        enabled = false;
-      }
-
-      this.options.enabled = enabled;
-    }
-    this._clean();
-  }
-
-  /**
-   *
-   * @param {Object} moduleOptions
-   */
-  setModuleOptions(moduleOptions) {
-    this.moduleOptions = moduleOptions;
-    if (this.options.enabled === true) {
-      this._clean();
-      if (this.options.container !== undefined) {
-        this.container = this.options.container;
-      }
-      this._create();
-    }
-  }
-
-  /**
-   * Create all DOM elements
-   * @private
-   */
-  _create() {
-    this._clean();
-    this.changedOptions = [];
-
-    const filter = this.options.filter;
-    let counter = 0;
-    let show = false;
-    for (const option in this.configureOptions) {
-      if (Object.prototype.hasOwnProperty.call(this.configureOptions, option)) {
-        this.allowCreation = false;
-        show = false;
-        if (typeof filter === 'function') {
-          show = filter(option,[]);
-          show = show || this._handleObject(this.configureOptions[option], [option], true);
-        }
-        else if (filter === true || filter.indexOf(option) !== -1) {
-          show = true;
-        }
-
-        if (show !== false) {
-          this.allowCreation = true;
-
-          // linebreak between categories
-          if (counter > 0) {
-            this._makeItem([]);
-          }
-          // a header for the category
-          this._makeHeader(option);
-
-          // get the sub options
-          this._handleObject(this.configureOptions[option], [option]);
-        }
-        counter++;
-      }
-    }
-    this._makeButton();
-    this._push();
-    //~ this.colorPicker.insertTo(this.container);
-  }
-
-
-  /**
-   * draw all DOM elements on the screen
-   * @private
-   */
-  _push() {
-    this.wrapper = document.createElement('div');
-    this.wrapper.className = 'vis-configuration-wrapper';
-    this.container.appendChild(this.wrapper);
-    for (let i = 0; i < this.domElements.length; i++) {
-      this.wrapper.appendChild(this.domElements[i]);
-    }
-
-    this._showPopupIfNeeded();
-  }
-
-
-  /**
-   * delete all DOM elements
-   * @private
-   */
-  _clean() {
-    for (let i = 0; i < this.domElements.length; i++) {
-      this.wrapper.removeChild(this.domElements[i]);
-    }
-
-    if (this.wrapper !== undefined) {
-      this.container.removeChild(this.wrapper);
-      this.wrapper = undefined;
-    }
-    this.domElements = [];
-
-    this._removePopup();
-  }
-
-
-  /**
-   * get the value from the actualOptions if it exists
-   * @param {array} path    | where to look for the actual option
-   * @returns {*}
-   * @private
-   */
-  _getValue(path) {
-    let base = this.moduleOptions;
-    for (let i = 0; i < path.length; i++) {
-      if (base[path[i]] !== undefined) {
-        base = base[path[i]];
-      }
-      else {
-        base = undefined;
-        break;
-      }
-    }
-    return base;
-  }
-
-
-  /**
-   * all option elements are wrapped in an item
-   * @param {Array} path    | where to look for the actual option
-   * @param {Array.<Element>} domElements
-   * @returns {number}
-   * @private
-   */
-  _makeItem(path, ...domElements) {
-    if (this.allowCreation === true) {
-      const item = document.createElement('div');
-      item.className = 'vis-configuration vis-config-item vis-config-s' + path.length;
-      domElements.forEach((element) => {
-        item.appendChild(element);
-      });
-      this.domElements.push(item);
-      return this.domElements.length;
-    }
-    return 0;
-  }
-
-
-  /**
-   * header for major subjects
-   * @param {string} name
-   * @private
-   */
-  _makeHeader(name) {
-    const div = document.createElement('div');
-    div.className = 'vis-configuration vis-config-header';
-    div.innerHTML = name;
-    this._makeItem([],div);
-  }
-
-
-  /**
-   * make a label, if it is an object label, it gets different styling.
-   * @param {string} name
-   * @param {array} path    | where to look for the actual option
-   * @param {string} objectLabel
-   * @returns {HTMLElement}
-   * @private
-   */
-  _makeLabel(name, path, objectLabel = false) {
-    const div = document.createElement('div');
-    div.className = 'vis-configuration vis-config-label vis-config-s' + path.length;
-    if (objectLabel === true) {
-      div.innerHTML = '<i><b>' + name + ':</b></i>';
-    }
-    else {
-      div.innerHTML = name + ':';
-    }
-    return div;
-  }
-
-
-  /**
-   * make a dropdown list for multiple possible string optoins
-   * @param {Array.<number>} arr
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _makeDropdown(arr, value, path) {
-    const select = document.createElement('select');
-    select.className = 'vis-configuration vis-config-select';
-    let selectedValue = 0;
-    if (value !== undefined) {
-      if (arr.indexOf(value) !== -1) {
-        selectedValue = arr.indexOf(value);
-      }
-    }
-
-    for (let i = 0; i < arr.length; i++) {
-      const option = document.createElement('option');
-      option.value = arr[i];
-      if (i === selectedValue) {
-        option.selected = 'selected';
-      }
-      option.innerHTML = arr[i];
-      select.appendChild(option);
-    }
-
-    const me = this;
-    select.onchange = function () {me._update(this.value, path);};
-
-    const label = this._makeLabel(path[path.length-1], path);
-    this._makeItem(path, label, select);
-  }
-
-
-  /**
-   * make a range object for numeric options
-   * @param {Array.<number>} arr
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _makeRange(arr, value, path) {
-    const defaultValue = arr[0];
-    const min = arr[1];
-    const max = arr[2];
-    const step = arr[3];
-    const range = document.createElement('input');
-    range.className = 'vis-configuration vis-config-range';
-    try {
-      range.type = 'range'; // not supported on IE9
-      range.min = min;
-      range.max = max;
-    }
-    // TODO: Add some error handling and remove this lint exception
-    catch (err) {}  // eslint-disable-line no-empty
-    range.step = step;
-
-    // set up the popup settings in case they are needed.
-    let popupString = '';
-    let popupValue = 0;
-
-    if (value !== undefined) {
-      const factor = 1.20;
-      if (value < 0 && value * factor < min) {
-        range.min = Math.ceil(value * factor);
-        popupValue = range.min;
-        popupString = 'range increased';
-      }
-      else if (value / factor < min) {
-        range.min = Math.ceil(value / factor);
-        popupValue = range.min;
-        popupString = 'range increased';
-      }
-      if (value * factor > max && max !== 1) {
-        range.max = Math.ceil(value * factor);
-        popupValue = range.max;
-        popupString = 'range increased';
-      }
-      range.value = value;
-    }
-    else {
-      range.value = defaultValue;
-    }
-
-    const input = document.createElement('input');
-    input.className = 'vis-configuration vis-config-rangeinput';
-    input.value = range.value;
-
-    const me = this;
-    range.onchange = function () {input.value = this.value; me._update(Number(this.value), path);};
-    range.oninput  = function () {input.value = this.value; };
-
-    const label = this._makeLabel(path[path.length-1], path);
-    const itemIndex = this._makeItem(path, label, range, input);
-
-    // if a popup is needed AND it has not been shown for this value, show it.
-    if (popupString !== '' && this.popupHistory[itemIndex] !== popupValue) {
-      this.popupHistory[itemIndex] = popupValue;
-      this._setupPopup(popupString, itemIndex);
-    }
-  }
-
-  /**
-   * make a button object
-   * @private
-   */
-  _makeButton() {
-    if (this.options.showButton === true) {
-      const generateButton = document.createElement('div');
-      generateButton.className = 'vis-configuration vis-config-button';
-      generateButton.innerHTML = 'generate options';
-      generateButton.onclick =     () => {this._printOptions();};
-      generateButton.onmouseover = () => {generateButton.className = 'vis-configuration vis-config-button hover';};
-      generateButton.onmouseout =  () => {generateButton.className = 'vis-configuration vis-config-button';};
-
-      this.optionsContainer = document.createElement('div');
-      this.optionsContainer.className = 'vis-configuration vis-config-option-container';
-
-      this.domElements.push(this.optionsContainer);
-      this.domElements.push(generateButton);
-    }
-  }
-
-
-  /**
-   * prepare the popup
-   * @param {string} string
-   * @param {number} index
-   * @private
-   */
-  _setupPopup(string, index) {
-    if (this.initialized === true && this.allowCreation === true && this.popupCounter < this.popupLimit) {
-      const div = document.createElement("div");
-      div.id = "vis-configuration-popup";
-      div.className = "vis-configuration-popup";
-      div.innerHTML = string;
-      div.onclick = () => {this._removePopup();};
-      this.popupCounter += 1;
-      this.popupDiv = {html:div, index:index};
-    }
-  }
-
-
-  /**
-   * remove the popup from the dom
-   * @private
-   */
-  _removePopup() {
-    if (this.popupDiv.html !== undefined) {
-      this.popupDiv.html.parentNode.removeChild(this.popupDiv.html);
-      clearTimeout(this.popupDiv.hideTimeout);
-      clearTimeout(this.popupDiv.deleteTimeout);
-      this.popupDiv = {};
-    }
-  }
-
-
-  /**
-   * Show the popup if it is needed.
-   * @private
-   */
-  _showPopupIfNeeded() {
-    if (this.popupDiv.html !== undefined) {
-      const correspondingElement = this.domElements[this.popupDiv.index];
-      const rect = correspondingElement.getBoundingClientRect();
-      this.popupDiv.html.style.left = rect.left + "px";
-      this.popupDiv.html.style.top = rect.top - 30 + "px"; // 30 is the height;
-      document.body.appendChild(this.popupDiv.html);
-      this.popupDiv.hideTimeout = setTimeout(() => {
-        this.popupDiv.html.style.opacity = 0;
-      },1500);
-      this.popupDiv.deleteTimeout = setTimeout(() => {
-        this._removePopup();
-      },1800);
-    }
-  }
-
-  /**
-   * make a checkbox for boolean options.
-   * @param {number} defaultValue
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _makeCheckbox(defaultValue, value, path) {
-    const checkbox = document.createElement('input');
-    checkbox.type = 'checkbox';
-    checkbox.className = 'vis-configuration vis-config-checkbox';
-    checkbox.checked = defaultValue;
-    if (value !== undefined) {
-      checkbox.checked = value;
-      if (value !== defaultValue) {
-        if (typeof defaultValue === 'object') {
-          if (value !== defaultValue.enabled) {
-            this.changedOptions.push({path:path, value:value});
-          }
-        }
-        else {
-          this.changedOptions.push({path:path, value:value});
-        }
-      }
-    }
-
-    const me = this;
-    checkbox.onchange = function() {me._update(this.checked, path);};
-
-    const label = this._makeLabel(path[path.length-1], path);
-    this._makeItem(path, label, checkbox);
-  }
-
-  /**
-   * make a text input field for string options.
-   * @param {number} defaultValue
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _makeTextInput(defaultValue, value, path) {
-    const checkbox = document.createElement('input');
-    checkbox.type = 'text';
-    checkbox.className = 'vis-configuration vis-config-text';
-    checkbox.value = value;
-    if (value !== defaultValue) {
-      this.changedOptions.push({path:path, value:value});
-    }
-
-    const me = this;
-    checkbox.onchange = function() {me._update(this.value, path);};
-
-    const label = this._makeLabel(path[path.length-1], path);
-    this._makeItem(path, label, checkbox);
-  }
-
-
-  /**
-   * make a color field with a color picker for color fields
-   * @param {Array.<number>} arr
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _makeColorField(arr, value, path) {
-    const defaultColor = arr[1];
-    const div = document.createElement('div');
-    value = value === undefined ? defaultColor : value;
-
-    if (value !== 'none') {
-      div.className = 'vis-configuration vis-config-colorBlock';
-      div.style.backgroundColor = value;
-    }
-    else {
-      div.className = 'vis-configuration vis-config-colorBlock none';
-    }
-
-    value = value === undefined ? defaultColor : value;
-    div.onclick = () => {
-      this._showColorPicker(value,div,path);
-    };
-
-    const label = this._makeLabel(path[path.length-1], path);
-    this._makeItem(path,label, div);
-  }
-
-
-  /**
-   * used by the color buttons to call the color picker.
-   * @param {number} value
-   * @param {HTMLElement} div
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _showColorPicker(value, div, path) {
-    // clear the callback from this div
-    div.onclick = function() {};
-
-    this.colorPicker.insertTo(div);
-    this.colorPicker.show();
-
-    this.colorPicker.setColor(value);
-    this.colorPicker.setUpdateCallback((color) => {
-      const colorString = 'rgba(' + color.r + ',' + color.g + ',' + color.b + ',' + color.a + ')';
-      div.style.backgroundColor = colorString;
-      this._update(colorString,path);
-    });
-
-    // on close of the colorpicker, restore the callback.
-    this.colorPicker.setCloseCallback(() => {
-      div.onclick = () => {
-        this._showColorPicker(value,div,path);
-      };
-    });
-  }
-
-
-  /**
-   * parse an object and draw the correct items
-   * @param {Object} obj
-   * @param {array} [path=[]]    | where to look for the actual option
-   * @param {boolean} [checkOnly=false]
-   * @returns {boolean}
-   * @private
-   */
-  _handleObject(obj, path = [], checkOnly = false) {
-    let show = false;
-    const filter = this.options.filter;
-    let visibleInSet = false;
-    for (const subObj in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, subObj)) {
-        show = true;
-        const item = obj[subObj];
-        const newPath = copyAndExtendArray(path, subObj);
-        if (typeof filter === 'function') {
-          show = filter(subObj,path);
-
-          // if needed we must go deeper into the object.
-          if (show === false) {
-            if (!(item instanceof Array) && typeof item !== 'string' && typeof item !== 'boolean' && item instanceof Object) {
-              this.allowCreation = false;
-              show = this._handleObject(item, newPath, true);
-              this.allowCreation = checkOnly === false;
-            }
-          }
-        }
-
-        if (show !== false) {
-          visibleInSet = true;
-          const value = this._getValue(newPath);
-
-          if (item instanceof Array) {
-            this._handleArray(item, value, newPath);
-          }
-          else if (typeof item === 'string') {
-            this._makeTextInput(item, value, newPath);
-          }
-          else if (typeof item === 'boolean') {
-            this._makeCheckbox(item, value, newPath);
-          }
-          else if (item instanceof Object) {
-            // collapse the physics options that are not enabled
-            let draw = true;
-            if (path.indexOf('physics') !== -1) {
-              if (this.moduleOptions.physics.solver !== subObj && subObj !== 'wind') {
-                draw = false;
-              }
-            }
-
-            if (draw === true) {
-              // initially collapse options with an disabled enabled option.
-              if (item.enabled !== undefined) {
-                const enabledPath = copyAndExtendArray(newPath, 'enabled');
-                const enabledValue = this._getValue(enabledPath);
-                if (enabledValue === true) {
-                  const label = this._makeLabel(subObj, newPath, true);
-                  this._makeItem(newPath, label);
-                  visibleInSet = this._handleObject(item, newPath) || visibleInSet;
-                }
-                else {
-                  this._makeCheckbox(item, enabledValue, newPath);
-                }
-              }
-              else {
-                const label = this._makeLabel(subObj, newPath, true);
-                this._makeItem(newPath, label);
-                visibleInSet = this._handleObject(item, newPath) || visibleInSet;
-              }
-            }
-          }
-          else {
-            console.error('dont know how to handle', item, subObj, newPath);
-          }
-        }
-      }
-    }
-    return visibleInSet;
-  }
-
-
-  /**
-   * handle the array type of option
-   * @param {Array.<number>} arr
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _handleArray(arr, value, path) {
-    if (typeof arr[0] === 'string' && arr[0] === 'color') {
-      this._makeColorField(arr, value, path);
-      if (arr[1] !== value) {this.changedOptions.push({path:path, value:value});}
-    }
-    else if (typeof arr[0] === 'string') {
-      this._makeDropdown(arr, value, path);
-      if (arr[0] !== value) {this.changedOptions.push({path:path, value:value});}
-    }
-    else if (typeof arr[0] === 'number') {
-      this._makeRange(arr, value, path);
-      if (arr[0] !== value) {this.changedOptions.push({path:path, value:Number(value)});}
-    }
-  }
-
-
-
-  /**
-   * called to update the network with the new settings.
-   * @param {number} value
-   * @param {array} path    | where to look for the actual option
-   * @private
-   */
-  _update(value, path) {
-    const options = this._constructOptions(value,path);
-
-    if (this.parent.body && this.parent.body.emitter && this.parent.body.emitter.emit) {
-      this.parent.body.emitter.emit("configChange", options);
-    }
-    this.initialized = true;
-    this.parent.setOptions(options);
-  }
-
-
-  /**
-   *
-   * @param {string|Boolean} value
-   * @param {Array.<string>} path
-   * @param {{}} optionsObj
-   * @returns {{}}
-   * @private
-   */
-  _constructOptions(value, path, optionsObj = {}) {
-    let pointer = optionsObj;
-
-    // when dropdown boxes can be string or boolean, we typecast it into correct types
-    value = value === 'true'  ? true  : value;
-    value = value === 'false' ? false : value;
-
-    for (let i = 0; i < path.length; i++) {
-      if (path[i] !== 'global') {
-        if (pointer[path[i]] === undefined) {
-          pointer[path[i]] = {};
-        }
-        if (i !== path.length - 1) {
-          pointer = pointer[path[i]];
-        }
-        else {
-          pointer[path[i]] = value;
-        }
-      }
-    }
-    return optionsObj;
-  }
-
-  /**
-   * @private
-   */
-  _printOptions() {
-    const options = this.getOptions();
-    this.optionsContainer.innerHTML = '<pre>var options = ' + JSON.stringify(options, null, 2) + '</pre>';
-  }
-
-  /**
-   *
-   * @returns {{}} options
-   */
-  getOptions() {
-    const options = {};
-    for (let i = 0; i < this.changedOptions.length; i++) {
-      this._constructOptions(this.changedOptions[i].value, this.changedOptions[i].path, options);
-    }
-    return options;
   }
 }
 
@@ -22383,14 +22295,13 @@ class Configurator {
  * __any__ means that the name of the property does not matter.
  * __type__ is a required field for all objects and contains the allowed types of all objects
  */
-const string = 'string';
-const bool = 'boolean';
-const number = 'number';
-const array = 'array';
-const object = 'object'; // should only be in a __type__ property
-const dom = 'dom';
-const any = 'any';
-
+const string = "string";
+const bool = "boolean";
+const number = "number";
+const array = "array";
+const object = "object"; // should only be in a __type__ property
+const dom = "dom";
+const any = "any";
 // List of endpoints
 const endPoints = [
   "arrow",
@@ -22404,16 +22315,194 @@ const endPoints = [
   "inv_curve",
   "inv_triangle",
   "triangle",
-  "vee"
+  "vee",
 ];
-
-const allOptions$1 = {
+/* eslint-disable @typescript-eslint/naming-convention -- The __*__ format is used to prevent collisions with actual option names. */
+const nodeOptions = {
+  borderWidth: { number },
+  borderWidthSelected: { number, undefined: "undefined" },
+  brokenImage: { string, undefined: "undefined" },
+  chosen: {
+    label: { boolean: bool, function: "function" },
+    node: { boolean: bool, function: "function" },
+    __type__: { object, boolean: bool },
+  },
+  color: {
+    border: { string },
+    background: { string },
+    highlight: {
+      border: { string },
+      background: { string },
+      __type__: { object, string },
+    },
+    hover: {
+      border: { string },
+      background: { string },
+      __type__: { object, string },
+    },
+    __type__: { object, string },
+  },
+  opacity: { number, undefined: "undefined" },
+  fixed: {
+    x: { boolean: bool },
+    y: { boolean: bool },
+    __type__: { object, boolean: bool },
+  },
+  font: {
+    align: { string },
+    color: { string },
+    size: { number },
+    face: { string },
+    background: { string },
+    strokeWidth: { number },
+    strokeColor: { string },
+    vadjust: { number },
+    multi: { boolean: bool, string },
+    bold: {
+      color: { string },
+      size: { number },
+      face: { string },
+      mod: { string },
+      vadjust: { number },
+      __type__: { object, string },
+    },
+    boldital: {
+      color: { string },
+      size: { number },
+      face: { string },
+      mod: { string },
+      vadjust: { number },
+      __type__: { object, string },
+    },
+    ital: {
+      color: { string },
+      size: { number },
+      face: { string },
+      mod: { string },
+      vadjust: { number },
+      __type__: { object, string },
+    },
+    mono: {
+      color: { string },
+      size: { number },
+      face: { string },
+      mod: { string },
+      vadjust: { number },
+      __type__: { object, string },
+    },
+    __type__: { object, string },
+  },
+  group: { string, number, undefined: "undefined" },
+  heightConstraint: {
+    minimum: { number },
+    valign: { string },
+    __type__: { object, boolean: bool, number },
+  },
+  hidden: { boolean: bool },
+  icon: {
+    face: { string },
+    code: { string },
+    size: { number },
+    color: { string },
+    weight: { string, number },
+    __type__: { object },
+  },
+  id: { string, number },
+  image: {
+    selected: { string, undefined: "undefined" },
+    unselected: { string, undefined: "undefined" },
+    __type__: { object, string },
+  },
+  imagePadding: {
+    top: { number },
+    right: { number },
+    bottom: { number },
+    left: { number },
+    __type__: { object, number },
+  },
+  label: { string, undefined: "undefined" },
+  labelHighlightBold: { boolean: bool },
+  level: { number, undefined: "undefined" },
+  margin: {
+    top: { number },
+    right: { number },
+    bottom: { number },
+    left: { number },
+    __type__: { object, number },
+  },
+  mass: { number },
+  physics: { boolean: bool },
+  scaling: {
+    min: { number },
+    max: { number },
+    label: {
+      enabled: { boolean: bool },
+      min: { number },
+      max: { number },
+      maxVisible: { number },
+      drawThreshold: { number },
+      __type__: { object, boolean: bool },
+    },
+    customScalingFunction: { function: "function" },
+    __type__: { object },
+  },
+  shadow: {
+    enabled: { boolean: bool },
+    color: { string },
+    size: { number },
+    x: { number },
+    y: { number },
+    __type__: { object, boolean: bool },
+  },
+  shape: {
+    string: [
+      "custom",
+      "ellipse",
+      "circle",
+      "database",
+      "box",
+      "text",
+      "image",
+      "circularImage",
+      "diamond",
+      "dot",
+      "star",
+      "triangle",
+      "triangleDown",
+      "square",
+      "icon",
+      "hexagon",
+    ],
+  },
+  ctxRenderer: { function: "function" },
+  shapeProperties: {
+    borderDashes: { boolean: bool, array },
+    borderRadius: { number },
+    interpolation: { boolean: bool },
+    useImageSize: { boolean: bool },
+    useBorderWithImage: { boolean: bool },
+    coordinateOrigin: { string: ["center", "top-left"] },
+    __type__: { object },
+  },
+  size: { number },
+  title: { string, dom, undefined: "undefined" },
+  value: { number, undefined: "undefined" },
+  widthConstraint: {
+    minimum: { number },
+    maximum: { number },
+    __type__: { object, boolean: bool, number },
+  },
+  x: { number },
+  y: { number },
+  __type__: { object },
+};
+const allOptions = {
   configure: {
     enabled: { boolean: bool },
-    filter: { boolean: bool, string, array, 'function': 'function' },
+    filter: { boolean: bool, string, array, function: "function" },
     container: { dom },
     showButton: { boolean: bool },
-    __type__: { object, boolean: bool, string, array, 'function': 'function' }
+    __type__: { object, boolean: bool, string, array, function: "function" },
   },
   edges: {
     arrows: {
@@ -22424,7 +22513,7 @@ const allOptions$1 = {
         imageHeight: { number },
         imageWidth: { number },
         src: { string },
-        __type__: { object, boolean: bool }
+        __type__: { object, boolean: bool },
       },
       middle: {
         enabled: { boolean: bool },
@@ -22433,7 +22522,7 @@ const allOptions$1 = {
         imageWidth: { number },
         imageHeight: { number },
         src: { string },
-        __type__: { object, boolean: bool }
+        __type__: { object, boolean: bool },
       },
       from: {
         enabled: { boolean: bool },
@@ -22442,93 +22531,93 @@ const allOptions$1 = {
         imageWidth: { number },
         imageHeight: { number },
         src: { string },
-        __type__: { object, boolean: bool }
+        __type__: { object, boolean: bool },
       },
-      __type__: { string: ["from", "to", "middle"], object }
+      __type__: { string: ["from", "to", "middle"], object },
     },
     endPointOffset: {
-	  from: {
-	  	number: number
-	  },
-	  to: {
-	  	number: number
-	  },
-	  __type__: {
-	      object: object,
-	      number: number
-	    }
-	},
+      from: {
+        number: number,
+      },
+      to: {
+        number: number,
+      },
+      __type__: {
+        object: object,
+        number: number,
+      },
+    },
     arrowStrikethrough: { boolean: bool },
     background: {
       enabled: { boolean: bool },
       color: { string },
       size: { number },
       dashes: { boolean: bool, array },
-      __type__: { object, boolean: bool }
+      __type__: { object, boolean: bool },
     },
     chosen: {
-      label: { boolean: bool, 'function': 'function' },
-      edge: { boolean: bool, 'function': 'function' },
-      __type__: { object, boolean: bool }
+      label: { boolean: bool, function: "function" },
+      edge: { boolean: bool, function: "function" },
+      __type__: { object, boolean: bool },
     },
     color: {
       color: { string },
       highlight: { string },
       hover: { string },
-      inherit: { string: ['from', 'to', 'both'], boolean: bool },
+      inherit: { string: ["from", "to", "both"], boolean: bool },
       opacity: { number },
-      __type__: { object, string }
+      __type__: { object, string },
     },
     dashes: { boolean: bool, array },
     font: {
       color: { string },
-      size: { number }, // px
+      size: { number },
       face: { string },
       background: { string },
-      strokeWidth: { number }, // px
+      strokeWidth: { number },
       strokeColor: { string },
-      align: { string: ['horizontal', 'top', 'middle', 'bottom'] },
+      align: { string: ["horizontal", "top", "middle", "bottom"] },
       vadjust: { number },
       multi: { boolean: bool, string },
       bold: {
         color: { string },
-        size: { number }, // px
+        size: { number },
         face: { string },
         mod: { string },
         vadjust: { number },
-        __type__: { object, string }
+        __type__: { object, string },
       },
       boldital: {
         color: { string },
-        size: { number }, // px
+        size: { number },
         face: { string },
         mod: { string },
         vadjust: { number },
-        __type__: { object, string }
+        __type__: { object, string },
       },
       ital: {
         color: { string },
-        size: { number }, // px
+        size: { number },
         face: { string },
         mod: { string },
         vadjust: { number },
-        __type__: { object, string }
+        __type__: { object, string },
       },
       mono: {
         color: { string },
-        size: { number }, // px
+        size: { number },
         face: { string },
         mod: { string },
         vadjust: { number },
-        __type__: { object, string }
+        __type__: { object, string },
       },
-      __type__: { object, string }
+      __type__: { object, string },
     },
     hidden: { boolean: bool },
-    hoverWidth: { 'function': 'function', number },
-    label: { string, 'undefined': 'undefined' },
+    hoverWidth: { function: "function", number },
+    label: { string, undefined: "undefined" },
     labelHighlightBold: { boolean: bool },
-    length: { number, 'undefined': 'undefined' },
+    length: { number, undefined: "undefined" },
     physics: { boolean: bool },
     scaling: {
       min: { number },
@@ -22539,18 +22628,18 @@ const allOptions$1 = {
         max: { number },
         maxVisible: { number },
         drawThreshold: { number },
-        __type__: { object, boolean: bool }
+        __type__: { object, boolean: bool },
       },
-      customScalingFunction: { 'function': 'function' },
-      __type__: { object }
+      customScalingFunction: { function: "function" },
+      __type__: { object },
     },
-    selectionWidth: { 'function': 'function', number },
+    selectionWidth: { function: "function", number },
     selfReferenceSize: { number },
-    selfReference: { 
+    selfReference: {
       size: { number },
       angle: { number },
       renderBehindTheNode: { boolean: bool },
-      __type__: { object }
+      __type__: { object },
     },
     shadow: {
       enabled: { boolean: bool },
@@ -22558,28 +22647,44 @@ const allOptions$1 = {
       size: { number },
       x: { number },
       y: { number },
-      __type__: { object, boolean: bool }
+      __type__: { object, boolean: bool },
     },
     smooth: {
       enabled: { boolean: bool },
-      type: { string: ['dynamic', 'continuous', 'discrete', 'diagonalCross', 'straightCross', 'horizontal', 'vertical', 'curvedCW', 'curvedCCW', 'cubicBezier'] },
+      type: {
+        string: [
+          "dynamic",
+          "continuous",
+          "discrete",
+          "diagonalCross",
+          "straightCross",
+          "horizontal",
+          "vertical",
+          "curvedCW",
+          "curvedCCW",
+          "cubicBezier",
+        ],
+      },
       roundness: { number },
-      forceDirection: { string: ['horizontal', 'vertical', 'none'], boolean: bool },
-      __type__: { object, boolean: bool }
+      forceDirection: {
+        string: ["horizontal", "vertical", "none"],
+        boolean: bool,
+      },
+      __type__: { object, boolean: bool },
     },
-    title: { string, 'undefined': 'undefined' },
+    title: { string, undefined: "undefined" },
     width: { number },
     widthConstraint: {
       maximum: { number },
-      __type__: { object, boolean: bool, number }
+      __type__: { object, boolean: bool, number },
     },
-    value: { number, 'undefined': 'undefined' },
-    __type__: { object }
+    value: { number, undefined: "undefined" },
+    __type__: { object },
   },
   groups: {
     useDefaultGroups: { boolean: bool },
-    __any__: 'get from nodes, will be overwritten below',
-    __type__: { object }
+    __any__: nodeOptions,
+    __type__: { object },
   },
   interaction: {
     dragNodes: { boolean: bool },
@@ -22590,9 +22695,15 @@ const allOptions$1 = {
     hover: { boolean: bool },
     keyboard: {
       enabled: { boolean: bool },
-      speed: { x: { number }, y: { number }, zoom: { number }, __type__: { object } },
+      speed: {
+        x: { number },
+        y: { number },
+        zoom: { number },
+        __type__: { object },
+      },
       bindToWindow: { boolean: bool },
-      __type__: { object, boolean: bool }
+      autoFocus: { boolean: bool },
+      __type__: { object, boolean: bool },
     },
     multiselect: { boolean: bool },
     navigationButtons: { boolean: bool },
@@ -22602,10 +22713,10 @@ const allOptions$1 = {
     tooltipDelay: { number },
     zoomView: { boolean: bool },
     zoomSpeed: { number },
-    __type__: { object }
+    __type__: { object },
   },
   layout: {
-    randomSeed: { 'undefined': 'undefined', number, string },
+    randomSeed: { undefined: "undefined", number, string },
     improvedLayout: { boolean: bool },
     clusterThreshold: { number },
     hierarchical: {
@@ -22616,187 +22727,29 @@ const allOptions$1 = {
       blockShifting: { boolean: bool },
       edgeMinimization: { boolean: bool },
       parentCentralization: { boolean: bool },
-      direction: { string: ['UD', 'DU', 'LR', 'RL'] },   // UD, DU, LR, RL
-      sortMethod: { string: ['hubsize', 'directed'] }, // hubsize, directed
-      shakeTowards: { string: ['leaves', 'roots'] }, // leaves, roots
-      __type__: { object, boolean: bool }
+      direction: { string: ["UD", "DU", "LR", "RL"] },
+      sortMethod: { string: ["hubsize", "directed"] },
+      shakeTowards: { string: ["leaves", "roots"] },
+      __type__: { object, boolean: bool },
     },
-    __type__: { object }
+    __type__: { object },
   },
   manipulation: {
     enabled: { boolean: bool },
     initiallyActive: { boolean: bool },
-    addNode: { boolean: bool, 'function': 'function' },
-    addEdge: { boolean: bool, 'function': 'function' },
-    editNode: { 'function': 'function' },
+    addNode: { boolean: bool, function: "function" },
+    addEdge: { boolean: bool, function: "function" },
+    editNode: { function: "function" },
     editEdge: {
-      editWithoutDrag: { 'function' : 'function' },
-      __type__: {object, boolean: bool, 'function': 'function' }
+      editWithoutDrag: { function: "function" },
+      __type__: { object, boolean: bool, function: "function" },
     },
-    deleteNode: { boolean: bool, 'function': 'function' },
-    deleteEdge: { boolean: bool, 'function': 'function' },
-    controlNodeStyle: 'get from nodes, will be overwritten below',
-    __type__: { object, boolean: bool }
+    deleteNode: { boolean: bool, function: "function" },
+    deleteEdge: { boolean: bool, function: "function" },
+    controlNodeStyle: nodeOptions,
+    __type__: { object, boolean: bool },
   },
-  nodes: {
-    borderWidth: { number },
-    borderWidthSelected: { number, 'undefined': 'undefined' },
-    brokenImage: { string, 'undefined': 'undefined' },
-    chosen: {
-      label: { boolean: bool, 'function': 'function' },
-      node: { boolean: bool, 'function': 'function' },
-      __type__: { object, boolean: bool }
-    },
-    color: {
-      border: { string },
-      background: { string },
-      highlight: {
-        border: { string },
-        background: { string },
-        __type__: { object, string }
-      },
-      hover: {
-        border: { string },
-        background: { string },
-        __type__: { object, string }
-      },
-      __type__: { object, string }
-    },
-    opacity: { number, 'undefined': 'undefined' },
-    fixed: {
-      x: { boolean: bool },
-      y: { boolean: bool },
-      __type__: { object, boolean: bool }
-    },
-    font: {
-      align: { string },
-      color: { string },
-      size: { number }, // px
-      face: { string },
-      background: { string },
-      strokeWidth: { number }, // px
-      strokeColor: { string },
-      vadjust: { number },
-      multi: { boolean: bool, string },
-      bold: {
-        color: { string },
-        size: { number }, // px
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string }
-      },
-      boldital: {
-        color: { string },
-        size: { number }, // px
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string }
-      },
-      ital: {
-        color: { string },
-        size: { number }, // px
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string }
-      },
-      mono: {
-        color: { string },
-        size: { number }, // px
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string }
-      },
-      __type__: { object, string }
-    },
-    group: { string, number, 'undefined': 'undefined' },
-    heightConstraint: {
-      minimum: { number },
-      valign: { string },
-      __type__: { object, boolean: bool, number }
-    },
-    hidden: { boolean: bool },
-    icon: {
-      face: { string },
-      code: { string },  //'\uf007',
-      size: { number },  //50,
-      color: { string },
-      weight: { string, number },
-      __type__: { object }
-    },
-    id: { string, number },
-    image: {
-      selected: { string, 'undefined': 'undefined' }, // --> URL
-      unselected: { string, 'undefined': 'undefined' }, // --> URL
-      __type__: { object, string }
-    },
-    imagePadding: {
-      top: { number },
-      right: { number },
-      bottom: { number },
-      left: { number },
-      __type__: { object, number }
-    },
-    label: { string, 'undefined': 'undefined' },
-    labelHighlightBold: { boolean: bool },
-    level: { number, 'undefined': 'undefined' },
-    margin: {
-      top: { number },
-      right: { number },
-      bottom: { number },
-      left: { number },
-      __type__: { object, number }
-    },
-    mass: { number },
-    physics: { boolean: bool },
-    scaling: {
-      min: { number },
-      max: { number },
-      label: {
-        enabled: { boolean: bool },
-        min: { number },
-        max: { number },
-        maxVisible: { number },
-        drawThreshold: { number },
-        __type__: { object, boolean: bool }
-      },
-      customScalingFunction: { 'function': 'function' },
-      __type__: { object }
-    },
-    shadow: {
-      enabled: { boolean: bool },
-      color: { string },
-      size: { number },
-      x: { number },
-      y: { number },
-      __type__: { object, boolean: bool }
-    },
-    shape: { string: ['custom', 'ellipse', 'circle', 'database', 'box', 'text', 'image', 'circularImage', 'diamond', 'dot', 'star', 'triangle', 'triangleDown', 'square', 'icon', 'hexagon'] },
-    customRenderer: { 'function': 'function' },
-    shapeProperties: {
-      borderDashes: { boolean: bool, array },
-      borderRadius: { number },
-      interpolation: { boolean: bool },
-      useImageSize: { boolean: bool },
-      useBorderWithImage: { boolean: bool },
-      coordinateOrigin: { string: ['center', 'top-left'] },
-      __type__: { object }
-    },
-    size: { number },
-    title: { string, dom, 'undefined': 'undefined' },
-    value: { number, 'undefined': 'undefined' },
-    widthConstraint: {
-      minimum: { number },
-      maximum: { number },
-      __type__: { object, boolean: bool, number }
-    },
-    x: { number },
-    y: { number },
-    __type__: { object }
-  },
+  nodes: nodeOptions,
   physics: {
     enabled: { boolean: bool },
     barnesHut: {
@@ -22807,7 +22760,7 @@ const allOptions$1 = {
       springConstant: { number },
       damping: { number },
       avoidOverlap: { number },
-      __type__: { object }
+      __type__: { object },
     },
     forceAtlas2Based: {
       theta: { number },
@@ -22817,7 +22770,7 @@ const allOptions$1 = {
       springConstant: { number },
       damping: { number },
       avoidOverlap: { number },
-      __type__: { object }
+      __type__: { object },
     },
     repulsion: {
       centralGravity: { number },
@@ -22825,7 +22778,7 @@ const allOptions$1 = {
       springConstant: { number },
       nodeDistance: { number },
       damping: { number },
-      __type__: { object }
+      __type__: { object },
     },
     hierarchicalRepulsion: {
       centralGravity: { number },
@@ -22834,45 +22787,48 @@ const allOptions$1 = {
       nodeDistance: { number },
       damping: { number },
       avoidOverlap: { number },
-      __type__: { object }
+      __type__: { object },
     },
     maxVelocity: { number },
-    minVelocity: { number },    // px/s
-    solver: { string: ['barnesHut', 'repulsion', 'hierarchicalRepulsion', 'forceAtlas2Based'] },
+    minVelocity: { number },
+    solver: {
+      string: [
+        "barnesHut",
+        "repulsion",
+        "hierarchicalRepulsion",
+        "forceAtlas2Based",
+      ],
+    },
     stabilization: {
       enabled: { boolean: bool },
-      iterations: { number },   // maximum number of iteration to stabilize
+      iterations: { number },
       updateInterval: { number },
       onlyDynamicEdges: { boolean: bool },
       fit: { boolean: bool },
-      __type__: { object, boolean: bool }
+      __type__: { object, boolean: bool },
     },
     timestep: { number },
     adaptiveTimestep: { boolean: bool },
     wind: {
       x: { number },
       y: { number },
-      __type__: { object }
+      __type__: { object },
     },
-    __type__: { object, boolean: bool }
+    __type__: { object, boolean: bool },
   },
-
   //globals :
   autoResize: { boolean: bool },
   clickToUse: { boolean: bool },
   locale: { string },
   locales: {
     __any__: { any },
-    __type__: { object }
+    __type__: { object },
   },
   height: { string },
   width: { string },
-  __type__: { object }
+  __type__: { object },
 };
-
-allOptions$1.groups.__any__ = allOptions$1.nodes;
-allOptions$1.manipulation.controlNodeStyle = allOptions$1.nodes;
-
+/* eslint-enable @typescript-eslint/naming-convention */
 /**
  * This provides ranges, initial values, steps and dropdown menu choices for the
  * configuration.
@@ -22902,29 +22858,29 @@ const configureOptions = {
     borderWidth: [1, 0, 10, 1],
     borderWidthSelected: [2, 0, 10, 1],
     color: {
-      border: ['color', '#2B7CE9'],
-      background: ['color', '#97C2FC'],
+      border: ["color", "#2B7CE9"],
+      background: ["color", "#97C2FC"],
       highlight: {
-        border: ['color', '#2B7CE9'],
-        background: ['color', '#D2E5FF']
+        border: ["color", "#2B7CE9"],
+        background: ["color", "#D2E5FF"],
       },
       hover: {
-        border: ['color', '#2B7CE9'],
-        background: ['color', '#D2E5FF']
-      }
+        border: ["color", "#2B7CE9"],
+        background: ["color", "#D2E5FF"],
+      },
     },
     opacity: [0, 0, 1, 0.1],
     fixed: {
       x: false,
-      y: false
+      y: false,
     },
     font: {
-      color: ['color', '#343434'],
-      size: [14, 0, 100, 1], // px
-      face: ['arial', 'verdana', 'tahoma'],
-      background: ['color', 'none'],
-      strokeWidth: [0, 0, 50, 1], // px
-      strokeColor: ['color', '#ffffff']
+      color: ["color", "#343434"],
+      size: [14, 0, 100, 1],
+      face: ["arial", "verdana", "tahoma"],
+      background: ["color", "none"],
+      strokeWidth: [0, 0, 50, 1],
+      strokeColor: ["color", "#ffffff"],
     },
     //group: 'string',
     hidden: false,
@@ -22945,52 +22901,65 @@ const configureOptions = {
         min: [14, 0, 200, 1],
         max: [30, 0, 200, 1],
         maxVisible: [30, 0, 200, 1],
-        drawThreshold: [5, 0, 20, 1]
-      }
+        drawThreshold: [5, 0, 20, 1],
+      },
     },
     shadow: {
       enabled: false,
-      color: 'rgba(0,0,0,0.5)',
+      color: "rgba(0,0,0,0.5)",
       size: [10, 0, 20, 1],
       x: [5, -30, 30, 1],
-      y: [5, -30, 30, 1]
+      y: [5, -30, 30, 1],
     },
-    shape: ['ellipse', 'box', 'circle', 'database', 'diamond', 'dot', 'square', 'star', 'text', 'triangle', 'triangleDown','hexagon'],
+    shape: [
+      "ellipse",
+      "box",
+      "circle",
+      "database",
+      "diamond",
+      "dot",
+      "square",
+      "star",
+      "text",
+      "triangle",
+      "triangleDown",
+      "hexagon",
+    ],
     shapeProperties: {
       borderDashes: false,
       borderRadius: [6, 0, 20, 1],
       interpolation: true,
-      useImageSize: false
+      useImageSize: false,
     },
-    size: [25, 0, 200, 1]
+    size: [25, 0, 200, 1],
   },
   edges: {
     arrows: {
-      to: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: 'arrow' },
-      middle: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: 'arrow' },
-      from: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: 'arrow' }
+      to: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
+      middle: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
+      from: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
     },
     endPointOffset: {
       from: [0, -10, 10, 1],
-      to: [0, -10, 10, 1]
+      to: [0, -10, 10, 1],
     },
     arrowStrikethrough: true,
     color: {
-      color: ['color', '#848484'],
-      highlight: ['color', '#848484'],
-      hover: ['color', '#848484'],
-      inherit: ['from', 'to', 'both', true, false],
-      opacity: [1, 0, 1, 0.05]
+      color: ["color", "#848484"],
+      highlight: ["color", "#848484"],
+      hover: ["color", "#848484"],
+      inherit: ["from", "to", "both", true, false],
+      opacity: [1, 0, 1, 0.05],
     },
     dashes: false,
     font: {
-      color: ['color', '#343434'],
-      size: [14, 0, 100, 1], // px
-      face: ['arial', 'verdana', 'tahoma'],
-      background: ['color', 'none'],
-      strokeWidth: [2, 0, 50, 1], // px
-      strokeColor: ['color', '#ffffff'],
-      align: ['horizontal', 'top', 'middle', 'bottom']
+      color: ["color", "#343434"],
+      size: [14, 0, 100, 1],
+      face: ["arial", "verdana", "tahoma"],
+      background: ["color", "none"],
+      strokeWidth: [2, 0, 50, 1],
+      strokeColor: ["color", "#ffffff"],
+      align: ["horizontal", "top", "middle", "bottom"],
     },
     hidden: false,
     hoverWidth: [1.5, 0, 5, 0.1],
@@ -23004,30 +22973,41 @@ const configureOptions = {
         min: [14, 0, 200, 1],
         max: [30, 0, 200, 1],
         maxVisible: [30, 0, 200, 1],
-        drawThreshold: [5, 0, 20, 1]
-      }
+        drawThreshold: [5, 0, 20, 1],
+      },
     },
     selectionWidth: [1.5, 0, 5, 0.1],
     selfReferenceSize: [20, 0, 200, 1],
-    selfReference: { 
+    selfReference: {
       size: [20, 0, 200, 1],
       angle: [Math.PI / 2, -6 * Math.PI, 6 * Math.PI, Math.PI / 8],
       renderBehindTheNode: true,
     },
     shadow: {
       enabled: false,
-      color: 'rgba(0,0,0,0.5)',
+      color: "rgba(0,0,0,0.5)",
       size: [10, 0, 20, 1],
       x: [5, -30, 30, 1],
-      y: [5, -30, 30, 1]
+      y: [5, -30, 30, 1],
     },
     smooth: {
       enabled: true,
-      type: ['dynamic', 'continuous', 'discrete', 'diagonalCross', 'straightCross', 'horizontal', 'vertical', 'curvedCW', 'curvedCCW', 'cubicBezier'],
-      forceDirection: ['horizontal', 'vertical', 'none'],
-      roundness: [0.5, 0, 1, 0.05]
+      type: [
+        "dynamic",
+        "continuous",
+        "discrete",
+        "diagonalCross",
+        "straightCross",
+        "horizontal",
+        "vertical",
+        "curvedCW",
+        "curvedCCW",
+        "cubicBezier",
+      ],
+      forceDirection: ["horizontal", "vertical", "none"],
+      roundness: [0.5, 0, 1, 0.05],
     },
-    width: [1, 0, 30, 1]
+    width: [1, 0, 30, 1],
   },
   layout: {
     //randomSeed: [0, 0, 500, 1],
@@ -23040,10 +23020,10 @@ const configureOptions = {
       blockShifting: true,
       edgeMinimization: true,
       parentCentralization: true,
-      direction: ['UD', 'DU', 'LR', 'RL'],   // UD, DU, LR, RL
-      sortMethod: ['hubsize', 'directed'], // hubsize, directed
-      shakeTowards: ['leaves', 'roots'] // leaves, roots
-    }
+      direction: ["UD", "DU", "LR", "RL"],
+      sortMethod: ["hubsize", "directed"],
+      shakeTowards: ["leaves", "roots"], // leaves, roots
+    },
   },
   interaction: {
     dragNodes: true,
@@ -23054,8 +23034,13 @@ const configureOptions = {
     hover: false,
     keyboard: {
       enabled: false,
-      speed: { x: [10, 0, 40, 1], y: [10, 0, 40, 1], zoom: [0.02, 0, 0.1, 0.005] },
-      bindToWindow: true
+      speed: {
+        x: [10, 0, 40, 1],
+        y: [10, 0, 40, 1],
+        zoom: [0.02, 0, 0.1, 0.005],
+      },
+      bindToWindow: true,
+      autoFocus: true,
     },
     multiselect: false,
     navigationButtons: false,
@@ -23064,11 +23049,11 @@ const configureOptions = {
     hoverConnectedEdges: true,
     tooltipDelay: [300, 0, 1000, 25],
     zoomView: true,
-    zoomSpeed: [1, 0.1, 2, 0.1]
+    zoomSpeed: [1, 0.1, 2, 0.1],
   },
   manipulation: {
     enabled: false,
-    initiallyActive: false
+    initiallyActive: false,
   },
   physics: {
     enabled: true,
@@ -23079,7 +23064,7 @@ const configureOptions = {
       springLength: [95, 0, 500, 5],
       springConstant: [0.04, 0, 1.2, 0.005],
       damping: [0.09, 0, 1, 0.01],
-      avoidOverlap: [0, 0, 1, 0.01]
+      avoidOverlap: [0, 0, 1, 0.01],
     },
     forceAtlas2Based: {
       theta: [0.5, 0.1, 1, 0.05],
@@ -23088,14 +23073,14 @@ const configureOptions = {
       springLength: [95, 0, 500, 5],
       springConstant: [0.08, 0, 1.2, 0.005],
       damping: [0.4, 0, 1, 0.01],
-      avoidOverlap: [0, 0, 1, 0.01]
+      avoidOverlap: [0, 0, 1, 0.01],
     },
     repulsion: {
       centralGravity: [0.2, 0, 10, 0.05],
       springLength: [200, 0, 500, 5],
       springConstant: [0.05, 0, 1.2, 0.005],
       nodeDistance: [100, 0, 500, 5],
-      damping: [0.09, 0, 1, 0.01]
+      damping: [0.09, 0, 1, 0.01],
     },
     hierarchicalRepulsion: {
       centralGravity: [0.2, 0, 10, 0.05],
@@ -23103,24 +23088,41 @@ const configureOptions = {
       springConstant: [0.01, 0, 1.2, 0.005],
       nodeDistance: [120, 0, 500, 5],
       damping: [0.09, 0, 1, 0.01],
-      avoidOverlap: [0, 0, 1, 0.01]
+      avoidOverlap: [0, 0, 1, 0.01],
     },
     maxVelocity: [50, 0, 150, 1],
     minVelocity: [0.1, 0.01, 0.5, 0.01],
-    solver: ['barnesHut', 'forceAtlas2Based', 'repulsion', 'hierarchicalRepulsion'],
+    solver: [
+      "barnesHut",
+      "forceAtlas2Based",
+      "repulsion",
+      "hierarchicalRepulsion",
+    ],
     timestep: [0.5, 0.01, 1, 0.01],
     wind: {
       x: [0, -10, 10, 0.1],
-      y: [0, -10, 10, 0.1]
+      y: [0, -10, 10, 0.1],
     },
     //adaptiveTimestep: true
+  },
+};
+const configuratorHideOption = (parentPath, optionName, options) => {
+  if (
+    parentPath.includes("physics") &&
+    configureOptions.physics.solver.includes(optionName) &&
+    options.physics.solver !== optionName &&
+    optionName !== "wind"
+  ) {
+    return true;
   }
+  return false;
 };
 
-var options = /*#__PURE__*/Object.freeze({
+var options = /*#__PURE__*/ Object.freeze({
   __proto__: null,
-  allOptions: allOptions$1,
-  configureOptions: configureOptions
+  allOptions: allOptions,
+  configuratorHideOption: configuratorHideOption,
+  configureOptions: configureOptions,
 });
 
 /**
@@ -23132,12 +23134,11 @@ class FloydWarshall {
   /**
    * @ignore
    */
-  constructor() {
-  }
+  constructor() {}
 
   /**
    *
-   * @param {Object} body
+   * @param {object} body
    * @param {Array.<Node>} nodesArray
    * @param {Array.<Edge>} edgesArray
    * @returns {{}}
@@ -23152,7 +23153,7 @@ class FloydWarshall {
       const cell = {};
       D_matrix[node] = cell;
       for (let j = 0; j < nodesArray.length; j++) {
-        cell[nodesArray[j]] = (i == j ? 0 : 1e9);
+        cell[nodesArray[j]] = i == j ? 0 : 1e9;
       }
     }
 
@@ -23160,7 +23161,11 @@ class FloydWarshall {
     for (let i = 0; i < edgesArray.length; i++) {
       const edge = edges[edgesArray[i]];
       // edge has to be connected if it counts to the distances. If it is connected to inner clusters it will crash so we also check if it is in the D_matrix
-      if (edge.connected === true && D_matrix[edge.fromId] !== undefined && D_matrix[edge.toId] !== undefined) {
+      if (
+        edge.connected === true &&
+        D_matrix[edge.fromId] !== undefined &&
+        D_matrix[edge.toId] !== undefined
+      ) {
         D_matrix[edge.fromId][edge.toId] = 1;
         D_matrix[edge.toId][edge.fromId] = 1;
       }
@@ -23192,7 +23197,6 @@ class FloydWarshall {
 
 // distance finding algorithm
 
-
 /**
  * KamadaKawai positions the nodes initially based on
  *
@@ -23203,7 +23207,7 @@ class FloydWarshall {
  */
 class KamadaKawai {
   /**
-   * @param {Object} body
+   * @param {object} body
    * @param {number} edgeLength
    * @param {number} edgeStrength
    */
@@ -23216,7 +23220,8 @@ class KamadaKawai {
 
   /**
    * Not sure if needed but can be used to update the spring length and spring constant
-   * @param {Object} options
+   *
+   * @param {object} options
    */
   setOptions(options) {
     if (options) {
@@ -23229,16 +23234,20 @@ class KamadaKawai {
     }
   }
 
-
   /**
    * Position the system
+   *
    * @param {Array.<Node>} nodesArray
    * @param {Array.<vis.Edge>} edgesArray
    * @param {boolean} [ignoreClusters=false]
    */
   solve(nodesArray, edgesArray, ignoreClusters = false) {
     // get distance matrix
-    const D_matrix = this.distanceSolver.getDistances(this.body, nodesArray, edgesArray); // distance matrix
+    const D_matrix = this.distanceSolver.getDistances(
+      this.body,
+      nodesArray,
+      edgesArray
+    ); // distance matrix
 
     // get the L Matrix
     this._createL_matrix(D_matrix);
@@ -23253,15 +23262,23 @@ class KamadaKawai {
     const threshold = 0.01;
     const innerThreshold = 1;
     let iterations = 0;
-    const maxIterations = Math.max(1000, Math.min(10 * this.body.nodeIndices.length, 6000));
+    const maxIterations = Math.max(
+      1000,
+      Math.min(10 * this.body.nodeIndices.length, 6000)
+    );
     const maxInnerIterations = 5;
 
     let maxEnergy = 1e9;
-    let highE_nodeId = 0, dE_dx = 0, dE_dy = 0, delta_m = 0, subIterations = 0;
+    let highE_nodeId = 0,
+      dE_dx = 0,
+      dE_dy = 0,
+      delta_m = 0,
+      subIterations = 0;
 
     while (maxEnergy > threshold && iterations < maxIterations) {
       iterations += 1;
-      [highE_nodeId, maxEnergy, dE_dx, dE_dy] = this._getHighestEnergyNode(ignoreClusters);
+      [highE_nodeId, maxEnergy, dE_dx, dE_dy] =
+        this._getHighestEnergyNode(ignoreClusters);
       delta_m = maxEnergy;
       subIterations = 0;
       while (delta_m > innerThreshold && subIterations < maxInnerIterations) {
@@ -23274,6 +23291,7 @@ class KamadaKawai {
 
   /**
    * get the node with the highest energy
+   *
    * @param {boolean} ignoreClusters
    * @returns {number[]}
    * @private
@@ -23283,13 +23301,19 @@ class KamadaKawai {
     const nodes = this.body.nodes;
     let maxEnergy = 0;
     let maxEnergyNodeId = nodesArray[0];
-    let dE_dx_max = 0, dE_dy_max = 0;
+    let dE_dx_max = 0,
+      dE_dy_max = 0;
 
     for (let nodeIdx = 0; nodeIdx < nodesArray.length; nodeIdx++) {
       const m = nodesArray[nodeIdx];
       // by not evaluating nodes with predefined positions we should only move nodes that have no positions.
-      if ((nodes[m].predefinedPosition === false || nodes[m].isCluster === true && ignoreClusters === true) || nodes[m].options.fixed.x === true || nodes[m].options.fixed.y === true) {
-        const [delta_m,dE_dx,dE_dy] = this._getEnergy(m);
+      if (
+        nodes[m].predefinedPosition !== true ||
+        (nodes[m].isCluster === true && ignoreClusters === true) ||
+        nodes[m].options.fixed.x !== true ||
+        nodes[m].options.fixed.y !== true
+      ) {
+        const [delta_m, dE_dx, dE_dy] = this._getEnergy(m);
         if (maxEnergy < delta_m) {
           maxEnergy = delta_m;
           maxEnergyNodeId = m;
@@ -23304,19 +23328,21 @@ class KamadaKawai {
 
   /**
    * calculate the energy of a single node
+   *
    * @param {Node.id} m
    * @returns {number[]}
    * @private
    */
   _getEnergy(m) {
-    const [dE_dx,dE_dy] = this.E_sums[m];
-    const delta_m = Math.sqrt((dE_dx ** 2) + (dE_dy ** 2));
+    const [dE_dx, dE_dy] = this.E_sums[m];
+    const delta_m = Math.sqrt(dE_dx ** 2 + dE_dy ** 2);
     return [delta_m, dE_dx, dE_dy];
   }
 
   /**
    * move the node based on it's energy
    * the dx and dy are calculated from the linear system proposed by Kamada and Kawai
+   *
    * @param {number} m
    * @param {number} dE_dx
    * @param {number} dE_dy
@@ -23341,14 +23367,18 @@ class KamadaKawai {
         const y_i = nodes[i].y;
         const kmat = km[i];
         const lmat = lm[i];
-        const denominator = 1.0 / ((((x_m - x_i) ** 2) + ((y_m - y_i) ** 2)) ** 1.5);
-        d2E_dx2 += kmat * (1 - lmat * ((y_m - y_i) ** 2) * denominator);
+        const denominator = 1.0 / ((x_m - x_i) ** 2 + (y_m - y_i) ** 2) ** 1.5;
+        d2E_dx2 += kmat * (1 - lmat * (y_m - y_i) ** 2 * denominator);
         d2E_dxdy += kmat * (lmat * (x_m - x_i) * (y_m - y_i) * denominator);
-        d2E_dy2 += kmat * (1 - lmat * ((x_m - x_i) ** 2) * denominator);
+        d2E_dy2 += kmat * (1 - lmat * (x_m - x_i) ** 2 * denominator);
       }
     }
     // make the variable names easier to make the solving of the linear system easier to read
-    const A = d2E_dx2, B = d2E_dxdy, C = dE_dx, D = d2E_dy2, E = dE_dy;
+    const A = d2E_dx2,
+      B = d2E_dxdy,
+      C = dE_dx,
+      D = d2E_dy2,
+      E = dE_dy;
 
     // solve the linear system for dx and dy
     const dy = (C / A + E / B) / (B / A - D / B);
@@ -23362,10 +23392,10 @@ class KamadaKawai {
     this._updateE_matrix(m);
   }
 
-
   /**
    * Create the L matrix: edge length times shortest path
-   * @param {Object} D_matrix
+   *
+   * @param {object} D_matrix
    * @private
    */
   _createL_matrix(D_matrix) {
@@ -23376,15 +23406,16 @@ class KamadaKawai {
     for (let i = 0; i < nodesArray.length; i++) {
       this.L_matrix[nodesArray[i]] = {};
       for (let j = 0; j < nodesArray.length; j++) {
-        this.L_matrix[nodesArray[i]][nodesArray[j]] = edgeLength * D_matrix[nodesArray[i]][nodesArray[j]];
+        this.L_matrix[nodesArray[i]][nodesArray[j]] =
+          edgeLength * D_matrix[nodesArray[i]][nodesArray[j]];
       }
     }
   }
 
-
   /**
    * Create the K matrix: spring constants times shortest path
-   * @param {Object} D_matrix
+   *
+   * @param {object} D_matrix
    * @private
    */
   _createK_matrix(D_matrix) {
@@ -23395,13 +23426,15 @@ class KamadaKawai {
     for (let i = 0; i < nodesArray.length; i++) {
       this.K_matrix[nodesArray[i]] = {};
       for (let j = 0; j < nodesArray.length; j++) {
-        this.K_matrix[nodesArray[i]][nodesArray[j]] = edgeStrength * (D_matrix[nodesArray[i]][nodesArray[j]] ** -2);
+        this.K_matrix[nodesArray[i]][nodesArray[j]] =
+          edgeStrength * D_matrix[nodesArray[i]][nodesArray[j]] ** -2;
       }
     }
   }
 
   /**
    *  Create matrix with all energies between nodes
+   *
    *  @private
    */
   _createE_matrix() {
@@ -23423,10 +23456,13 @@ class KamadaKawai {
         if (i !== m) {
           const x_i = nodes[i].x;
           const y_i = nodes[i].y;
-          const denominator = 1.0 / Math.sqrt(((x_m - x_i) ** 2) + ((y_m - y_i) ** 2));
+          const denominator =
+            1.0 / Math.sqrt((x_m - x_i) ** 2 + (y_m - y_i) ** 2);
           this.E_matrix[m][iIdx] = [
-            this.K_matrix[m][i] * ((x_m - x_i) - this.L_matrix[m][i] * (x_m - x_i) * denominator),
-            this.K_matrix[m][i] * ((y_m - y_i) - this.L_matrix[m][i] * (y_m - y_i) * denominator)
+            this.K_matrix[m][i] *
+              (x_m - x_i - this.L_matrix[m][i] * (x_m - x_i) * denominator),
+            this.K_matrix[m][i] *
+              (y_m - y_i - this.L_matrix[m][i] * (y_m - y_i) * denominator),
           ];
           this.E_matrix[i][mIdx] = this.E_matrix[m][iIdx];
           dE_dx += this.E_matrix[m][iIdx][0];
@@ -23465,17 +23501,20 @@ class KamadaKawai {
         //Calc new energy:
         const x_i = nodes[i].x;
         const y_i = nodes[i].y;
-        const denominator = 1.0 / Math.sqrt(((x_m - x_i) ** 2) + ((y_m - y_i) ** 2));
-        const dx = kcolm[i] * ((x_m - x_i) - lcolm[i] * (x_m - x_i) * denominator);
-        const dy = kcolm[i] * ((y_m - y_i) - lcolm[i] * (y_m - y_i) * denominator);
+        const denominator =
+          1.0 / Math.sqrt((x_m - x_i) ** 2 + (y_m - y_i) ** 2);
+        const dx =
+          kcolm[i] * (x_m - x_i - lcolm[i] * (x_m - x_i) * denominator);
+        const dy =
+          kcolm[i] * (y_m - y_i - lcolm[i] * (y_m - y_i) * denominator);
         colm[iIdx] = [dx, dy];
         dE_dx += dx;
         dE_dy += dy;
 
         //add new energy to sum of each column
         const sum = this.E_sums[i];
-        sum[0] += (dx-oldDx);
-        sum[1] += (dy-oldDy);
+        sum[0] += dx - oldDx;
+        sum[1] += dy - oldDy;
       }
     }
     //Store sum at -1 index
@@ -23485,29 +23524,28 @@ class KamadaKawai {
 
 // Load custom shapes into CanvasRenderingContext2D
 
-
 /**
  * Create a network visualization, displaying nodes and edges.
  *
  * @param {Element} container   The DOM element in which the Network will
  *                                  be created. Normally a div element.
- * @param {Object} data         An object containing parameters
+ * @param {object} data         An object containing parameters
  *                              {Array} nodes
  *                              {Array} edges
- * @param {Object} options      Options
- * @constructor Network
+ * @param {object} options      Options
+ * @class Network
  */
 function Network(container, data, options) {
   if (!(this instanceof Network)) {
-    throw new SyntaxError('Constructor must be called with the new operator');
+    throw new SyntaxError("Constructor must be called with the new operator");
   }
 
   // set constant values
   this.options = {};
   this.defaultOptions = {
-    locale: 'en',
+    locale: "en",
     locales: locales,
-    clickToUse: false
+    clickToUse: false,
   };
   Object.assign(this.options, this.defaultOptions);
 
@@ -23533,70 +23571,82 @@ function Network(container, data, options) {
     edgeIndices: [],
 
     emitter: {
-      on:   this.on.bind(this),
-      off:  this.off.bind(this),
+      on: this.on.bind(this),
+      off: this.off.bind(this),
       emit: this.emit.bind(this),
-      once: this.once.bind(this)
+      once: this.once.bind(this),
     },
     eventListeners: {
-      onTap:        function() {},
-      onTouch:      function() {},
-      onDoubleTap:  function() {},
-      onHold:       function() {},
-      onDragStart:  function() {},
-      onDrag:       function() {},
-      onDragEnd:    function() {},
-      onMouseWheel: function() {},
-      onPinch:      function() {},
-      onMouseMove:  function() {},
-      onRelease:    function() {},
-      onContext:    function() {}
+      onTap: function () {},
+      onTouch: function () {},
+      onDoubleTap: function () {},
+      onHold: function () {},
+      onDragStart: function () {},
+      onDrag: function () {},
+      onDragEnd: function () {},
+      onMouseWheel: function () {},
+      onPinch: function () {},
+      onMouseMove: function () {},
+      onRelease: function () {},
+      onContext: function () {},
     },
     data: {
-      nodes: null,      // A DataSet or DataView
-      edges: null       // A DataSet or DataView
+      nodes: null, // A DataSet or DataView
+      edges: null, // A DataSet or DataView
     },
     functions: {
-      createNode: function() {},
-      createEdge: function() {},
-      getPointer: function() {}
+      createNode: function () {},
+      createEdge: function () {},
+      getPointer: function () {},
     },
     modules: {},
     view: {
       scale: 1,
-      translation: {x: 0, y: 0}
+      translation: { x: 0, y: 0 },
     },
     selectionBox: {
       show: false,
       position: {
         start: { x: 0, y: 0 },
-        end: { x: 0, y: 0 }
-      }
-    }
+        end: { x: 0, y: 0 },
+      },
+    },
   };
-
-
 
   // bind the event listeners
   this.bindEventListeners();
 
   // setting up all modules
-  this.images              = new Images(() => this.body.emitter.emit("_requestRedraw")); // object with images
-  this.groups              = new Groups(); // object with groups
-  this.canvas              = new Canvas(this.body);                         // DOM handler
-  this.selectionHandler    = new SelectionHandler(this.body, this.canvas);  // Selection handler
-  this.interactionHandler  = new InteractionHandler(this.body, this.canvas, this.selectionHandler);  // Interaction handler handles all the hammer bindings (that are bound by canvas), key
-  this.view                = new View(this.body, this.canvas);              // camera handler, does animations and zooms
-  this.renderer            = new CanvasRenderer(this.body, this.canvas);    // renderer, starts renderloop, has events that modules can hook into
-  this.physics             = new PhysicsEngine(this.body);                  // physics engine, does all the simulations
-  this.layoutEngine        = new LayoutEngine(this.body);                   // layout engine for inital layout and hierarchical layout
-  this.clustering          = new ClusterEngine(this.body);                  // clustering api
-  this.manipulation        = new ManipulationSystem(this.body, this.canvas, this.selectionHandler, this.interactionHandler); // data manipulation system
+  this.images = new Images(() => this.body.emitter.emit("_requestRedraw")); // object with images
+  this.groups = new Groups(); // object with groups
+  this.canvas = new Canvas(this.body); // DOM handler
+  this.selectionHandler = new SelectionHandler(this.body, this.canvas); // Selection handler
+  this.interactionHandler = new InteractionHandler(
+    this.body,
+    this.canvas,
+    this.selectionHandler
+  ); // Interaction handler handles all the hammer bindings (that are bound by canvas), key
+  this.view = new View(this.body, this.canvas); // camera handler, does animations and zooms
+  this.renderer = new CanvasRenderer(this.body, this.canvas); // renderer, starts renderloop, has events that modules can hook into
+  this.physics = new PhysicsEngine(this.body); // physics engine, does all the simulations
+  this.layoutEngine = new LayoutEngine(this.body); // layout engine for inital layout and hierarchical layout
+  this.clustering = new ClusterEngine(this.body); // clustering api
+  this.manipulation = new ManipulationSystem(
+    this.body,
+    this.canvas,
+    this.selectionHandler,
+    this.interactionHandler
+  ); // data manipulation system
 
-  this.nodesHandler        = new NodesHandler(this.body, this.images, this.groups, this.layoutEngine);   // Handle adding, deleting and updating of nodes as well as global options
-  this.edgesHandler        = new EdgesHandler(this.body, this.images, this.groups);   // Handle adding, deleting and updating of edges as well as global options
+  this.nodesHandler = new NodesHandler(
+    this.body,
+    this.images,
+    this.groups,
+    this.layoutEngine
+  ); // Handle adding, deleting and updating of nodes as well as global options
+  this.edgesHandler = new EdgesHandler(this.body, this.images, this.groups); // Handle adding, deleting and updating of edges as well as global options
 
-  this.body.modules["kamadaKawai"] = new KamadaKawai(this.body,150,0.05);   // Layouting algorithm.
+  this.body.modules["kamadaKawai"] = new KamadaKawai(this.body, 150, 0.05); // Layouting algorithm.
   this.body.modules["clustering"] = this.clustering;
 
   // create the DOM elements
@@ -23607,31 +23657,33 @@ function Network(container, data, options) {
 
   // load data (the disable start variable will be the same as the enabled clustering)
   this.setData(data);
-
 }
 
 // Extend Network with an Emitter mixin
 Emitter(Network.prototype);
 
-
 /**
  * Set options
- * @param {Object} options
+ *
+ * @param {object} options
  */
 Network.prototype.setOptions = function (options) {
   if (options === null) {
-    options = undefined;  // This ensures that options handling doesn't crash in the handling
+    options = undefined; // This ensures that options handling doesn't crash in the handling
   }
 
   if (options !== undefined) {
-    const errorFound = Validator.validate(options, allOptions$1);
+    const errorFound = Validator.validate(options, allOptions);
     if (errorFound === true) {
-      console.log('%cErrors have been found in the supplied options object.', printStyle);
+      console.error(
+        "%cErrors have been found in the supplied options object.",
+        VALIDATOR_PRINT_STYLE
+      );
     }
 
     // copy the global fields over
-    const fields = ['locale','locales','clickToUse'];
-    selectiveDeepExtend(fields,this.options, options);
+    const fields = ["locale", "locales", "clickToUse"];
+    selectiveDeepExtend(fields, this.options, options);
 
     // normalize the locale or use English
     if (options.locale !== undefined) {
@@ -23654,8 +23706,8 @@ Network.prototype.setOptions = function (options) {
     this.manipulation.setOptions(options.manipulation, options, this.options); // manipulation uses the locales in the globals
 
     this.interactionHandler.setOptions(options.interaction);
-    this.renderer.setOptions(options.interaction);            // options for rendering are in interaction
-    this.selectionHandler.setOptions(options.interaction);    // options for selection are in interaction
+    this.renderer.setOptions(options.interaction); // options for rendering are in interaction
+    this.selectionHandler.setOptions(options.interaction); // options for selection are in interaction
 
     // reload the settings of the nodes to apply changes in groups that are not referenced by pointer.
     if (options.groups !== undefined) {
@@ -23665,9 +23717,15 @@ Network.prototype.setOptions = function (options) {
     //this.view.setOptions(options.view);
     //this.clustering.setOptions(options.clustering);
 
-    if ('configure' in options) {
+    if ("configure" in options) {
       if (!this.configurator) {
-        this.configurator = new Configurator(this, this.body.container, configureOptions, this.canvas.pixelRatio);
+        this.configurator = new Configurator(
+          this,
+          this.body.container,
+          configureOptions,
+          this.canvas.pixelRatio,
+          configuratorHideOption
+        );
       }
 
       this.configurator.setOptions(options.configure);
@@ -23675,21 +23733,29 @@ Network.prototype.setOptions = function (options) {
 
     // if the configuration system is enabled, copy all options and put them into the config system
     if (this.configurator && this.configurator.options.enabled === true) {
-      const networkOptions = {nodes:{},edges:{},layout:{},interaction:{},manipulation:{},physics:{},global:{}};
-      deepExtend(networkOptions.nodes,        this.nodesHandler.options);
-      deepExtend(networkOptions.edges,        this.edgesHandler.options);
-      deepExtend(networkOptions.layout,       this.layoutEngine.options);
+      const networkOptions = {
+        nodes: {},
+        edges: {},
+        layout: {},
+        interaction: {},
+        manipulation: {},
+        physics: {},
+        global: {},
+      };
+      deepExtend(networkOptions.nodes, this.nodesHandler.options);
+      deepExtend(networkOptions.edges, this.edgesHandler.options);
+      deepExtend(networkOptions.layout, this.layoutEngine.options);
       // load the selectionHandler and render default options in to the interaction group
-      deepExtend(networkOptions.interaction,  this.selectionHandler.options);
-      deepExtend(networkOptions.interaction,  this.renderer.options);
+      deepExtend(networkOptions.interaction, this.selectionHandler.options);
+      deepExtend(networkOptions.interaction, this.renderer.options);
 
-      deepExtend(networkOptions.interaction,  this.interactionHandler.options);
+      deepExtend(networkOptions.interaction, this.interactionHandler.options);
       deepExtend(networkOptions.manipulation, this.manipulation.options);
-      deepExtend(networkOptions.physics,      this.physics.options);
+      deepExtend(networkOptions.physics, this.physics.options);
 
       // load globals into the global object
-      deepExtend(networkOptions.global,       this.canvas.options);
-      deepExtend(networkOptions.global,       this.options);
+      deepExtend(networkOptions.global, this.canvas.options);
+      deepExtend(networkOptions.global, this.options);
 
       this.configurator.setModuleOptions(networkOptions);
     }
@@ -23699,18 +23765,18 @@ Network.prototype.setOptions = function (options) {
       if (options.clickToUse === true) {
         if (this.activator === undefined) {
           this.activator = new Activator(this.canvas.frame);
-          this.activator.on('change', () => {this.body.emitter.emit("activate");});
+          this.activator.on("change", () => {
+            this.body.emitter.emit("activate");
+          });
         }
-      }
-      else {
+      } else {
         if (this.activator !== undefined) {
           this.activator.destroy();
           delete this.activator;
         }
         this.body.emitter.emit("activate");
       }
-    }
-    else {
+    } else {
       this.body.emitter.emit("activate");
     }
 
@@ -23719,7 +23785,6 @@ Network.prototype.setOptions = function (options) {
     this.body.emitter.emit("startSimulation");
   }
 };
-
 
 /**
  * Update the visible nodes and edges list with the most recent node state.
@@ -23738,7 +23803,10 @@ Network.prototype._updateVisibleIndices = function () {
 
   for (const nodeId in nodes) {
     if (Object.prototype.hasOwnProperty.call(nodes, nodeId)) {
-      if (!this.clustering._isClusteredNode(nodeId) && nodes[nodeId].options.hidden === false) {
+      if (
+        !this.clustering._isClusteredNode(nodeId) &&
+        nodes[nodeId].options.hidden === false
+      ) {
         this.body.nodeIndices.push(nodes[nodeId].id);
       }
     }
@@ -23751,15 +23819,15 @@ Network.prototype._updateVisibleIndices = function () {
       // It can happen that this is executed *after* a node edge has been removed,
       // but *before* the edge itself has been removed. Taking this into account.
       const fromNode = nodes[edge.fromId];
-      const toNode   = nodes[edge.toId];
-      const edgeNodesPresent = (fromNode !== undefined) && (toNode !== undefined);
+      const toNode = nodes[edge.toId];
+      const edgeNodesPresent = fromNode !== undefined && toNode !== undefined;
 
       const isVisible =
-          !this.clustering._isClusteredEdge(edgeId)
-        && edge.options.hidden === false
-        && edgeNodesPresent
-        && fromNode.options.hidden === false  // Also hidden if any of its connecting nodes are hidden
-        && toNode.options.hidden === false;   // idem
+        !this.clustering._isClusteredEdge(edgeId) &&
+        edge.options.hidden === false &&
+        edgeNodesPresent &&
+        fromNode.options.hidden === false && // Also hidden if any of its connecting nodes are hidden
+        toNode.options.hidden === false; // idem
 
       if (isVisible) {
         this.body.edgeIndices.push(edge.id);
@@ -23767,7 +23835,6 @@ Network.prototype._updateVisibleIndices = function () {
     }
   }
 };
-
 
 /**
  * Bind all events
@@ -23794,11 +23861,10 @@ Network.prototype.bindEventListeners = function () {
   });
 };
 
-
 /**
  * Set nodes and edges, and optionally options as well.
  *
- * @param {Object} data              Object containing parameters:
+ * @param {object} data              Object containing parameters:
  *                                   {Array | DataSet | DataView} [nodes] Array with nodes
  *                                   {Array | DataSet | DataView} [edges] Array with edges
  *                                   {String} [dot] String containing data in DOT format
@@ -23814,28 +23880,32 @@ Network.prototype.setData = function (data) {
   this.selectionHandler.unselectAll();
 
   if (data && data.dot && (data.nodes || data.edges)) {
-    throw new SyntaxError('Data must contain either parameter "dot" or ' +
-      ' parameter pair "nodes" and "edges", but not both.');
+    throw new SyntaxError(
+      'Data must contain either parameter "dot" or ' +
+        ' parameter pair "nodes" and "edges", but not both.'
+    );
   }
 
   // set options
   this.setOptions(data && data.options);
   // set all data
   if (data && data.dot) {
-    console.log('The dot property has been deprecated. Please use the static convertDot method to convert DOT into vis.network format and use the normal data format with nodes and edges. This converter is used like this: var data = vis.network.convertDot(dotString);');
+    console.warn(
+      "The dot property has been deprecated. Please use the static convertDot method to convert DOT into vis.network format and use the normal data format with nodes and edges. This converter is used like this: var data = vis.network.convertDot(dotString);"
+    );
     // parse DOT file
     const dotData = DOTToGraph(data.dot);
     this.setData(dotData);
     return;
-  }
-  else if (data && data.gephi) {
+  } else if (data && data.gephi) {
     // parse DOT file
-    console.log('The gephi property has been deprecated. Please use the static convertGephi method to convert gephi into vis.network format and use the normal data format with nodes and edges. This converter is used like this: var data = vis.network.convertGephi(gephiJson);');
+    console.warn(
+      "The gephi property has been deprecated. Please use the static convertGephi method to convert gephi into vis.network format and use the normal data format with nodes and edges. This converter is used like this: var data = vis.network.convertGephi(gephiJson);"
+    );
     const gephiData = parseGephi(data.gephi);
     this.setData(gephiData);
     return;
-  }
-  else {
+  } else {
     this.nodesHandler.setData(data && data.nodes, true);
     this.edgesHandler.setData(data && data.edges, true);
   }
@@ -23849,7 +23919,6 @@ Network.prototype.setData = function (data) {
   // find a stable position or start animating to a stable position
   this.body.emitter.emit("initPhysics");
 };
-
 
 /**
  * Cleans up all bindings of the network, removing it fully from the memory IF the variable is set to null after calling this function.
@@ -23880,12 +23949,14 @@ Network.prototype.destroy = function () {
   delete this.images;
 
   for (const nodeId in this.body.nodes) {
-    if (!Object.prototype.hasOwnProperty.call(this.body.nodes, nodeId)) continue;
+    if (!Object.prototype.hasOwnProperty.call(this.body.nodes, nodeId))
+      continue;
     delete this.body.nodes[nodeId];
   }
 
   for (const edgeId in this.body.edges) {
-    if (!Object.prototype.hasOwnProperty.call(this.body.edges, edgeId)) continue;
+    if (!Object.prototype.hasOwnProperty.call(this.body.edges, edgeId))
+      continue;
     delete this.body.edges[edgeId];
   }
 
@@ -23893,11 +23964,11 @@ Network.prototype.destroy = function () {
   recursiveDOMDelete(this.body.container);
 };
 
-
 /**
  * Update the values of all object in the given array according to the current
  * value range of the objects in the array.
- * @param {Object} obj    An object containing a set of Edges or Nodes
+ *
+ * @param {object} obj    An object containing a set of Edges or Nodes
  *                        The objects must have a method getValue() and
  *                        setValueRange(min, max).
  * @private
@@ -23913,8 +23984,8 @@ Network.prototype._updateValueRange = function (obj) {
     if (Object.prototype.hasOwnProperty.call(obj, id)) {
       const value = obj[id].getValue();
       if (value !== undefined) {
-        valueMin = (valueMin === undefined) ? value : Math.min(value, valueMin);
-        valueMax = (valueMax === undefined) ? value : Math.max(value, valueMax);
+        valueMin = valueMin === undefined ? value : Math.min(value, valueMin);
+        valueMax = valueMax === undefined ? value : Math.max(value, valueMax);
         valueTotal += value;
       }
     }
@@ -23930,20 +24001,24 @@ Network.prototype._updateValueRange = function (obj) {
   }
 };
 
-
 /**
  * Returns true when the Network is active.
+ *
  * @returns {boolean}
  */
 Network.prototype.isActive = function () {
   return !this.activator || this.activator.active;
 };
 
-
-Network.prototype.setSize             = function() {return this.canvas.setSize.apply(this.canvas,arguments);};
-Network.prototype.canvasToDOM         = function() {return this.canvas.canvasToDOM.apply(this.canvas,arguments);};
-Network.prototype.DOMtoCanvas         = function() {return this.canvas.DOMtoCanvas.apply(this.canvas,arguments);};
-
+Network.prototype.setSize = function () {
+  return this.canvas.setSize.apply(this.canvas, arguments);
+};
+Network.prototype.canvasToDOM = function () {
+  return this.canvas.canvasToDOM.apply(this.canvas, arguments);
+};
+Network.prototype.DOMtoCanvas = function () {
+  return this.canvas.DOMtoCanvas.apply(this.canvas, arguments);
+};
 
 /**
  * Nodes can be in clusters. Clusters can also be in clusters. This function returns and array of
@@ -23961,20 +24036,43 @@ Network.prototype.DOMtoCanvas         = function() {return this.canvas.DOMtoCanv
  * @param {string|number} nodeId
  * @returns {Array}
  */
-Network.prototype.findNode            = function() {return this.clustering.findNode.apply(this.clustering,arguments);};
+Network.prototype.findNode = function () {
+  return this.clustering.findNode.apply(this.clustering, arguments);
+};
 
-
-Network.prototype.isCluster           = function() {return this.clustering.isCluster.apply(this.clustering,arguments);};
-Network.prototype.openCluster         = function() {return this.clustering.openCluster.apply(this.clustering,arguments);};
-Network.prototype.cluster             = function() {return this.clustering.cluster.apply(this.clustering,arguments);};
-Network.prototype.getNodesInCluster   = function() {return this.clustering.getNodesInCluster.apply(this.clustering,arguments);};
-Network.prototype.clusterByConnection = function() {return this.clustering.clusterByConnection.apply(this.clustering,arguments);};
-Network.prototype.clusterByHubsize    = function() {return this.clustering.clusterByHubsize.apply(this.clustering,arguments);};
-Network.prototype.updateClusteredNode = function() {return this.clustering.updateClusteredNode.apply(this.clustering,arguments);};
-Network.prototype.getClusteredEdges   = function() {return this.clustering.getClusteredEdges.apply(this.clustering,arguments);};
-Network.prototype.getBaseEdge         = function() {return this.clustering.getBaseEdge.apply(this.clustering,arguments);};
-Network.prototype.getBaseEdges        = function() {return this.clustering.getBaseEdges.apply(this.clustering,arguments);};
-Network.prototype.updateEdge          = function() {return this.clustering.updateEdge.apply(this.clustering,arguments);};
+Network.prototype.isCluster = function () {
+  return this.clustering.isCluster.apply(this.clustering, arguments);
+};
+Network.prototype.openCluster = function () {
+  return this.clustering.openCluster.apply(this.clustering, arguments);
+};
+Network.prototype.cluster = function () {
+  return this.clustering.cluster.apply(this.clustering, arguments);
+};
+Network.prototype.getNodesInCluster = function () {
+  return this.clustering.getNodesInCluster.apply(this.clustering, arguments);
+};
+Network.prototype.clusterByConnection = function () {
+  return this.clustering.clusterByConnection.apply(this.clustering, arguments);
+};
+Network.prototype.clusterByHubsize = function () {
+  return this.clustering.clusterByHubsize.apply(this.clustering, arguments);
+};
+Network.prototype.updateClusteredNode = function () {
+  return this.clustering.updateClusteredNode.apply(this.clustering, arguments);
+};
+Network.prototype.getClusteredEdges = function () {
+  return this.clustering.getClusteredEdges.apply(this.clustering, arguments);
+};
+Network.prototype.getBaseEdge = function () {
+  return this.clustering.getBaseEdge.apply(this.clustering, arguments);
+};
+Network.prototype.getBaseEdges = function () {
+  return this.clustering.getBaseEdges.apply(this.clustering, arguments);
+};
+Network.prototype.updateEdge = function () {
+  return this.clustering.updateEdge.apply(this.clustering, arguments);
+};
 
 /**
  * This method will cluster all nodes with 1 edge with their respective connected node.
@@ -23983,66 +24081,164 @@ Network.prototype.updateEdge          = function() {return this.clustering.updat
  * @param {object} [options]
  * @returns {undefined}
  */
-Network.prototype.clusterOutliers     = function() {return this.clustering.clusterOutliers.apply(this.clustering,arguments);};
+Network.prototype.clusterOutliers = function () {
+  return this.clustering.clusterOutliers.apply(this.clustering, arguments);
+};
 
-Network.prototype.getSeed             = function() {return this.layoutEngine.getSeed.apply(this.layoutEngine,arguments);};
-Network.prototype.enableEditMode      = function() {return this.manipulation.enableEditMode.apply(this.manipulation,arguments);};
-Network.prototype.disableEditMode     = function() {return this.manipulation.disableEditMode.apply(this.manipulation,arguments);};
-Network.prototype.addNodeMode         = function() {return this.manipulation.addNodeMode.apply(this.manipulation,arguments);};
-Network.prototype.editNode            = function() {return this.manipulation.editNode.apply(this.manipulation,arguments);};
-Network.prototype.editNodeMode        = function() {console.log("Deprecated: Please use editNode instead of editNodeMode."); return this.manipulation.editNode.apply(this.manipulation,arguments);};
-Network.prototype.addEdgeMode         = function() {return this.manipulation.addEdgeMode.apply(this.manipulation,arguments);};
-Network.prototype.editEdgeMode        = function() {return this.manipulation.editEdgeMode.apply(this.manipulation,arguments);};
-Network.prototype.deleteSelected      = function() {return this.manipulation.deleteSelected.apply(this.manipulation,arguments);};
-Network.prototype.getPositions        = function() {return this.nodesHandler.getPositions.apply(this.nodesHandler,arguments);};
-Network.prototype.getPosition         = function() {return this.nodesHandler.getPosition.apply(this.nodesHandler,arguments);};
-Network.prototype.storePositions      = function() {return this.nodesHandler.storePositions.apply(this.nodesHandler,arguments);};
-Network.prototype.moveNode            = function() {return this.nodesHandler.moveNode.apply(this.nodesHandler,arguments);};
-Network.prototype.getBoundingBox      = function() {return this.nodesHandler.getBoundingBox.apply(this.nodesHandler,arguments);};
-Network.prototype.getConnectedNodes   = function(objectId) {
+Network.prototype.getSeed = function () {
+  return this.layoutEngine.getSeed.apply(this.layoutEngine, arguments);
+};
+Network.prototype.enableEditMode = function () {
+  return this.manipulation.enableEditMode.apply(this.manipulation, arguments);
+};
+Network.prototype.disableEditMode = function () {
+  return this.manipulation.disableEditMode.apply(this.manipulation, arguments);
+};
+Network.prototype.addNodeMode = function () {
+  return this.manipulation.addNodeMode.apply(this.manipulation, arguments);
+};
+Network.prototype.editNode = function () {
+  return this.manipulation.editNode.apply(this.manipulation, arguments);
+};
+Network.prototype.editNodeMode = function () {
+  console.warn("Deprecated: Please use editNode instead of editNodeMode.");
+  return this.manipulation.editNode.apply(this.manipulation, arguments);
+};
+Network.prototype.addEdgeMode = function () {
+  return this.manipulation.addEdgeMode.apply(this.manipulation, arguments);
+};
+Network.prototype.editEdgeMode = function () {
+  return this.manipulation.editEdgeMode.apply(this.manipulation, arguments);
+};
+Network.prototype.deleteSelected = function () {
+  return this.manipulation.deleteSelected.apply(this.manipulation, arguments);
+};
+Network.prototype.getPositions = function () {
+  return this.nodesHandler.getPositions.apply(this.nodesHandler, arguments);
+};
+Network.prototype.getPosition = function () {
+  return this.nodesHandler.getPosition.apply(this.nodesHandler, arguments);
+};
+Network.prototype.storePositions = function () {
+  return this.nodesHandler.storePositions.apply(this.nodesHandler, arguments);
+};
+Network.prototype.moveNode = function () {
+  return this.nodesHandler.moveNode.apply(this.nodesHandler, arguments);
+};
+Network.prototype.getBoundingBox = function () {
+  return this.nodesHandler.getBoundingBox.apply(this.nodesHandler, arguments);
+};
+Network.prototype.getConnectedNodes = function (objectId) {
   if (this.body.nodes[objectId] !== undefined) {
-    return this.nodesHandler.getConnectedNodes.apply(this.nodesHandler,arguments);
-  }
-  else {
-    return this.edgesHandler.getConnectedNodes.apply(this.edgesHandler,arguments);
+    return this.nodesHandler.getConnectedNodes.apply(
+      this.nodesHandler,
+      arguments
+    );
+  } else {
+    return this.edgesHandler.getConnectedNodes.apply(
+      this.edgesHandler,
+      arguments
+    );
   }
 };
-Network.prototype.getConnectedEdges   = function() {return this.nodesHandler.getConnectedEdges.apply(this.nodesHandler,arguments);};
-Network.prototype.startSimulation     = function() {return this.physics.startSimulation.apply(this.physics,arguments);};
-Network.prototype.stopSimulation      = function() {return this.physics.stopSimulation.apply(this.physics,arguments);};
-Network.prototype.stabilize           = function() {return this.physics.stabilize.apply(this.physics,arguments);};
-Network.prototype.getSelection        = function() {return this.selectionHandler.getSelection.apply(this.selectionHandler,arguments);};
-Network.prototype.setSelection        = function() {return this.selectionHandler.setSelection.apply(this.selectionHandler,arguments);};
-Network.prototype.getSelectedNodes    = function() {return this.selectionHandler.getSelectedNodes.apply(this.selectionHandler,arguments);};
-Network.prototype.getSelectedEdges    = function() {return this.selectionHandler.getSelectedEdges.apply(this.selectionHandler,arguments);};
-Network.prototype.getNodeAt           = function() {
-  const node = this.selectionHandler.getNodeAt.apply(this.selectionHandler,arguments);
+Network.prototype.getConnectedEdges = function () {
+  return this.nodesHandler.getConnectedEdges.apply(
+    this.nodesHandler,
+    arguments
+  );
+};
+Network.prototype.startSimulation = function () {
+  return this.physics.startSimulation.apply(this.physics, arguments);
+};
+Network.prototype.stopSimulation = function () {
+  return this.physics.stopSimulation.apply(this.physics, arguments);
+};
+Network.prototype.stabilize = function () {
+  return this.physics.stabilize.apply(this.physics, arguments);
+};
+Network.prototype.getSelection = function () {
+  return this.selectionHandler.getSelection.apply(
+    this.selectionHandler,
+    arguments
+  );
+};
+Network.prototype.setSelection = function () {
+  return this.selectionHandler.setSelection.apply(
+    this.selectionHandler,
+    arguments
+  );
+};
+Network.prototype.getSelectedNodes = function () {
+  return this.selectionHandler.getSelectedNodeIds.apply(
+    this.selectionHandler,
+    arguments
+  );
+};
+Network.prototype.getSelectedEdges = function () {
+  return this.selectionHandler.getSelectedEdgeIds.apply(
+    this.selectionHandler,
+    arguments
+  );
+};
+Network.prototype.getNodeAt = function () {
+  const node = this.selectionHandler.getNodeAt.apply(
+    this.selectionHandler,
+    arguments
+  );
   if (node !== undefined && node.id !== undefined) {
     return node.id;
   }
   return node;
 };
-Network.prototype.getEdgeAt           = function() {
-    const edge = this.selectionHandler.getEdgeAt.apply(this.selectionHandler,arguments);
-    if (edge !== undefined && edge.id !== undefined) {
-      return edge.id;
-    }
-    return edge;
-  };
-Network.prototype.selectNodes         = function() {return this.selectionHandler.selectNodes.apply(this.selectionHandler,arguments);};
-Network.prototype.selectEdges         = function() {return this.selectionHandler.selectEdges.apply(this.selectionHandler,arguments);};
-Network.prototype.unselectAll         = function() {
-  this.selectionHandler.unselectAll.apply(this.selectionHandler,arguments);
+Network.prototype.getEdgeAt = function () {
+  const edge = this.selectionHandler.getEdgeAt.apply(
+    this.selectionHandler,
+    arguments
+  );
+  if (edge !== undefined && edge.id !== undefined) {
+    return edge.id;
+  }
+  return edge;
+};
+Network.prototype.selectNodes = function () {
+  return this.selectionHandler.selectNodes.apply(
+    this.selectionHandler,
+    arguments
+  );
+};
+Network.prototype.selectEdges = function () {
+  return this.selectionHandler.selectEdges.apply(
+    this.selectionHandler,
+    arguments
+  );
+};
+Network.prototype.unselectAll = function () {
+  this.selectionHandler.unselectAll.apply(this.selectionHandler, arguments);
+  this.selectionHandler.commitWithoutEmitting.apply(this.selectionHandler);
   this.redraw();
 };
-Network.prototype.redraw              = function() {return this.renderer.redraw.apply(this.renderer,arguments);};
-Network.prototype.getScale            = function() {return this.view.getScale.apply(this.view,arguments);};
-Network.prototype.getViewPosition     = function() {return this.view.getViewPosition.apply(this.view,arguments);};
-Network.prototype.fit                 = function() {return this.view.fit.apply(this.view,arguments);};
-Network.prototype.moveTo              = function() {return this.view.moveTo.apply(this.view,arguments);};
-Network.prototype.focus               = function() {return this.view.focus.apply(this.view,arguments);};
-Network.prototype.releaseNode         = function() {return this.view.releaseNode.apply(this.view,arguments);};
-Network.prototype.getOptionsFromConfigurator = function() {
+Network.prototype.redraw = function () {
+  return this.renderer.redraw.apply(this.renderer, arguments);
+};
+Network.prototype.getScale = function () {
+  return this.view.getScale.apply(this.view, arguments);
+};
+Network.prototype.getViewPosition = function () {
+  return this.view.getViewPosition.apply(this.view, arguments);
+};
+Network.prototype.fit = function () {
+  return this.view.fit.apply(this.view, arguments);
+};
+Network.prototype.moveTo = function () {
+  return this.view.moveTo.apply(this.view, arguments);
+};
+Network.prototype.focus = function () {
+  return this.view.focus.apply(this.view, arguments);
+};
+Network.prototype.releaseNode = function () {
+  return this.view.releaseNode.apply(this.view, arguments);
+};
+Network.prototype.getOptionsFromConfigurator = function () {
   let options = {};
   if (this.configurator) {
     options = this.configurator.getOptions.apply(this.configurator);
@@ -24055,5 +24251,13 @@ const parseDOTNetwork = DOTToGraph;
 // overflow in UMD builds. They all export vis namespace therefore reexporting
 // leads to loading vis to load vis to load vis…
 
-export { Network, Images as NetworkImages, dotparser as networkDOTParser, gephiParser as networkGephiParser, options as networkOptions, parseDOTNetwork, parseGephi as parseGephiNetwork };
+export {
+  Network,
+  Images as NetworkImages,
+  dotparser as networkDOTParser,
+  gephiParser as networkGephiParser,
+  options as networkOptions,
+  parseDOTNetwork,
+  parseGephi as parseGephiNetwork,
+};
 //# sourceMappingURL=vis-network.js.map
