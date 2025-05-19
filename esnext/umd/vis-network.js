@@ -5,7 +5,7 @@
  * A dynamic, browser-based visualization library.
  *
  * @version 0.0.0-no-version
- * @date    2025-02-17T20:02:11.557Z
+ * @date    2025-05-19T20:35:42.177Z
  *
  * @copyright (c) 2011-2017 Almende B.V, http://almende.com
  * @copyright (c) 2017-2019 visjs contributors, https://github.com/visjs
@@ -25,38 +25,10 @@
  */
 
 (function (global, factory) {
-  typeof exports === "object" && typeof module !== "undefined"
-    ? factory(
-        exports,
-        require("component-emitter"),
-        require("vis-util/esnext/umd/vis-util.js"),
-        require("vis-data/esnext/umd/vis-data.js"),
-        require("uuid"),
-        require("keycharm")
-      )
-    : typeof define === "function" && define.amd
-    ? define(
-        [
-          "exports",
-          "component-emitter",
-          "vis-util/esnext/umd/vis-util.js",
-          "vis-data/esnext/umd/vis-data.js",
-          "uuid",
-          "keycharm",
-        ],
-        factory
-      )
-    : ((global =
-        typeof globalThis !== "undefined" ? globalThis : global || self),
-      factory(
-        (global.vis = global.vis || {}),
-        global.Emitter,
-        global.vis,
-        global.vis,
-        global.uuid,
-        global.keycharm
-      ));
-})(this, function (exports, Emitter, esnext, esnext$1, uuid, keycharm) {
+  typeof exports === 'object' && typeof module !== 'undefined' ? factory(exports, require('component-emitter'), require('vis-util/esnext/umd/vis-util.js'), require('vis-data/esnext/umd/vis-data.js'), require('uuid'), require('keycharm')) :
+  typeof define === 'function' && define.amd ? define(['exports', 'component-emitter', 'vis-util/esnext/umd/vis-util.js', 'vis-data/esnext/umd/vis-data.js', 'uuid', 'keycharm'], factory) :
+  (global = typeof globalThis !== 'undefined' ? globalThis : global || self, factory(global.vis = global.vis || {}, global.Emitter, global.vis, global.vis, global.uuid, global.keycharm));
+})(this, (function (exports, Emitter, esnext, esnext$1, uuid, keycharm) {
   /**
    * Draw a circle.
    *
@@ -66,9 +38,9 @@
    * @param r - The radius of the circle.
    */
   function drawCircle(ctx, x, y, r) {
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, 2 * Math.PI, false);
-    ctx.closePath();
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, 2 * Math.PI, false);
+      ctx.closePath();
   }
   /**
    * Draw a square.
@@ -79,9 +51,9 @@
    * @param r - Half of the width and height of the square.
    */
   function drawSquare(ctx, x, y, r) {
-    ctx.beginPath();
-    ctx.rect(x - r, y - r, r * 2, r * 2);
-    ctx.closePath();
+      ctx.beginPath();
+      ctx.rect(x - r, y - r, r * 2, r * 2);
+      ctx.closePath();
   }
   /**
    * Draw an equilateral triangle standing on a side.
@@ -94,19 +66,19 @@
    * http://en.wikipedia.org/wiki/Equilateral_triangle
    */
   function drawTriangle(ctx, x, y, r) {
-    ctx.beginPath();
-    // the change in radius and the offset is here to center the shape
-    r *= 1.15;
-    y += 0.275 * r;
-    const s = r * 2;
-    const s2 = s / 2;
-    const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
-    const h = Math.sqrt(s * s - s2 * s2); // height
-    ctx.moveTo(x, y - (h - ir));
-    ctx.lineTo(x + s2, y + ir);
-    ctx.lineTo(x - s2, y + ir);
-    ctx.lineTo(x, y - (h - ir));
-    ctx.closePath();
+      ctx.beginPath();
+      // the change in radius and the offset is here to center the shape
+      r *= 1.15;
+      y += 0.275 * r;
+      const s = r * 2;
+      const s2 = s / 2;
+      const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
+      const h = Math.sqrt(s * s - s2 * s2); // height
+      ctx.moveTo(x, y - (h - ir));
+      ctx.lineTo(x + s2, y + ir);
+      ctx.lineTo(x - s2, y + ir);
+      ctx.lineTo(x, y - (h - ir));
+      ctx.closePath();
   }
   /**
    * Draw an equilateral triangle standing on a vertex.
@@ -119,19 +91,19 @@
    * http://en.wikipedia.org/wiki/Equilateral_triangle
    */
   function drawTriangleDown(ctx, x, y, r) {
-    ctx.beginPath();
-    // the change in radius and the offset is here to center the shape
-    r *= 1.15;
-    y -= 0.275 * r;
-    const s = r * 2;
-    const s2 = s / 2;
-    const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
-    const h = Math.sqrt(s * s - s2 * s2); // height
-    ctx.moveTo(x, y + (h - ir));
-    ctx.lineTo(x + s2, y - ir);
-    ctx.lineTo(x - s2, y - ir);
-    ctx.lineTo(x, y + (h - ir));
-    ctx.closePath();
+      ctx.beginPath();
+      // the change in radius and the offset is here to center the shape
+      r *= 1.15;
+      y -= 0.275 * r;
+      const s = r * 2;
+      const s2 = s / 2;
+      const ir = (Math.sqrt(3) / 6) * s; // radius of inner circle
+      const h = Math.sqrt(s * s - s2 * s2); // height
+      ctx.moveTo(x, y + (h - ir));
+      ctx.lineTo(x + s2, y - ir);
+      ctx.lineTo(x - s2, y - ir);
+      ctx.lineTo(x, y + (h - ir));
+      ctx.closePath();
   }
   /**
    * Draw a star.
@@ -142,19 +114,16 @@
    * @param r - The outer radius of the star.
    */
   function drawStar(ctx, x, y, r) {
-    // http://www.html5canvastutorials.com/labs/html5-canvas-star-spinner/
-    ctx.beginPath();
-    // the change in radius and the offset is here to center the shape
-    r *= 0.82;
-    y += 0.1 * r;
-    for (let n = 0; n < 10; n++) {
-      const radius = n % 2 === 0 ? r * 1.3 : r * 0.5;
-      ctx.lineTo(
-        x + radius * Math.sin((n * 2 * Math.PI) / 10),
-        y - radius * Math.cos((n * 2 * Math.PI) / 10)
-      );
-    }
-    ctx.closePath();
+      // http://www.html5canvastutorials.com/labs/html5-canvas-star-spinner/
+      ctx.beginPath();
+      // the change in radius and the offset is here to center the shape
+      r *= 0.82;
+      y += 0.1 * r;
+      for (let n = 0; n < 10; n++) {
+          const radius = n % 2 === 0 ? r * 1.3 : r * 0.5;
+          ctx.lineTo(x + radius * Math.sin((n * 2 * Math.PI) / 10), y - radius * Math.cos((n * 2 * Math.PI) / 10));
+      }
+      ctx.closePath();
   }
   /**
    * Draw a diamond.
@@ -167,12 +136,12 @@
    * http://www.html5canvastutorials.com/labs/html5-canvas-star-spinner/
    */
   function drawDiamond(ctx, x, y, r) {
-    ctx.beginPath();
-    ctx.lineTo(x, y + r);
-    ctx.lineTo(x + r, y);
-    ctx.lineTo(x, y - r);
-    ctx.lineTo(x - r, y);
-    ctx.closePath();
+      ctx.beginPath();
+      ctx.lineTo(x, y + r);
+      ctx.lineTo(x + r, y);
+      ctx.lineTo(x, y - r);
+      ctx.lineTo(x - r, y);
+      ctx.closePath();
   }
   /**
    * Draw a rectangle with rounded corners.
@@ -187,24 +156,24 @@
    * http://stackoverflow.com/questions/1255512/how-to-draw-a-rounded-rectangle-on-html-canvas
    */
   function drawRoundRect(ctx, x, y, w, h, r) {
-    const r2d = Math.PI / 180;
-    if (w - 2 * r < 0) {
-      r = w / 2;
-    } //ensure that the radius isn't too large for x
-    if (h - 2 * r < 0) {
-      r = h / 2;
-    } //ensure that the radius isn't too large for y
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.arc(x + w - r, y + r, r, r2d * 270, r2d * 360, false);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.arc(x + w - r, y + h - r, r, 0, r2d * 90, false);
-    ctx.lineTo(x + r, y + h);
-    ctx.arc(x + r, y + h - r, r, r2d * 90, r2d * 180, false);
-    ctx.lineTo(x, y + r);
-    ctx.arc(x + r, y + r, r, r2d * 180, r2d * 270, false);
-    ctx.closePath();
+      const r2d = Math.PI / 180;
+      if (w - 2 * r < 0) {
+          r = w / 2;
+      } //ensure that the radius isn't too large for x
+      if (h - 2 * r < 0) {
+          r = h / 2;
+      } //ensure that the radius isn't too large for y
+      ctx.beginPath();
+      ctx.moveTo(x + r, y);
+      ctx.lineTo(x + w - r, y);
+      ctx.arc(x + w - r, y + r, r, r2d * 270, r2d * 360, false);
+      ctx.lineTo(x + w, y + h - r);
+      ctx.arc(x + w - r, y + h - r, r, 0, r2d * 90, false);
+      ctx.lineTo(x + r, y + h);
+      ctx.arc(x + r, y + h - r, r, r2d * 90, r2d * 180, false);
+      ctx.lineTo(x, y + r);
+      ctx.arc(x + r, y + r, r, r2d * 180, r2d * 270, false);
+      ctx.closePath();
   }
   /**
    * Draw an ellipse.
@@ -220,20 +189,19 @@
    * Postfix '_vis' added to discern it from standard method ellipse().
    */
   function drawEllipse(ctx, x, y, w, h) {
-    const kappa = 0.5522848,
-      ox = (w / 2) * kappa, // control point offset horizontal
+      const kappa = 0.5522848, ox = (w / 2) * kappa, // control point offset horizontal
       oy = (h / 2) * kappa, // control point offset vertical
       xe = x + w, // x-end
       ye = y + h, // y-end
       xm = x + w / 2, // x-middle
       ym = y + h / 2; // y-middle
-    ctx.beginPath();
-    ctx.moveTo(x, ym);
-    ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-    ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-    ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-    ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-    ctx.closePath();
+      ctx.beginPath();
+      ctx.moveTo(x, ym);
+      ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+      ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+      ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+      ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+      ctx.closePath();
   }
   /**
    * Draw an isometric cylinder.
@@ -247,11 +215,10 @@
    * http://stackoverflow.com/questions/2172798/how-to-draw-an-oval-in-html5-canvas
    */
   function drawDatabase(ctx, x, y, w, h) {
-    const f = 1 / 3;
-    const wEllipse = w;
-    const hEllipse = h * f;
-    const kappa = 0.5522848,
-      ox = (wEllipse / 2) * kappa, // control point offset horizontal
+      const f = 1 / 3;
+      const wEllipse = w;
+      const hEllipse = h * f;
+      const kappa = 0.5522848, ox = (wEllipse / 2) * kappa, // control point offset horizontal
       oy = (hEllipse / 2) * kappa, // control point offset vertical
       xe = x + wEllipse, // x-end
       ye = y + hEllipse, // y-end
@@ -259,16 +226,16 @@
       ym = y + hEllipse / 2, // y-middle
       ymb = y + (h - hEllipse / 2), // y-midlle, bottom ellipse
       yeb = y + h; // y-end, bottom ellipse
-    ctx.beginPath();
-    ctx.moveTo(xe, ym);
-    ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
-    ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
-    ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
-    ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
-    ctx.lineTo(xe, ymb);
-    ctx.bezierCurveTo(xe, ymb + oy, xm + ox, yeb, xm, yeb);
-    ctx.bezierCurveTo(xm - ox, yeb, x, ymb + oy, x, ymb);
-    ctx.lineTo(x, ym);
+      ctx.beginPath();
+      ctx.moveTo(xe, ym);
+      ctx.bezierCurveTo(xe, ym + oy, xm + ox, ye, xm, ye);
+      ctx.bezierCurveTo(xm - ox, ye, x, ym + oy, x, ym);
+      ctx.bezierCurveTo(x, ym - oy, xm - ox, y, xm, y);
+      ctx.bezierCurveTo(xm + ox, y, xe, ym - oy, xe, ym);
+      ctx.lineTo(xe, ymb);
+      ctx.bezierCurveTo(xe, ymb + oy, xm + ox, yeb, xm, yeb);
+      ctx.bezierCurveTo(xm - ox, yeb, x, ymb + oy, x, ymb);
+      ctx.lineTo(x, ym);
   }
   /**
    * Draw a dashed line.
@@ -285,34 +252,35 @@
    * http://stackoverflow.com/questions/4576724/dotted-stroke-in-canvas
    */
   function drawDashedLine(ctx, x, y, x2, y2, pattern) {
-    ctx.beginPath();
-    ctx.moveTo(x, y);
-    const patternLength = pattern.length;
-    const dx = x2 - x;
-    const dy = y2 - y;
-    const slope = dy / dx;
-    let distRemaining = Math.sqrt(dx * dx + dy * dy);
-    let patternIndex = 0;
-    let draw = true;
-    let xStep = 0;
-    let dashLength = +pattern[0];
-    while (distRemaining >= 0.1) {
-      dashLength = +pattern[patternIndex++ % patternLength];
-      if (dashLength > distRemaining) {
-        dashLength = distRemaining;
+      ctx.beginPath();
+      ctx.moveTo(x, y);
+      const patternLength = pattern.length;
+      const dx = x2 - x;
+      const dy = y2 - y;
+      const slope = dy / dx;
+      let distRemaining = Math.sqrt(dx * dx + dy * dy);
+      let patternIndex = 0;
+      let draw = true;
+      let xStep = 0;
+      let dashLength = +pattern[0];
+      while (distRemaining >= 0.1) {
+          dashLength = +pattern[patternIndex++ % patternLength];
+          if (dashLength > distRemaining) {
+              dashLength = distRemaining;
+          }
+          xStep = Math.sqrt((dashLength * dashLength) / (1 + slope * slope));
+          xStep = dx < 0 ? -xStep : xStep;
+          x += xStep;
+          y += slope * xStep;
+          if (draw === true) {
+              ctx.lineTo(x, y);
+          }
+          else {
+              ctx.moveTo(x, y);
+          }
+          distRemaining -= dashLength;
+          draw = !draw;
       }
-      xStep = Math.sqrt((dashLength * dashLength) / (1 + slope * slope));
-      xStep = dx < 0 ? -xStep : xStep;
-      x += xStep;
-      y += slope * xStep;
-      if (draw === true) {
-        ctx.lineTo(x, y);
-      } else {
-        ctx.moveTo(x, y);
-      }
-      distRemaining -= dashLength;
-      draw = !draw;
-    }
   }
   /**
    * Draw a hexagon.
@@ -323,28 +291,28 @@
    * @param r - The radius of the hexagon.
    */
   function drawHexagon(ctx, x, y, r) {
-    ctx.beginPath();
-    const sides = 6;
-    const a = (Math.PI * 2) / sides;
-    ctx.moveTo(x + r, y);
-    for (let i = 1; i < sides; i++) {
-      ctx.lineTo(x + r * Math.cos(a * i), y + r * Math.sin(a * i));
-    }
-    ctx.closePath();
+      ctx.beginPath();
+      const sides = 6;
+      const a = (Math.PI * 2) / sides;
+      ctx.moveTo(x + r, y);
+      for (let i = 1; i < sides; i++) {
+          ctx.lineTo(x + r * Math.cos(a * i), y + r * Math.sin(a * i));
+      }
+      ctx.closePath();
   }
   const shapeMap = {
-    circle: drawCircle,
-    dashedLine: drawDashedLine,
-    database: drawDatabase,
-    diamond: drawDiamond,
-    ellipse: drawEllipse,
-    ellipse_vis: drawEllipse,
-    hexagon: drawHexagon,
-    roundRect: drawRoundRect,
-    square: drawSquare,
-    star: drawStar,
-    triangle: drawTriangle,
-    triangleDown: drawTriangleDown,
+      circle: drawCircle,
+      dashedLine: drawDashedLine,
+      database: drawDatabase,
+      diamond: drawDiamond,
+      ellipse: drawEllipse,
+      ellipse_vis: drawEllipse,
+      hexagon: drawHexagon,
+      roundRect: drawRoundRect,
+      square: drawSquare,
+      star: drawStar,
+      triangle: drawTriangle,
+      triangleDown: drawTriangleDown,
   };
   /**
    * Returns either custom or native drawing function base on supplied name.
@@ -357,13 +325,14 @@
    * `(ctx: CanvasRenderingContext2D, ...originalArgs) => void`.
    */
   function getShape(name) {
-    if (Object.prototype.hasOwnProperty.call(shapeMap, name)) {
-      return shapeMap[name];
-    } else {
-      return function (ctx, ...args) {
-        CanvasRenderingContext2D.prototype[name].call(ctx, args);
-      };
-    }
+      if (Object.prototype.hasOwnProperty.call(shapeMap, name)) {
+          return shapeMap[name];
+      }
+      else {
+          return function (ctx, ...args) {
+              CanvasRenderingContext2D.prototype[name].call(ctx, args);
+          };
+      }
   }
 
   /* eslint-disable no-prototype-builtins */
@@ -1667,10 +1636,10 @@
   /* eslint-enable no-unused-vars */
   /* eslint-enable no-prototype-builtins */
 
-  var dotparser = /*#__PURE__*/ Object.freeze({
+  var dotparser = /*#__PURE__*/Object.freeze({
     __proto__: null,
     DOTToGraph: DOTToGraph,
-    parseDOT: parseDOT,
+    parseDOT: parseDOT
   });
 
   /**
@@ -1681,319 +1650,296 @@
    * @returns The converted data ready to be used in Vis.
    */
   function parseGephi(gephiJSON, optionsObj) {
-    const options = {
-      edges: {
-        inheritColor: false,
-      },
-      nodes: {
-        fixed: false,
-        parseColor: false,
-      },
-    };
-    if (optionsObj != null) {
-      if (optionsObj.fixed != null) {
-        options.nodes.fixed = optionsObj.fixed;
-      }
-      if (optionsObj.parseColor != null) {
-        options.nodes.parseColor = optionsObj.parseColor;
-      }
-      if (optionsObj.inheritColor != null) {
-        options.edges.inheritColor = optionsObj.inheritColor;
-      }
-    }
-    const gEdges = gephiJSON.edges;
-    const vEdges = gEdges.map((gEdge) => {
-      const vEdge = {
-        from: gEdge.source,
-        id: gEdge.id,
-        to: gEdge.target,
+      const options = {
+          edges: {
+              inheritColor: false,
+          },
+          nodes: {
+              fixed: false,
+              parseColor: false,
+          },
       };
-      if (gEdge.attributes != null) {
-        vEdge.attributes = gEdge.attributes;
+      if (optionsObj != null) {
+          if (optionsObj.fixed != null) {
+              options.nodes.fixed = optionsObj.fixed;
+          }
+          if (optionsObj.parseColor != null) {
+              options.nodes.parseColor = optionsObj.parseColor;
+          }
+          if (optionsObj.inheritColor != null) {
+              options.edges.inheritColor = optionsObj.inheritColor;
+          }
       }
-      if (gEdge.label != null) {
-        vEdge.label = gEdge.label;
-      }
-      if (gEdge.attributes != null && gEdge.attributes.title != null) {
-        vEdge.title = gEdge.attributes.title;
-      }
-      if (gEdge.type === "Directed") {
-        vEdge.arrows = "to";
-      }
-      // edge['value'] = gEdge.attributes != null ? gEdge.attributes.Weight : undefined;
-      // edge['width'] = edge['value'] != null ? undefined : edgegEdge.size;
-      if (gEdge.color && options.edges.inheritColor === false) {
-        vEdge.color = gEdge.color;
-      }
-      return vEdge;
-    });
-    const vNodes = gephiJSON.nodes.map((gNode) => {
-      const vNode = {
-        id: gNode.id,
-        fixed: options.nodes.fixed && gNode.x != null && gNode.y != null,
-      };
-      if (gNode.attributes != null) {
-        vNode.attributes = gNode.attributes;
-      }
-      if (gNode.label != null) {
-        vNode.label = gNode.label;
-      }
-      if (gNode.size != null) {
-        vNode.size = gNode.size;
-      }
-      if (gNode.attributes != null && gNode.attributes.title != null) {
-        vNode.title = gNode.attributes.title;
-      }
-      if (gNode.title != null) {
-        vNode.title = gNode.title;
-      }
-      if (gNode.x != null) {
-        vNode.x = gNode.x;
-      }
-      if (gNode.y != null) {
-        vNode.y = gNode.y;
-      }
-      if (gNode.color != null) {
-        if (options.nodes.parseColor === true) {
-          vNode.color = gNode.color;
-        } else {
-          vNode.color = {
-            background: gNode.color,
-            border: gNode.color,
-            highlight: {
-              background: gNode.color,
-              border: gNode.color,
-            },
-            hover: {
-              background: gNode.color,
-              border: gNode.color,
-            },
+      const gEdges = gephiJSON.edges;
+      const vEdges = gEdges.map((gEdge) => {
+          const vEdge = {
+              from: gEdge.source,
+              id: gEdge.id,
+              to: gEdge.target,
           };
-        }
-      }
-      return vNode;
-    });
-    return { nodes: vNodes, edges: vEdges };
+          if (gEdge.attributes != null) {
+              vEdge.attributes = gEdge.attributes;
+          }
+          if (gEdge.label != null) {
+              vEdge.label = gEdge.label;
+          }
+          if (gEdge.attributes != null && gEdge.attributes.title != null) {
+              vEdge.title = gEdge.attributes.title;
+          }
+          if (gEdge.type === "Directed") {
+              vEdge.arrows = "to";
+          }
+          // edge['value'] = gEdge.attributes != null ? gEdge.attributes.Weight : undefined;
+          // edge['width'] = edge['value'] != null ? undefined : edgegEdge.size;
+          if (gEdge.color && options.edges.inheritColor === false) {
+              vEdge.color = gEdge.color;
+          }
+          return vEdge;
+      });
+      const vNodes = gephiJSON.nodes.map((gNode) => {
+          const vNode = {
+              id: gNode.id,
+              fixed: options.nodes.fixed && gNode.x != null && gNode.y != null,
+          };
+          if (gNode.attributes != null) {
+              vNode.attributes = gNode.attributes;
+          }
+          if (gNode.label != null) {
+              vNode.label = gNode.label;
+          }
+          if (gNode.size != null) {
+              vNode.size = gNode.size;
+          }
+          if (gNode.attributes != null && gNode.attributes.title != null) {
+              vNode.title = gNode.attributes.title;
+          }
+          if (gNode.title != null) {
+              vNode.title = gNode.title;
+          }
+          if (gNode.x != null) {
+              vNode.x = gNode.x;
+          }
+          if (gNode.y != null) {
+              vNode.y = gNode.y;
+          }
+          if (gNode.color != null) {
+              if (options.nodes.parseColor === true) {
+                  vNode.color = gNode.color;
+              }
+              else {
+                  vNode.color = {
+                      background: gNode.color,
+                      border: gNode.color,
+                      highlight: {
+                          background: gNode.color,
+                          border: gNode.color,
+                      },
+                      hover: {
+                          background: gNode.color,
+                          border: gNode.color,
+                      },
+                  };
+              }
+          }
+          return vNode;
+      });
+      return { nodes: vNodes, edges: vEdges };
   }
 
-  var gephiParser = /*#__PURE__*/ Object.freeze({
+  var gephiParser = /*#__PURE__*/Object.freeze({
     __proto__: null,
-    parseGephi: parseGephi,
+    parseGephi: parseGephi
   });
 
   // English
   const en = {
-    addDescription: "Click in an empty space to place a new node.",
-    addEdge: "Add Edge",
-    addNode: "Add Node",
-    back: "Back",
-    close: "Close",
-    createEdgeError: "Cannot link edges to a cluster.",
-    del: "Delete selected",
-    deleteClusterError: "Clusters cannot be deleted.",
-    edgeDescription:
-      "Click on a node and drag the edge to another node to connect them.",
-    edit: "Edit",
-    editClusterError: "Clusters cannot be edited.",
-    editEdge: "Edit Edge",
-    editEdgeDescription:
-      "Click on the control points and drag them to a node to connect to it.",
-    editNode: "Edit Node",
+      addDescription: "Click in an empty space to place a new node.",
+      addEdge: "Add Edge",
+      addNode: "Add Node",
+      back: "Back",
+      close: "Close",
+      createEdgeError: "Cannot link edges to a cluster.",
+      del: "Delete selected",
+      deleteClusterError: "Clusters cannot be deleted.",
+      edgeDescription: "Click on a node and drag the edge to another node to connect them.",
+      edit: "Edit",
+      editClusterError: "Clusters cannot be edited.",
+      editEdge: "Edit Edge",
+      editEdgeDescription: "Click on the control points and drag them to a node to connect to it.",
+      editNode: "Edit Node",
   };
   // German
   const de = {
-    addDescription:
-      "Klicke auf eine freie Stelle, um einen neuen Knoten zu plazieren.",
-    addEdge: "Kante hinzuf\u00fcgen",
-    addNode: "Knoten hinzuf\u00fcgen",
-    back: "Zur\u00fcck",
-    close: "Schließen",
-    createEdgeError:
-      "Es ist nicht m\u00f6glich, Kanten mit Clustern zu verbinden.",
-    del: "L\u00f6sche Auswahl",
-    deleteClusterError: "Cluster k\u00f6nnen nicht gel\u00f6scht werden.",
-    edgeDescription:
-      "Klicke auf einen Knoten und ziehe die Kante zu einem anderen Knoten, um diese zu verbinden.",
-    edit: "Editieren",
-    editClusterError: "Cluster k\u00f6nnen nicht editiert werden.",
-    editEdge: "Kante editieren",
-    editEdgeDescription:
-      "Klicke auf die Verbindungspunkte und ziehe diese auf einen Knoten, um sie zu verbinden.",
-    editNode: "Knoten editieren",
+      addDescription: "Klicke auf eine freie Stelle, um einen neuen Knoten zu plazieren.",
+      addEdge: "Kante hinzuf\u00fcgen",
+      addNode: "Knoten hinzuf\u00fcgen",
+      back: "Zur\u00fcck",
+      close: "Schließen",
+      createEdgeError: "Es ist nicht m\u00f6glich, Kanten mit Clustern zu verbinden.",
+      del: "L\u00f6sche Auswahl",
+      deleteClusterError: "Cluster k\u00f6nnen nicht gel\u00f6scht werden.",
+      edgeDescription: "Klicke auf einen Knoten und ziehe die Kante zu einem anderen Knoten, um diese zu verbinden.",
+      edit: "Editieren",
+      editClusterError: "Cluster k\u00f6nnen nicht editiert werden.",
+      editEdge: "Kante editieren",
+      editEdgeDescription: "Klicke auf die Verbindungspunkte und ziehe diese auf einen Knoten, um sie zu verbinden.",
+      editNode: "Knoten editieren",
   };
   // Spanish
   const es = {
-    addDescription:
-      "Haga clic en un lugar vac\u00edo para colocar un nuevo nodo.",
-    addEdge: "A\u00f1adir arista",
-    addNode: "A\u00f1adir nodo",
-    back: "Atr\u00e1s",
-    close: "Cerrar",
-    createEdgeError: "No se puede conectar una arista a un grupo.",
-    del: "Eliminar selecci\u00f3n",
-    deleteClusterError: "No es posible eliminar grupos.",
-    edgeDescription:
-      "Haga clic en un nodo y arrastre la arista hacia otro nodo para conectarlos.",
-    edit: "Editar",
-    editClusterError: "No es posible editar grupos.",
-    editEdge: "Editar arista",
-    editEdgeDescription:
-      "Haga clic en un punto de control y arrastrelo a un nodo para conectarlo.",
-    editNode: "Editar nodo",
+      addDescription: "Haga clic en un lugar vac\u00edo para colocar un nuevo nodo.",
+      addEdge: "A\u00f1adir arista",
+      addNode: "A\u00f1adir nodo",
+      back: "Atr\u00e1s",
+      close: "Cerrar",
+      createEdgeError: "No se puede conectar una arista a un grupo.",
+      del: "Eliminar selecci\u00f3n",
+      deleteClusterError: "No es posible eliminar grupos.",
+      edgeDescription: "Haga clic en un nodo y arrastre la arista hacia otro nodo para conectarlos.",
+      edit: "Editar",
+      editClusterError: "No es posible editar grupos.",
+      editEdge: "Editar arista",
+      editEdgeDescription: "Haga clic en un punto de control y arrastrelo a un nodo para conectarlo.",
+      editNode: "Editar nodo",
   };
   //Italiano
   const it = {
-    addDescription: "Clicca per aggiungere un nuovo nodo",
-    addEdge: "Aggiungi un vertice",
-    addNode: "Aggiungi un nodo",
-    back: "Indietro",
-    close: "Chiudere",
-    createEdgeError: "Non si possono collegare vertici ad un cluster",
-    del: "Cancella la selezione",
-    deleteClusterError: "I cluster non possono essere cancellati",
-    edgeDescription:
-      "Clicca su un nodo e trascinalo ad un altro nodo per connetterli.",
-    edit: "Modifica",
-    editClusterError: "I clusters non possono essere modificati.",
-    editEdge: "Modifica il vertice",
-    editEdgeDescription:
-      "Clicca sui Punti di controllo e trascinali ad un nodo per connetterli.",
-    editNode: "Modifica il nodo",
+      addDescription: "Clicca per aggiungere un nuovo nodo",
+      addEdge: "Aggiungi un vertice",
+      addNode: "Aggiungi un nodo",
+      back: "Indietro",
+      close: "Chiudere",
+      createEdgeError: "Non si possono collegare vertici ad un cluster",
+      del: "Cancella la selezione",
+      deleteClusterError: "I cluster non possono essere cancellati",
+      edgeDescription: "Clicca su un nodo e trascinalo ad un altro nodo per connetterli.",
+      edit: "Modifica",
+      editClusterError: "I clusters non possono essere modificati.",
+      editEdge: "Modifica il vertice",
+      editEdgeDescription: "Clicca sui Punti di controllo e trascinali ad un nodo per connetterli.",
+      editNode: "Modifica il nodo",
   };
   // Dutch
   const nl = {
-    addDescription: "Klik op een leeg gebied om een nieuwe node te maken.",
-    addEdge: "Link toevoegen",
-    addNode: "Node toevoegen",
-    back: "Terug",
-    close: "Sluiten",
-    createEdgeError: "Kan geen link maken naar een cluster.",
-    del: "Selectie verwijderen",
-    deleteClusterError: "Clusters kunnen niet worden verwijderd.",
-    edgeDescription:
-      "Klik op een node en sleep de link naar een andere node om ze te verbinden.",
-    edit: "Wijzigen",
-    editClusterError: "Clusters kunnen niet worden aangepast.",
-    editEdge: "Link wijzigen",
-    editEdgeDescription:
-      "Klik op de verbindingspunten en sleep ze naar een node om daarmee te verbinden.",
-    editNode: "Node wijzigen",
+      addDescription: "Klik op een leeg gebied om een nieuwe node te maken.",
+      addEdge: "Link toevoegen",
+      addNode: "Node toevoegen",
+      back: "Terug",
+      close: "Sluiten",
+      createEdgeError: "Kan geen link maken naar een cluster.",
+      del: "Selectie verwijderen",
+      deleteClusterError: "Clusters kunnen niet worden verwijderd.",
+      edgeDescription: "Klik op een node en sleep de link naar een andere node om ze te verbinden.",
+      edit: "Wijzigen",
+      editClusterError: "Clusters kunnen niet worden aangepast.",
+      editEdge: "Link wijzigen",
+      editEdgeDescription: "Klik op de verbindingspunten en sleep ze naar een node om daarmee te verbinden.",
+      editNode: "Node wijzigen",
   };
   // Portuguese Brazil
   const pt = {
-    addDescription: "Clique em um espaço em branco para adicionar um novo nó",
-    addEdge: "Adicionar aresta",
-    addNode: "Adicionar nó",
-    back: "Voltar",
-    close: "Fechar",
-    createEdgeError: "Não foi possível linkar arestas a um cluster.",
-    del: "Remover selecionado",
-    deleteClusterError: "Clusters não puderam ser removidos.",
-    edgeDescription:
-      "Clique em um nó e arraste a aresta até outro nó para conectá-los",
-    edit: "Editar",
-    editClusterError: "Clusters não puderam ser editados.",
-    editEdge: "Editar aresta",
-    editEdgeDescription:
-      "Clique nos pontos de controle e os arraste para um nó para conectá-los",
-    editNode: "Editar nó",
+      addDescription: "Clique em um espaço em branco para adicionar um novo nó",
+      addEdge: "Adicionar aresta",
+      addNode: "Adicionar nó",
+      back: "Voltar",
+      close: "Fechar",
+      createEdgeError: "Não foi possível linkar arestas a um cluster.",
+      del: "Remover selecionado",
+      deleteClusterError: "Clusters não puderam ser removidos.",
+      edgeDescription: "Clique em um nó e arraste a aresta até outro nó para conectá-los",
+      edit: "Editar",
+      editClusterError: "Clusters não puderam ser editados.",
+      editEdge: "Editar aresta",
+      editEdgeDescription: "Clique nos pontos de controle e os arraste para um nó para conectá-los",
+      editNode: "Editar nó",
   };
   // Russian
   const ru = {
-    addDescription: "Кликните в свободное место, чтобы добавить новый узел.",
-    addEdge: "Добавить ребро",
-    addNode: "Добавить узел",
-    back: "Назад",
-    close: "Закрывать",
-    createEdgeError: "Невозможно соединить ребра в кластер.",
-    del: "Удалить выбранное",
-    deleteClusterError: "Кластеры не могут быть удалены",
-    edgeDescription:
-      "Кликните на узел и протяните ребро к другому узлу, чтобы соединить их.",
-    edit: "Редактировать",
-    editClusterError: "Кластеры недоступны для редактирования.",
-    editEdge: "Редактировать ребро",
-    editEdgeDescription:
-      "Кликните на контрольные точки и перетащите их в узел, чтобы подключиться к нему.",
-    editNode: "Редактировать узел",
+      addDescription: "Кликните в свободное место, чтобы добавить новый узел.",
+      addEdge: "Добавить ребро",
+      addNode: "Добавить узел",
+      back: "Назад",
+      close: "Закрывать",
+      createEdgeError: "Невозможно соединить ребра в кластер.",
+      del: "Удалить выбранное",
+      deleteClusterError: "Кластеры не могут быть удалены",
+      edgeDescription: "Кликните на узел и протяните ребро к другому узлу, чтобы соединить их.",
+      edit: "Редактировать",
+      editClusterError: "Кластеры недоступны для редактирования.",
+      editEdge: "Редактировать ребро",
+      editEdgeDescription: "Кликните на контрольные точки и перетащите их в узел, чтобы подключиться к нему.",
+      editNode: "Редактировать узел",
   };
   // Chinese
   const cn = {
-    addDescription: "单击空白处放置新节点。",
-    addEdge: "添加连接线",
-    addNode: "添加节点",
-    back: "返回",
-    close: "關閉",
-    createEdgeError: "无法将连接线连接到群集。",
-    del: "删除选定",
-    deleteClusterError: "无法删除群集。",
-    edgeDescription: "单击某个节点并将该连接线拖动到另一个节点以连接它们。",
-    edit: "编辑",
-    editClusterError: "无法编辑群集。",
-    editEdge: "编辑连接线",
-    editEdgeDescription: "单击控制节点并将它们拖到节点上连接。",
-    editNode: "编辑节点",
+      addDescription: "单击空白处放置新节点。",
+      addEdge: "添加连接线",
+      addNode: "添加节点",
+      back: "返回",
+      close: "關閉",
+      createEdgeError: "无法将连接线连接到群集。",
+      del: "删除选定",
+      deleteClusterError: "无法删除群集。",
+      edgeDescription: "单击某个节点并将该连接线拖动到另一个节点以连接它们。",
+      edit: "编辑",
+      editClusterError: "无法编辑群集。",
+      editEdge: "编辑连接线",
+      editEdgeDescription: "单击控制节点并将它们拖到节点上连接。",
+      editNode: "编辑节点",
   };
   // Ukrainian
   const uk = {
-    addDescription: "Kлікніть на вільне місце, щоб додати новий вузол.",
-    addEdge: "Додати край",
-    addNode: "Додати вузол",
-    back: "Назад",
-    close: "Закрити",
-    createEdgeError: "Не можливо об'єднати краї в групу.",
-    del: "Видалити обране",
-    deleteClusterError: "Групи не можуть бути видалені.",
-    edgeDescription:
-      "Клікніть на вузол і перетягніть край до іншого вузла, щоб їх з'єднати.",
-    edit: "Редагувати",
-    editClusterError: "Групи недоступні для редагування.",
-    editEdge: "Редагувати край",
-    editEdgeDescription:
-      "Клікніть на контрольні точки і перетягніть їх у вузол, щоб підключитися до нього.",
-    editNode: "Редагувати вузол",
+      addDescription: "Kлікніть на вільне місце, щоб додати новий вузол.",
+      addEdge: "Додати край",
+      addNode: "Додати вузол",
+      back: "Назад",
+      close: "Закрити",
+      createEdgeError: "Не можливо об'єднати краї в групу.",
+      del: "Видалити обране",
+      deleteClusterError: "Групи не можуть бути видалені.",
+      edgeDescription: "Клікніть на вузол і перетягніть край до іншого вузла, щоб їх з'єднати.",
+      edit: "Редагувати",
+      editClusterError: "Групи недоступні для редагування.",
+      editEdge: "Редагувати край",
+      editEdgeDescription: "Клікніть на контрольні точки і перетягніть їх у вузол, щоб підключитися до нього.",
+      editNode: "Редагувати вузол",
   };
   // French
   const fr = {
-    addDescription: "Cliquez dans un endroit vide pour placer un nœud.",
-    addEdge: "Ajouter un lien",
-    addNode: "Ajouter un nœud",
-    back: "Retour",
-    close: "Fermer",
-    createEdgeError: "Impossible de créer un lien vers un cluster.",
-    del: "Effacer la sélection",
-    deleteClusterError: "Les clusters ne peuvent pas être effacés.",
-    edgeDescription:
-      "Cliquez sur un nœud et glissez le lien vers un autre nœud pour les connecter.",
-    edit: "Éditer",
-    editClusterError: "Les clusters ne peuvent pas être édités.",
-    editEdge: "Éditer le lien",
-    editEdgeDescription:
-      "Cliquez sur les points de contrôle et glissez-les pour connecter un nœud.",
-    editNode: "Éditer le nœud",
+      addDescription: "Cliquez dans un endroit vide pour placer un nœud.",
+      addEdge: "Ajouter un lien",
+      addNode: "Ajouter un nœud",
+      back: "Retour",
+      close: "Fermer",
+      createEdgeError: "Impossible de créer un lien vers un cluster.",
+      del: "Effacer la sélection",
+      deleteClusterError: "Les clusters ne peuvent pas être effacés.",
+      edgeDescription: "Cliquez sur un nœud et glissez le lien vers un autre nœud pour les connecter.",
+      edit: "Éditer",
+      editClusterError: "Les clusters ne peuvent pas être édités.",
+      editEdge: "Éditer le lien",
+      editEdgeDescription: "Cliquez sur les points de contrôle et glissez-les pour connecter un nœud.",
+      editNode: "Éditer le nœud",
   };
   // Czech
   const cs = {
-    addDescription:
-      "Kluknutím do prázdného prostoru můžete přidat nový vrchol.",
-    addEdge: "Přidat hranu",
-    addNode: "Přidat vrchol",
-    back: "Zpět",
-    close: "Zavřít",
-    createEdgeError: "Nelze připojit hranu ke shluku.",
-    del: "Smazat výběr",
-    deleteClusterError: "Nelze mazat shluky.",
-    edgeDescription:
-      "Přetažením z jednoho vrcholu do druhého můžete spojit tyto vrcholy novou hranou.",
-    edit: "Upravit",
-    editClusterError: "Nelze upravovat shluky.",
-    editEdge: "Upravit hranu",
-    editEdgeDescription:
-      "Přetažením kontrolního vrcholu hrany ji můžete připojit k jinému vrcholu.",
-    editNode: "Upravit vrchol",
+      addDescription: "Kluknutím do prázdného prostoru můžete přidat nový vrchol.",
+      addEdge: "Přidat hranu",
+      addNode: "Přidat vrchol",
+      back: "Zpět",
+      close: "Zavřít",
+      createEdgeError: "Nelze připojit hranu ke shluku.",
+      del: "Smazat výběr",
+      deleteClusterError: "Nelze mazat shluky.",
+      edgeDescription: "Přetažením z jednoho vrcholu do druhého můžete spojit tyto vrcholy novou hranou.",
+      edit: "Upravit",
+      editClusterError: "Nelze upravovat shluky.",
+      editEdge: "Upravit hranu",
+      editEdgeDescription: "Přetažením kontrolního vrcholu hrany ji můžete připojit k jinému vrcholu.",
+      editNode: "Upravit vrchol",
   };
 
-  var locales = /*#__PURE__*/ Object.freeze({
+  var locales = /*#__PURE__*/Object.freeze({
     __proto__: null,
     cn: cn,
     cs: cs,
@@ -2005,7 +1951,7 @@
     nl: nl,
     pt: pt,
     ru: ru,
-    uk: uk,
+    uk: uk
   });
 
   /**
@@ -2017,35 +1963,36 @@
    * fallbacks to en.
    */
   function normalizeLanguageCode(locales, rawCode) {
-    try {
-      const [rawLanguage, rawCountry] = rawCode.split(/[-_ /]/, 2);
-      const language = rawLanguage != null ? rawLanguage.toLowerCase() : null;
-      const country = rawCountry != null ? rawCountry.toUpperCase() : null;
-      if (language && country) {
-        const code = language + "-" + country;
-        if (Object.prototype.hasOwnProperty.call(locales, code)) {
-          return code;
-        } else {
-          console.warn(`Unknown variant ${country} of language ${language}.`);
-        }
+      try {
+          const [rawLanguage, rawCountry] = rawCode.split(/[-_ /]/, 2);
+          const language = rawLanguage != null ? rawLanguage.toLowerCase() : null;
+          const country = rawCountry != null ? rawCountry.toUpperCase() : null;
+          if (language && country) {
+              const code = language + "-" + country;
+              if (Object.prototype.hasOwnProperty.call(locales, code)) {
+                  return code;
+              }
+              else {
+                  console.warn(`Unknown variant ${country} of language ${language}.`);
+              }
+          }
+          if (language) {
+              const code = language;
+              if (Object.prototype.hasOwnProperty.call(locales, code)) {
+                  return code;
+              }
+              else {
+                  console.warn(`Unknown language ${language}`);
+              }
+          }
+          console.warn(`Unknown locale ${rawCode}, falling back to English.`);
+          return "en";
       }
-      if (language) {
-        const code = language;
-        if (Object.prototype.hasOwnProperty.call(locales, code)) {
-          return code;
-        } else {
-          console.warn(`Unknown language ${language}`);
-        }
+      catch (error) {
+          console.error(error);
+          console.warn(`Unexpected error while normalizing locale ${rawCode}, falling back to English.`);
+          return "en";
       }
-      console.warn(`Unknown locale ${rawCode}, falling back to English.`);
-      return "en";
-    } catch (error) {
-      console.error(error);
-      console.warn(
-        `Unexpected error while normalizing locale ${rawCode}, falling back to English.`
-      );
-      return "en";
-    }
   }
 
   /**
@@ -3231,12 +3178,7 @@
 
         // TODO: This can be done more efficiently with caching
         // This will set the ctx.font correctly, depending on selected/hover and mod - so that ctx.measureText() will be accurate.
-        const values = this.parent.getFormattingValues(
-          ctx,
-          selected,
-          hover,
-          mod
-        );
+        const values = this.parent.getFormattingValues(ctx, selected, hover, mod);
 
         let width = 0;
         if (text !== "") {
@@ -4223,14 +4165,7 @@
      * @param {number} [y=0]
      * @param {'middle'|'hanging'} [baseline='middle']
      */
-    calculateLabelSize(
-      ctx,
-      selected,
-      hover,
-      x = 0,
-      y = 0,
-      baseline = "middle"
-    ) {
+    calculateLabelSize(ctx, selected, hover, x = 0, y = 0, baseline = "middle") {
       this._processLabel(ctx, selected, hover);
       this.size.left = x - this.size.width * 0.5;
       this.size.top = y - this.size.height * 0.5;
@@ -4351,18 +4286,12 @@
         this.elementOptions.label
       );
 
-      if (
-        this.fontOptions.minWdt > 0 &&
-        state.width < this.fontOptions.minWdt
-      ) {
+      if (this.fontOptions.minWdt > 0 && state.width < this.fontOptions.minWdt) {
         state.width = this.fontOptions.minWdt;
       }
 
       this.size.labelHeight = state.height;
-      if (
-        this.fontOptions.minHgt > 0 &&
-        state.height < this.fontOptions.minHgt
-      ) {
+      if (this.fontOptions.minHgt > 0 && state.height < this.fontOptions.minHgt) {
         state.height = this.fontOptions.minHgt;
       }
 
@@ -5720,8 +5649,7 @@
           height: Number(this.options.icon.size),
         };
         this.width = this.iconSize.width + this.margin.right + this.margin.left;
-        this.height =
-          this.iconSize.height + this.margin.top + this.margin.bottom;
+        this.height = this.iconSize.height + this.margin.top + this.margin.bottom;
         this.radius = 0.5 * this.width;
       }
     }
@@ -5784,9 +5712,7 @@
         );
         this.boundingBox.bottom = Math.max(
           this.boundingBox.bottom,
-          this.boundingBox.bottom +
-            this.labelModule.size.height +
-            iconTextSpacing
+          this.boundingBox.bottom + this.labelModule.size.height + iconTextSpacing
         );
       }
     }
@@ -6164,8 +6090,7 @@
       if (this.needsRefresh(selected, hover)) {
         this.textSize = this.labelModule.getTextSize(ctx, selected, hover);
         this.width = this.textSize.width + this.margin.right + this.margin.left;
-        this.height =
-          this.textSize.height + this.margin.top + this.margin.bottom;
+        this.height = this.textSize.height + this.margin.top + this.margin.bottom;
         this.radius = 0.5 * this.width;
       }
     }
@@ -6543,9 +6468,7 @@
      * @returns {boolean}
      */
     static checkCoordinateOrigin(origin) {
-      return (
-        origin === undefined || origin === "center" || origin === "top-left"
-      );
+      return origin === undefined || origin === "center" || origin === "top-left";
     }
 
     /**
@@ -6624,12 +6547,7 @@
       groupList
     ) {
       const fields = ["color", "fixed", "shadow"];
-      esnext.selectiveNotDeepExtend(
-        fields,
-        parentOptions,
-        newOptions,
-        allowDeletion
-      );
+      esnext.selectiveNotDeepExtend(fields, parentOptions, newOptions, allowDeletion);
 
       Node.checkMass(newOptions);
 
@@ -6765,15 +6683,9 @@
       }
       if (this.options.opacity !== undefined) {
         const opacity = this.options.opacity;
-        values.borderColor = esnext.overrideOpacity(
-          values.borderColor,
-          opacity
-        );
+        values.borderColor = esnext.overrideOpacity(values.borderColor, opacity);
         values.color = esnext.overrideOpacity(values.color, opacity);
-        values.shadowColor = esnext.overrideOpacity(
-          values.shadowColor,
-          opacity
-        );
+        values.shadowColor = esnext.overrideOpacity(values.shadowColor, opacity);
       }
       return values;
     }
@@ -6835,11 +6747,7 @@
             this.shape = new Box$1(this.options, this.body, this.labelModule);
             break;
           case "circle":
-            this.shape = new Circle$1(
-              this.options,
-              this.body,
-              this.labelModule
-            );
+            this.shape = new Circle$1(this.options, this.body, this.labelModule);
             break;
           case "circularImage":
             this.shape = new CircularImage(
@@ -6859,18 +6767,10 @@
             );
             break;
           case "database":
-            this.shape = new Database(
-              this.options,
-              this.body,
-              this.labelModule
-            );
+            this.shape = new Database(this.options, this.body, this.labelModule);
             break;
           case "diamond":
-            this.shape = new Diamond$1(
-              this.options,
-              this.body,
-              this.labelModule
-            );
+            this.shape = new Diamond$1(this.options, this.body, this.labelModule);
             break;
           case "dot":
             this.shape = new Dot(this.options, this.body, this.labelModule);
@@ -6903,11 +6803,7 @@
             this.shape = new Text(this.options, this.body, this.labelModule);
             break;
           case "triangle":
-            this.shape = new Triangle$1(
-              this.options,
-              this.body,
-              this.labelModule
-            );
+            this.shape = new Triangle$1(this.options, this.body, this.labelModule);
             break;
           case "triangleDown":
             this.shape = new TriangleDown(
@@ -7046,14 +6942,8 @@
     draw(ctx) {
       const values = this.getFormattingValues();
       return (
-        this.shape.draw(
-          ctx,
-          this.x,
-          this.y,
-          this.selected,
-          this.hover,
-          values
-        ) || {}
+        this.shape.draw(ctx, this.x, this.y, this.selected, this.hover, values) ||
+        {}
       );
     }
 
@@ -7769,286 +7659,266 @@
    * @class
    */
   class EndPoint {
-    /**
-     * Apply transformation on points for display.
-     *
-     * The following is done:
-     * - rotate by the specified angle
-     * - multiply the (normalized) coordinates by the passed length
-     * - offset by the target coordinates
-     *
-     * @param points - The point(s) to be transformed.
-     * @param arrowData - The data determining the result of the transformation.
-     */
-    static transform(points, arrowData) {
-      if (!Array.isArray(points)) {
-        points = [points];
+      /**
+       * Apply transformation on points for display.
+       *
+       * The following is done:
+       * - rotate by the specified angle
+       * - multiply the (normalized) coordinates by the passed length
+       * - offset by the target coordinates
+       *
+       * @param points - The point(s) to be transformed.
+       * @param arrowData - The data determining the result of the transformation.
+       */
+      static transform(points, arrowData) {
+          if (!Array.isArray(points)) {
+              points = [points];
+          }
+          const x = arrowData.point.x;
+          const y = arrowData.point.y;
+          const angle = arrowData.angle;
+          const length = arrowData.length;
+          for (let i = 0; i < points.length; ++i) {
+              const p = points[i];
+              const xt = p.x * Math.cos(angle) - p.y * Math.sin(angle);
+              const yt = p.x * Math.sin(angle) + p.y * Math.cos(angle);
+              p.x = x + length * xt;
+              p.y = y + length * yt;
+          }
       }
-      const x = arrowData.point.x;
-      const y = arrowData.point.y;
-      const angle = arrowData.angle;
-      const length = arrowData.length;
-      for (let i = 0; i < points.length; ++i) {
-        const p = points[i];
-        const xt = p.x * Math.cos(angle) - p.y * Math.sin(angle);
-        const yt = p.x * Math.sin(angle) + p.y * Math.cos(angle);
-        p.x = x + length * xt;
-        p.y = y + length * yt;
+      /**
+       * Draw a closed path using the given real coordinates.
+       *
+       * @param ctx - The path will be rendered into this context.
+       * @param points - The points of the path.
+       */
+      static drawPath(ctx, points) {
+          ctx.beginPath();
+          ctx.moveTo(points[0].x, points[0].y);
+          for (let i = 1; i < points.length; ++i) {
+              ctx.lineTo(points[i].x, points[i].y);
+          }
+          ctx.closePath();
       }
-    }
-    /**
-     * Draw a closed path using the given real coordinates.
-     *
-     * @param ctx - The path will be rendered into this context.
-     * @param points - The points of the path.
-     */
-    static drawPath(ctx, points) {
-      ctx.beginPath();
-      ctx.moveTo(points[0].x, points[0].y);
-      for (let i = 1; i < points.length; ++i) {
-        ctx.lineTo(points[i].x, points[i].y);
-      }
-      ctx.closePath();
-    }
   }
   /**
    * Drawing methods for the arrow endpoint.
    */
   let Image$1 = class Image extends EndPoint {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns False as there is no way to fill an image.
-     */
-    static draw(ctx, arrowData) {
-      if (arrowData.image) {
-        ctx.save();
-        ctx.translate(arrowData.point.x, arrowData.point.y);
-        ctx.rotate(Math.PI / 2 + arrowData.angle);
-        const width =
-          arrowData.imageWidth != null
-            ? arrowData.imageWidth
-            : arrowData.image.width;
-        const height =
-          arrowData.imageHeight != null
-            ? arrowData.imageHeight
-            : arrowData.image.height;
-        arrowData.image.drawImageAtPosition(
-          ctx,
-          1, // scale
-          -width / 2, // x
-          0, // y
-          width,
-          height
-        );
-        ctx.restore();
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns False as there is no way to fill an image.
+       */
+      static draw(ctx, arrowData) {
+          if (arrowData.image) {
+              ctx.save();
+              ctx.translate(arrowData.point.x, arrowData.point.y);
+              ctx.rotate(Math.PI / 2 + arrowData.angle);
+              const width = arrowData.imageWidth != null
+                  ? arrowData.imageWidth
+                  : arrowData.image.width;
+              const height = arrowData.imageHeight != null
+                  ? arrowData.imageHeight
+                  : arrowData.image.height;
+              arrowData.image.drawImageAtPosition(ctx, 1, // scale
+              -width / 2, // x
+              0, // y
+              width, height);
+              ctx.restore();
+          }
+          return false;
       }
-      return false;
-    }
   };
   /**
    * Drawing methods for the arrow endpoint.
    */
   class Arrow extends EndPoint {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const points = [
-        { x: 0, y: 0 },
-        { x: -1, y: 0.3 },
-        { x: -0.9, y: 0 },
-        { x: -1, y: -0.3 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const points = [
+              { x: 0, y: 0 },
+              { x: -1, y: 0.3 },
+              { x: -0.9, y: 0 },
+              { x: -1, y: -0.3 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the crow endpoint.
    */
   class Crow {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const points = [
-        { x: -1, y: 0 },
-        { x: 0, y: 0.3 },
-        { x: -0.4, y: 0 },
-        { x: 0, y: -0.3 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const points = [
+              { x: -1, y: 0 },
+              { x: 0, y: 0.3 },
+              { x: -0.4, y: 0 },
+              { x: 0, y: -0.3 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the curve endpoint.
    */
   class Curve {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const point = { x: -0.4, y: 0 };
-      EndPoint.transform(point, arrowData);
-      // Update endpoint style for drawing transparent arc.
-      ctx.strokeStyle = ctx.fillStyle;
-      ctx.fillStyle = "rgba(0, 0, 0, 0)";
-      // Define curve endpoint as semicircle.
-      const pi = Math.PI;
-      const startAngle = arrowData.angle - pi / 2;
-      const endAngle = arrowData.angle + pi / 2;
-      ctx.beginPath();
-      ctx.arc(
-        point.x,
-        point.y,
-        arrowData.length * 0.4,
-        startAngle,
-        endAngle,
-        false
-      );
-      ctx.stroke();
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const point = { x: -0.4, y: 0 };
+          EndPoint.transform(point, arrowData);
+          // Update endpoint style for drawing transparent arc.
+          ctx.strokeStyle = ctx.fillStyle;
+          ctx.fillStyle = "rgba(0, 0, 0, 0)";
+          // Define curve endpoint as semicircle.
+          const pi = Math.PI;
+          const startAngle = arrowData.angle - pi / 2;
+          const endAngle = arrowData.angle + pi / 2;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, arrowData.length * 0.4, startAngle, endAngle, false);
+          ctx.stroke();
+          return true;
+      }
   }
   /**
    * Drawing methods for the inverted curve endpoint.
    */
   class InvertedCurve {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const point = { x: -0.3, y: 0 };
-      EndPoint.transform(point, arrowData);
-      // Update endpoint style for drawing transparent arc.
-      ctx.strokeStyle = ctx.fillStyle;
-      ctx.fillStyle = "rgba(0, 0, 0, 0)";
-      // Define inverted curve endpoint as semicircle.
-      const pi = Math.PI;
-      const startAngle = arrowData.angle + pi / 2;
-      const endAngle = arrowData.angle + (3 * pi) / 2;
-      ctx.beginPath();
-      ctx.arc(
-        point.x,
-        point.y,
-        arrowData.length * 0.4,
-        startAngle,
-        endAngle,
-        false
-      );
-      ctx.stroke();
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const point = { x: -0.3, y: 0 };
+          EndPoint.transform(point, arrowData);
+          // Update endpoint style for drawing transparent arc.
+          ctx.strokeStyle = ctx.fillStyle;
+          ctx.fillStyle = "rgba(0, 0, 0, 0)";
+          // Define inverted curve endpoint as semicircle.
+          const pi = Math.PI;
+          const startAngle = arrowData.angle + pi / 2;
+          const endAngle = arrowData.angle + (3 * pi) / 2;
+          ctx.beginPath();
+          ctx.arc(point.x, point.y, arrowData.length * 0.4, startAngle, endAngle, false);
+          ctx.stroke();
+          return true;
+      }
   }
   /**
    * Drawing methods for the trinagle endpoint.
    */
   class Triangle {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const points = [
-        { x: 0.02, y: 0 },
-        { x: -1, y: 0.3 },
-        { x: -1, y: -0.3 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const points = [
+              { x: 0.02, y: 0 },
+              { x: -1, y: 0.3 },
+              { x: -1, y: -0.3 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the inverted trinagle endpoint.
    */
   class InvertedTriangle {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const points = [
-        { x: 0, y: 0.3 },
-        { x: 0, y: -0.3 },
-        { x: -1, y: 0 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const points = [
+              { x: 0, y: 0.3 },
+              { x: 0, y: -0.3 },
+              { x: -1, y: 0 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the circle endpoint.
    */
   class Circle {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      const point = { x: -0.4, y: 0 };
-      EndPoint.transform(point, arrowData);
-      drawCircle(ctx, point.x, point.y, arrowData.length * 0.4);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          const point = { x: -0.4, y: 0 };
+          EndPoint.transform(point, arrowData);
+          drawCircle(ctx, point.x, point.y, arrowData.length * 0.4);
+          return true;
+      }
   }
   /**
    * Drawing methods for the bar endpoint.
    */
   class Bar {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      /*
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          /*
           var points = [
             {x:0, y:0.5},
             {x:0, y:-0.5}
@@ -8060,774 +7930,751 @@
           ctx.lineTo(points[1].x, points[1].y);
           ctx.stroke();
       */
-      const points = [
-        { x: 0, y: 0.5 },
-        { x: 0, y: -0.5 },
-        { x: -0.15, y: -0.5 },
-        { x: -0.15, y: 0.5 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+          const points = [
+              { x: 0, y: 0.5 },
+              { x: 0, y: -0.5 },
+              { x: -0.15, y: -0.5 },
+              { x: -0.15, y: 0.5 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the box endpoint.
    */
   class Box {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      const points = [
-        { x: 0, y: 0.3 },
-        { x: 0, y: -0.3 },
-        { x: -0.6, y: -0.3 },
-        { x: -0.6, y: 0.3 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          const points = [
+              { x: 0, y: 0.3 },
+              { x: 0, y: -0.3 },
+              { x: -0.6, y: -0.3 },
+              { x: -0.6, y: 0.3 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the diamond endpoint.
    */
   class Diamond {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      const points = [
-        { x: 0, y: 0 },
-        { x: -0.5, y: -0.3 },
-        { x: -1, y: 0 },
-        { x: -0.5, y: 0.3 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          const points = [
+              { x: 0, y: 0 },
+              { x: -0.5, y: -0.3 },
+              { x: -1, y: 0 },
+              { x: -0.5, y: 0.3 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the vee endpoint.
    */
   class Vee {
-    /**
-     * Draw this shape at the end of a line.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True because ctx.fill() can be used to fill the arrow.
-     */
-    static draw(ctx, arrowData) {
-      // Normalized points of closed path, in the order that they should be drawn.
-      // (0, 0) is the attachment point, and the point around which should be rotated
-      const points = [
-        { x: -1, y: 0.3 },
-        { x: -0.5, y: 0 },
-        { x: -1, y: -0.3 },
-        { x: 0, y: 0 },
-      ];
-      EndPoint.transform(points, arrowData);
-      EndPoint.drawPath(ctx, points);
-      return true;
-    }
+      /**
+       * Draw this shape at the end of a line.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True because ctx.fill() can be used to fill the arrow.
+       */
+      static draw(ctx, arrowData) {
+          // Normalized points of closed path, in the order that they should be drawn.
+          // (0, 0) is the attachment point, and the point around which should be rotated
+          const points = [
+              { x: -1, y: 0.3 },
+              { x: -0.5, y: 0 },
+              { x: -1, y: -0.3 },
+              { x: 0, y: 0 },
+          ];
+          EndPoint.transform(points, arrowData);
+          EndPoint.drawPath(ctx, points);
+          return true;
+      }
   }
   /**
    * Drawing methods for the endpoints.
    */
   class EndPoints {
-    /**
-     * Draw an endpoint.
-     *
-     * @param ctx - The shape will be rendered into this context.
-     * @param arrowData - The data determining the shape.
-     * @returns True if ctx.fill() can be used to fill the arrow, false otherwise.
-     */
-    static draw(ctx, arrowData) {
-      let type;
-      if (arrowData.type) {
-        type = arrowData.type.toLowerCase();
+      /**
+       * Draw an endpoint.
+       *
+       * @param ctx - The shape will be rendered into this context.
+       * @param arrowData - The data determining the shape.
+       * @returns True if ctx.fill() can be used to fill the arrow, false otherwise.
+       */
+      static draw(ctx, arrowData) {
+          let type;
+          if (arrowData.type) {
+              type = arrowData.type.toLowerCase();
+          }
+          switch (type) {
+              case "image":
+                  return Image$1.draw(ctx, arrowData);
+              case "circle":
+                  return Circle.draw(ctx, arrowData);
+              case "box":
+                  return Box.draw(ctx, arrowData);
+              case "crow":
+                  return Crow.draw(ctx, arrowData);
+              case "curve":
+                  return Curve.draw(ctx, arrowData);
+              case "diamond":
+                  return Diamond.draw(ctx, arrowData);
+              case "inv_curve":
+                  return InvertedCurve.draw(ctx, arrowData);
+              case "triangle":
+                  return Triangle.draw(ctx, arrowData);
+              case "inv_triangle":
+                  return InvertedTriangle.draw(ctx, arrowData);
+              case "bar":
+                  return Bar.draw(ctx, arrowData);
+              case "vee":
+                  return Vee.draw(ctx, arrowData);
+              case "arrow": // fall-through
+              default:
+                  return Arrow.draw(ctx, arrowData);
+          }
       }
-      switch (type) {
-        case "image":
-          return Image$1.draw(ctx, arrowData);
-        case "circle":
-          return Circle.draw(ctx, arrowData);
-        case "box":
-          return Box.draw(ctx, arrowData);
-        case "crow":
-          return Crow.draw(ctx, arrowData);
-        case "curve":
-          return Curve.draw(ctx, arrowData);
-        case "diamond":
-          return Diamond.draw(ctx, arrowData);
-        case "inv_curve":
-          return InvertedCurve.draw(ctx, arrowData);
-        case "triangle":
-          return Triangle.draw(ctx, arrowData);
-        case "inv_triangle":
-          return InvertedTriangle.draw(ctx, arrowData);
-        case "bar":
-          return Bar.draw(ctx, arrowData);
-        case "vee":
-          return Vee.draw(ctx, arrowData);
-        case "arrow": // fall-through
-        default:
-          return Arrow.draw(ctx, arrowData);
-      }
-    }
   }
 
   /**
    * The Base Class for all edges.
    */
   class EdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param _body - The body of the network.
-     * @param _labelModule - Label module.
-     */
-    constructor(options, _body, _labelModule) {
-      this._body = _body;
-      this._labelModule = _labelModule;
-      this.color = {};
-      this.colorDirty = true;
-      this.hoverWidth = 1.5;
-      this.selectionWidth = 2;
-      this.setOptions(options);
-      this.fromPoint = this.from;
-      this.toPoint = this.to;
-    }
-    /** @inheritDoc */
-    connect() {
-      this.from = this._body.nodes[this.options.from];
-      this.to = this._body.nodes[this.options.to];
-    }
-    /** @inheritDoc */
-    cleanup() {
-      return false;
-    }
-    /**
-     * Set new edge options.
-     *
-     * @param options - The new edge options object.
-     */
-    setOptions(options) {
-      this.options = options;
-      this.from = this._body.nodes[this.options.from];
-      this.to = this._body.nodes[this.options.to];
-      this.id = this.options.id;
-    }
-    /** @inheritDoc */
-    drawLine(ctx, values, _selected, _hover, viaNode = this.getViaNode()) {
-      // set style
-      ctx.strokeStyle = this.getColor(ctx, values);
-      ctx.lineWidth = values.width;
-      if (values.dashes !== false) {
-        this._drawDashedLine(ctx, values, viaNode);
-      } else {
-        this._drawLine(ctx, values, viaNode);
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param _body - The body of the network.
+       * @param _labelModule - Label module.
+       */
+      constructor(options, _body, _labelModule) {
+          this._body = _body;
+          this._labelModule = _labelModule;
+          this.color = {};
+          this.colorDirty = true;
+          this.hoverWidth = 1.5;
+          this.selectionWidth = 2;
+          this.setOptions(options);
+          this.fromPoint = this.from;
+          this.toPoint = this.to;
       }
-    }
-    /**
-     * Draw a line with given style between two nodes through supplied node(s).
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param viaNode - Additional control point(s) for the edge.
-     * @param fromPoint - TODO: Seems ignored, remove?
-     * @param toPoint - TODO: Seems ignored, remove?
-     */
-    _drawLine(ctx, values, viaNode, fromPoint, toPoint) {
-      if (this.from != this.to) {
-        // draw line
-        this._line(ctx, values, viaNode, fromPoint, toPoint);
-      } else {
-        const [x, y, radius] = this._getCircleData(ctx);
-        this._circle(ctx, values, x, y, radius);
+      /** @inheritDoc */
+      connect() {
+          this.from = this._body.nodes[this.options.from];
+          this.to = this._body.nodes[this.options.to];
       }
-    }
-    /**
-     * Draw a dashed line with given style between two nodes through supplied node(s).
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param viaNode - Additional control point(s) for the edge.
-     * @param _fromPoint - Ignored (TODO: remove in the future).
-     * @param _toPoint - Ignored (TODO: remove in the future).
-     */
-    _drawDashedLine(ctx, values, viaNode, _fromPoint, _toPoint) {
-      ctx.lineCap = "round";
-      const pattern = Array.isArray(values.dashes) ? values.dashes : [5, 5];
-      // only firefox and chrome support this method, else we use the legacy one.
-      if (ctx.setLineDash !== undefined) {
-        ctx.save();
-        // set dash settings for chrome or firefox
-        ctx.setLineDash(pattern);
-        ctx.lineDashOffset = 0;
-        // draw the line
-        if (this.from != this.to) {
-          // draw line
-          this._line(ctx, values, viaNode);
-        } else {
-          const [x, y, radius] = this._getCircleData(ctx);
-          this._circle(ctx, values, x, y, radius);
-        }
-        // restore the dash settings.
-        ctx.setLineDash([0]);
-        ctx.lineDashOffset = 0;
-        ctx.restore();
-      } else {
-        // unsupporting smooth lines
-        if (this.from != this.to) {
-          // draw line
-          drawDashedLine(
-            ctx,
-            this.from.x,
-            this.from.y,
-            this.to.x,
-            this.to.y,
-            pattern
-          );
-        } else {
-          const [x, y, radius] = this._getCircleData(ctx);
-          this._circle(ctx, values, x, y, radius);
-        }
-        // draw shadow if enabled
-        this.enableShadow(ctx, values);
-        ctx.stroke();
-        // disable shadows for other elements.
-        this.disableShadow(ctx, values);
+      /** @inheritDoc */
+      cleanup() {
+          return false;
       }
-    }
-    /**
-     * Find the intersection between the border of the node and the edge.
-     *
-     * @param node - The node (either from or to node of the edge).
-     * @param ctx - The context that will be used for rendering.
-     * @param options - Additional options.
-     * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
-     */
-    findBorderPosition(node, ctx, options) {
-      if (this.from != this.to) {
-        return this._findBorderPosition(node, ctx, options);
-      } else {
-        return this._findBorderPositionCircle(node, ctx, options);
+      /**
+       * Set new edge options.
+       *
+       * @param options - The new edge options object.
+       */
+      setOptions(options) {
+          this.options = options;
+          this.from = this._body.nodes[this.options.from];
+          this.to = this._body.nodes[this.options.to];
+          this.id = this.options.id;
       }
-    }
-    /** @inheritDoc */
-    findBorderPositions(ctx) {
-      if (this.from != this.to) {
-        return {
-          from: this._findBorderPosition(this.from, ctx),
-          to: this._findBorderPosition(this.to, ctx),
-        };
-      } else {
-        const [x, y] = this._getCircleData(ctx).slice(0, 2);
-        return {
-          from: this._findBorderPositionCircle(this.from, ctx, {
-            x,
-            y,
-            low: 0.25,
-            high: 0.6,
-            direction: -1,
-          }),
-          to: this._findBorderPositionCircle(this.from, ctx, {
-            x,
-            y,
-            low: 0.6,
-            high: 0.8,
-            direction: 1,
-          }),
-        };
-      }
-    }
-    /**
-     * Compute the center point and radius of an edge connected to the same node at both ends.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @returns `[x, y, radius]`
-     */
-    _getCircleData(ctx) {
-      const radius = this.options.selfReference.size;
-      if (ctx !== undefined) {
-        if (this.from.shape.width === undefined) {
-          this.from.shape.resize(ctx);
-        }
-      }
-      // get circle coordinates
-      const coordinates = getSelfRefCoordinates(
-        ctx,
-        this.options.selfReference.angle,
-        radius,
-        this.from
-      );
-      return [coordinates.x, coordinates.y, radius];
-    }
-    /**
-     * Get a point on a circle.
-     *
-     * @param x - Center of the circle on the x axis.
-     * @param y - Center of the circle on the y axis.
-     * @param radius - Radius of the circle.
-     * @param position - Value between 0 (line start) and 1 (line end).
-     * @returns Cartesian coordinates of requested point on the circle.
-     */
-    _pointOnCircle(x, y, radius, position) {
-      const angle = position * 2 * Math.PI;
-      return {
-        x: x + radius * Math.cos(angle),
-        y: y - radius * Math.sin(angle),
-      };
-    }
-    /**
-     * Find the intersection between the border of the node and the edge.
-     *
-     * @remarks
-     * This function uses binary search to look for the point where the circle crosses the border of the node.
-     * @param nearNode - The node (either from or to node of the edge).
-     * @param ctx - The context that will be used for rendering.
-     * @param options - Additional options.
-     * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
-     */
-    _findBorderPositionCircle(nearNode, ctx, options) {
-      const x = options.x;
-      const y = options.y;
-      let low = options.low;
-      let high = options.high;
-      const direction = options.direction;
-      const maxIterations = 10;
-      const radius = this.options.selfReference.size;
-      const threshold = 0.05;
-      let pos;
-      let middle = (low + high) * 0.5;
-      let endPointOffset = 0;
-      if (this.options.arrowStrikethrough === true) {
-        if (direction === -1) {
-          endPointOffset = this.options.endPointOffset.from;
-        } else if (direction === 1) {
-          endPointOffset = this.options.endPointOffset.to;
-        }
-      }
-      let iteration = 0;
-      do {
-        middle = (low + high) * 0.5;
-        pos = this._pointOnCircle(x, y, radius, middle);
-        const angle = Math.atan2(nearNode.y - pos.y, nearNode.x - pos.x);
-        const distanceToBorder =
-          nearNode.distanceToBorder(ctx, angle) + endPointOffset;
-        const distanceToPoint = Math.sqrt(
-          Math.pow(pos.x - nearNode.x, 2) + Math.pow(pos.y - nearNode.y, 2)
-        );
-        const difference = distanceToBorder - distanceToPoint;
-        if (Math.abs(difference) < threshold) {
-          break; // found
-        } else if (difference > 0) {
-          // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
-          if (direction > 0) {
-            low = middle;
-          } else {
-            high = middle;
+      /** @inheritDoc */
+      drawLine(ctx, values, _selected, _hover, viaNode = this.getViaNode()) {
+          // set style
+          ctx.strokeStyle = this.getColor(ctx, values);
+          ctx.lineWidth = values.width;
+          if (values.dashes !== false) {
+              this._drawDashedLine(ctx, values, viaNode);
           }
-        } else {
-          if (direction > 0) {
-            high = middle;
-          } else {
-            low = middle;
+          else {
+              this._drawLine(ctx, values, viaNode);
           }
-        }
-        ++iteration;
-      } while (low <= high && iteration < maxIterations);
-      return {
-        ...pos,
-        t: middle,
-      };
-    }
-    /**
-     * Get the line width of the edge. Depends on width and whether one of the connected nodes is selected.
-     *
-     * @param selected - Determines wheter the line is selected.
-     * @param hover - Determines wheter the line is being hovered, only applies if selected is false.
-     * @returns The width of the line.
-     */
-    getLineWidth(selected, hover) {
-      if (selected === true) {
-        return Math.max(this.selectionWidth, 0.3 / this._body.view.scale);
-      } else if (hover === true) {
-        return Math.max(this.hoverWidth, 0.3 / this._body.view.scale);
-      } else {
-        return Math.max(this.options.width, 0.3 / this._body.view.scale);
       }
-    }
-    /**
-     * Compute the color or gradient for given edge.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param _selected - Ignored (TODO: remove in the future).
-     * @param _hover - Ignored (TODO: remove in the future).
-     * @returns Color string if single color is inherited or gradient if two.
-     */
-    getColor(ctx, values) {
-      if (values.inheritsColor !== false) {
-        // when this is a loop edge, just use the 'from' method
-        if (values.inheritsColor === "both" && this.from.id !== this.to.id) {
-          const grd = ctx.createLinearGradient(
-            this.from.x,
-            this.from.y,
-            this.to.x,
-            this.to.y
-          );
-          let fromColor = this.from.options.color.highlight.border;
-          let toColor = this.to.options.color.highlight.border;
-          if (this.from.selected === false && this.to.selected === false) {
-            fromColor = esnext.overrideOpacity(
-              this.from.options.color.border,
-              values.opacity
-            );
-            toColor = esnext.overrideOpacity(
-              this.to.options.color.border,
-              values.opacity
-            );
-          } else if (
-            this.from.selected === true &&
-            this.to.selected === false
-          ) {
-            toColor = this.to.options.color.border;
-          } else if (
-            this.from.selected === false &&
-            this.to.selected === true
-          ) {
-            fromColor = this.from.options.color.border;
+      /**
+       * Draw a line with given style between two nodes through supplied node(s).
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values like color, opacity or shadow.
+       * @param viaNode - Additional control point(s) for the edge.
+       * @param fromPoint - TODO: Seems ignored, remove?
+       * @param toPoint - TODO: Seems ignored, remove?
+       */
+      _drawLine(ctx, values, viaNode, fromPoint, toPoint) {
+          if (this.from != this.to) {
+              // draw line
+              this._line(ctx, values, viaNode, fromPoint, toPoint);
           }
-          grd.addColorStop(0, fromColor);
-          grd.addColorStop(1, toColor);
-          // -------------------- this returns -------------------- //
-          return grd;
-        }
-        if (values.inheritsColor === "to") {
-          return esnext.overrideOpacity(
-            this.to.options.color.border,
-            values.opacity
-          );
-        } else {
-          // "from"
-          return esnext.overrideOpacity(
-            this.from.options.color.border,
-            values.opacity
-          );
-        }
-      } else {
-        return esnext.overrideOpacity(values.color, values.opacity);
-      }
-    }
-    /**
-     * Draw a line from a node to itself, a circle.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values like color, opacity or shadow.
-     * @param x - Center of the circle on the x axis.
-     * @param y - Center of the circle on the y axis.
-     * @param radius - Radius of the circle.
-     */
-    _circle(ctx, values, x, y, radius) {
-      // draw shadow if enabled
-      this.enableShadow(ctx, values);
-      //full circle
-      let angleFrom = 0;
-      let angleTo = Math.PI * 2;
-      if (!this.options.selfReference.renderBehindTheNode) {
-        //render only parts which are not overlaping with parent node
-        //need to find x,y of from point and x,y to point
-        //calculating radians
-        const low = this.options.selfReference.angle;
-        const high = this.options.selfReference.angle + Math.PI;
-        const pointTFrom = this._findBorderPositionCircle(this.from, ctx, {
-          x,
-          y,
-          low,
-          high,
-          direction: -1,
-        });
-        const pointTTo = this._findBorderPositionCircle(this.from, ctx, {
-          x,
-          y,
-          low,
-          high,
-          direction: 1,
-        });
-        angleFrom = Math.atan2(pointTFrom.y - y, pointTFrom.x - x);
-        angleTo = Math.atan2(pointTTo.y - y, pointTTo.x - x);
-      }
-      // draw a circle
-      ctx.beginPath();
-      ctx.arc(x, y, radius, angleFrom, angleTo, false);
-      ctx.stroke();
-      // disable shadows for other elements.
-      this.disableShadow(ctx, values);
-    }
-    /**
-     * @inheritDoc
-     * @remarks
-     * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
-     */
-    getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
-      if (this.from != this.to) {
-        return this._getDistanceToEdge(x1, y1, x2, y2, x3, y3);
-      } else {
-        const [x, y, radius] = this._getCircleData(undefined);
-        const dx = x - x3;
-        const dy = y - y3;
-        return Math.abs(Math.sqrt(dx * dx + dy * dy) - radius);
-      }
-    }
-    /**
-     * Calculate the distance between a point (x3, y3) and a line segment from (x1, y1) to (x2, y2).
-     *
-     * @param x1 - First end of the line segment on the x axis.
-     * @param y1 - First end of the line segment on the y axis.
-     * @param x2 - Second end of the line segment on the x axis.
-     * @param y2 - Second end of the line segment on the y axis.
-     * @param x3 - Position of the point on the x axis.
-     * @param y3 - Position of the point on the y axis.
-     * @returns The distance between the line segment and the point.
-     */
-    _getDistanceToLine(x1, y1, x2, y2, x3, y3) {
-      const px = x2 - x1;
-      const py = y2 - y1;
-      const something = px * px + py * py;
-      let u = ((x3 - x1) * px + (y3 - y1) * py) / something;
-      if (u > 1) {
-        u = 1;
-      } else if (u < 0) {
-        u = 0;
-      }
-      const x = x1 + u * px;
-      const y = y1 + u * py;
-      const dx = x - x3;
-      const dy = y - y3;
-      //# Note: If the actual distance does not matter,
-      //# if you only want to compare what this function
-      //# returns to other results of this function, you
-      //# can just return the squared distance instead
-      //# (i.e. remove the sqrt) to gain a little performance
-      return Math.sqrt(dx * dx + dy * dy);
-    }
-    /** @inheritDoc */
-    getArrowData(ctx, position, viaNode, _selected, _hover, values) {
-      // set lets
-      let angle;
-      let arrowPoint;
-      let node1;
-      let node2;
-      let reversed;
-      let scaleFactor;
-      let type;
-      const lineWidth = values.width;
-      if (position === "from") {
-        node1 = this.from;
-        node2 = this.to;
-        reversed = values.fromArrowScale < 0;
-        scaleFactor = Math.abs(values.fromArrowScale);
-        type = values.fromArrowType;
-      } else if (position === "to") {
-        node1 = this.to;
-        node2 = this.from;
-        reversed = values.toArrowScale < 0;
-        scaleFactor = Math.abs(values.toArrowScale);
-        type = values.toArrowType;
-      } else {
-        node1 = this.to;
-        node2 = this.from;
-        reversed = values.middleArrowScale < 0;
-        scaleFactor = Math.abs(values.middleArrowScale);
-        type = values.middleArrowType;
-      }
-      const length = 15 * scaleFactor + 3 * lineWidth; // 3* lineWidth is the width of the edge.
-      // if not connected to itself
-      if (node1 != node2) {
-        const approximateEdgeLength = Math.hypot(
-          node1.x - node2.x,
-          node1.y - node2.y
-        );
-        const relativeLength = length / approximateEdgeLength;
-        if (position !== "middle") {
-          // draw arrow head
-          if (this.options.smooth.enabled === true) {
-            const pointT = this._findBorderPosition(node1, ctx, {
-              via: viaNode,
-            });
-            const guidePos = this.getPoint(
-              pointT.t + relativeLength * (position === "from" ? 1 : -1),
-              viaNode
-            );
-            angle = Math.atan2(pointT.y - guidePos.y, pointT.x - guidePos.x);
-            arrowPoint = pointT;
-          } else {
-            angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
-            arrowPoint = this._findBorderPosition(node1, ctx);
+          else {
+              const [x, y, radius] = this._getCircleData(ctx);
+              this._circle(ctx, values, x, y, radius);
           }
-        } else {
-          // Negative half length reverses arrow direction.
-          const halfLength = (reversed ? -relativeLength : relativeLength) / 2;
-          const guidePos1 = this.getPoint(0.5 + halfLength, viaNode);
-          const guidePos2 = this.getPoint(0.5 - halfLength, viaNode);
-          angle = Math.atan2(
-            guidePos1.y - guidePos2.y,
-            guidePos1.x - guidePos2.x
-          );
-          arrowPoint = this.getPoint(0.5, viaNode);
-        }
-      } else {
-        // draw circle
-        const [x, y, radius] = this._getCircleData(ctx);
-        if (position === "from") {
-          const low = this.options.selfReference.angle;
-          const high = this.options.selfReference.angle + Math.PI;
-          const pointT = this._findBorderPositionCircle(this.from, ctx, {
-            x,
-            y,
-            low,
-            high,
-            direction: -1,
-          });
-          angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
-          arrowPoint = pointT;
-        } else if (position === "to") {
-          const low = this.options.selfReference.angle;
-          const high = this.options.selfReference.angle + Math.PI;
-          const pointT = this._findBorderPositionCircle(this.from, ctx, {
-            x,
-            y,
-            low,
-            high,
-            direction: 1,
-          });
-          angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI - 1.1 * Math.PI;
-          arrowPoint = pointT;
-        } else {
-          const pos = this.options.selfReference.angle / (2 * Math.PI);
-          arrowPoint = this._pointOnCircle(x, y, radius, pos);
-          angle = pos * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
-        }
       }
-      const xi = arrowPoint.x - length * 0.9 * Math.cos(angle);
-      const yi = arrowPoint.y - length * 0.9 * Math.sin(angle);
-      const arrowCore = { x: xi, y: yi };
-      return {
-        point: arrowPoint,
-        core: arrowCore,
-        angle: angle,
-        length: length,
-        type: type,
-      };
-    }
-    /** @inheritDoc */
-    drawArrowHead(ctx, values, _selected, _hover, arrowData) {
-      // set style
-      ctx.strokeStyle = this.getColor(ctx, values);
-      ctx.fillStyle = ctx.strokeStyle;
-      ctx.lineWidth = values.width;
-      const canFill = EndPoints.draw(ctx, arrowData);
-      if (canFill) {
-        // draw shadow if enabled
-        this.enableShadow(ctx, values);
-        ctx.fill();
-        // disable shadows for other elements.
-        this.disableShadow(ctx, values);
+      /**
+       * Draw a dashed line with given style between two nodes through supplied node(s).
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values like color, opacity or shadow.
+       * @param viaNode - Additional control point(s) for the edge.
+       * @param _fromPoint - Ignored (TODO: remove in the future).
+       * @param _toPoint - Ignored (TODO: remove in the future).
+       */
+      _drawDashedLine(ctx, values, viaNode, _fromPoint, _toPoint) {
+          ctx.lineCap = "round";
+          const pattern = Array.isArray(values.dashes) ? values.dashes : [5, 5];
+          // only firefox and chrome support this method, else we use the legacy one.
+          if (ctx.setLineDash !== undefined) {
+              ctx.save();
+              // set dash settings for chrome or firefox
+              ctx.setLineDash(pattern);
+              ctx.lineDashOffset = 0;
+              // draw the line
+              if (this.from != this.to) {
+                  // draw line
+                  this._line(ctx, values, viaNode);
+              }
+              else {
+                  const [x, y, radius] = this._getCircleData(ctx);
+                  this._circle(ctx, values, x, y, radius);
+              }
+              // restore the dash settings.
+              ctx.setLineDash([0]);
+              ctx.lineDashOffset = 0;
+              ctx.restore();
+          }
+          else {
+              // unsupporting smooth lines
+              if (this.from != this.to) {
+                  // draw line
+                  drawDashedLine(ctx, this.from.x, this.from.y, this.to.x, this.to.y, pattern);
+              }
+              else {
+                  const [x, y, radius] = this._getCircleData(ctx);
+                  this._circle(ctx, values, x, y, radius);
+              }
+              // draw shadow if enabled
+              this.enableShadow(ctx, values);
+              ctx.stroke();
+              // disable shadows for other elements.
+              this.disableShadow(ctx, values);
+          }
       }
-    }
-    /**
-     * Set the shadow formatting values in the context if enabled, do nothing otherwise.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values for the shadow.
-     */
-    enableShadow(ctx, values) {
-      if (values.shadow === true) {
-        ctx.shadowColor = values.shadowColor;
-        ctx.shadowBlur = values.shadowSize;
-        ctx.shadowOffsetX = values.shadowX;
-        ctx.shadowOffsetY = values.shadowY;
+      /**
+       * Find the intersection between the border of the node and the edge.
+       *
+       * @param node - The node (either from or to node of the edge).
+       * @param ctx - The context that will be used for rendering.
+       * @param options - Additional options.
+       * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
+       */
+      findBorderPosition(node, ctx, options) {
+          if (this.from != this.to) {
+              return this._findBorderPosition(node, ctx, options);
+          }
+          else {
+              return this._findBorderPositionCircle(node, ctx, options);
+          }
       }
-    }
-    /**
-     * Reset the shadow formatting values in the context if enabled, do nothing otherwise.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values for the shadow.
-     */
-    disableShadow(ctx, values) {
-      if (values.shadow === true) {
-        ctx.shadowColor = "rgba(0,0,0,0)";
-        ctx.shadowBlur = 0;
-        ctx.shadowOffsetX = 0;
-        ctx.shadowOffsetY = 0;
+      /** @inheritDoc */
+      findBorderPositions(ctx) {
+          if (this.from != this.to) {
+              return {
+                  from: this._findBorderPosition(this.from, ctx),
+                  to: this._findBorderPosition(this.to, ctx),
+              };
+          }
+          else {
+              const [x, y] = this._getCircleData(ctx).slice(0, 2);
+              return {
+                  from: this._findBorderPositionCircle(this.from, ctx, {
+                      x,
+                      y,
+                      low: 0.25,
+                      high: 0.6,
+                      direction: -1,
+                  }),
+                  to: this._findBorderPositionCircle(this.from, ctx, {
+                      x,
+                      y,
+                      low: 0.6,
+                      high: 0.8,
+                      direction: 1,
+                  }),
+              };
+          }
       }
-    }
-    /**
-     * Render the background according to the formatting values.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Formatting values for the background.
-     */
-    drawBackground(ctx, values) {
-      if (values.background !== false) {
-        // save original line attrs
-        const origCtxAttr = {
-          strokeStyle: ctx.strokeStyle,
-          lineWidth: ctx.lineWidth,
-          dashes: ctx.dashes,
-        };
-        ctx.strokeStyle = values.backgroundColor;
-        ctx.lineWidth = values.backgroundSize;
-        this.setStrokeDashed(ctx, values.backgroundDashes);
-        ctx.stroke();
-        // restore original line attrs
-        ctx.strokeStyle = origCtxAttr.strokeStyle;
-        ctx.lineWidth = origCtxAttr.lineWidth;
-        ctx.dashes = origCtxAttr.dashes;
-        this.setStrokeDashed(ctx, values.dashes);
+      /**
+       * Compute the center point and radius of an edge connected to the same node at both ends.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @returns `[x, y, radius]`
+       */
+      _getCircleData(ctx) {
+          const radius = this.options.selfReference.size;
+          if (ctx !== undefined) {
+              if (this.from.shape.width === undefined) {
+                  this.from.shape.resize(ctx);
+              }
+          }
+          // get circle coordinates
+          const coordinates = getSelfRefCoordinates(ctx, this.options.selfReference.angle, radius, this.from);
+          return [coordinates.x, coordinates.y, radius];
       }
-    }
-    /**
-     * Set the line dash pattern if supported. Logs a warning to the console if it isn't supported.
-     *
-     * @param ctx - The context that will be used for rendering.
-     * @param dashes - The pattern [line, space, line…], true for default dashed line or false for normal line.
-     */
-    setStrokeDashed(ctx, dashes) {
-      if (dashes !== false) {
-        if (ctx.setLineDash !== undefined) {
-          const pattern = Array.isArray(dashes) ? dashes : [5, 5];
-          ctx.setLineDash(pattern);
-        } else {
-          console.warn(
-            "setLineDash is not supported in this browser. The dashed stroke cannot be used."
-          );
-        }
-      } else {
-        if (ctx.setLineDash !== undefined) {
-          ctx.setLineDash([]);
-        } else {
-          console.warn(
-            "setLineDash is not supported in this browser. The dashed stroke cannot be used."
-          );
-        }
+      /**
+       * Get a point on a circle.
+       *
+       * @param x - Center of the circle on the x axis.
+       * @param y - Center of the circle on the y axis.
+       * @param radius - Radius of the circle.
+       * @param position - Value between 0 (line start) and 1 (line end).
+       * @returns Cartesian coordinates of requested point on the circle.
+       */
+      _pointOnCircle(x, y, radius, position) {
+          const angle = position * 2 * Math.PI;
+          return {
+              x: x + radius * Math.cos(angle),
+              y: y - radius * Math.sin(angle),
+          };
       }
-    }
+      /**
+       * Find the intersection between the border of the node and the edge.
+       *
+       * @remarks
+       * This function uses binary search to look for the point where the circle crosses the border of the node.
+       * @param nearNode - The node (either from or to node of the edge).
+       * @param ctx - The context that will be used for rendering.
+       * @param options - Additional options.
+       * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
+       */
+      _findBorderPositionCircle(nearNode, ctx, options) {
+          const x = options.x;
+          const y = options.y;
+          let low = options.low;
+          let high = options.high;
+          const direction = options.direction;
+          const maxIterations = 10;
+          const radius = this.options.selfReference.size;
+          const threshold = 0.05;
+          let pos;
+          let middle = (low + high) * 0.5;
+          let endPointOffset = 0;
+          if (this.options.arrowStrikethrough === true) {
+              if (direction === -1) {
+                  endPointOffset = this.options.endPointOffset.from;
+              }
+              else if (direction === 1) {
+                  endPointOffset = this.options.endPointOffset.to;
+              }
+          }
+          let iteration = 0;
+          do {
+              middle = (low + high) * 0.5;
+              pos = this._pointOnCircle(x, y, radius, middle);
+              const angle = Math.atan2(nearNode.y - pos.y, nearNode.x - pos.x);
+              const distanceToBorder = nearNode.distanceToBorder(ctx, angle) + endPointOffset;
+              const distanceToPoint = Math.sqrt(Math.pow(pos.x - nearNode.x, 2) + Math.pow(pos.y - nearNode.y, 2));
+              const difference = distanceToBorder - distanceToPoint;
+              if (Math.abs(difference) < threshold) {
+                  break; // found
+              }
+              else if (difference > 0) {
+                  // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
+                  if (direction > 0) {
+                      low = middle;
+                  }
+                  else {
+                      high = middle;
+                  }
+              }
+              else {
+                  if (direction > 0) {
+                      high = middle;
+                  }
+                  else {
+                      low = middle;
+                  }
+              }
+              ++iteration;
+          } while (low <= high && iteration < maxIterations);
+          return {
+              ...pos,
+              t: middle,
+          };
+      }
+      /**
+       * Get the line width of the edge. Depends on width and whether one of the connected nodes is selected.
+       *
+       * @param selected - Determines wheter the line is selected.
+       * @param hover - Determines wheter the line is being hovered, only applies if selected is false.
+       * @returns The width of the line.
+       */
+      getLineWidth(selected, hover) {
+          if (selected === true) {
+              return Math.max(this.selectionWidth, 0.3 / this._body.view.scale);
+          }
+          else if (hover === true) {
+              return Math.max(this.hoverWidth, 0.3 / this._body.view.scale);
+          }
+          else {
+              return Math.max(this.options.width, 0.3 / this._body.view.scale);
+          }
+      }
+      /**
+       * Compute the color or gradient for given edge.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values like color, opacity or shadow.
+       * @param _selected - Ignored (TODO: remove in the future).
+       * @param _hover - Ignored (TODO: remove in the future).
+       * @returns Color string if single color is inherited or gradient if two.
+       */
+      getColor(ctx, values) {
+          if (values.inheritsColor !== false) {
+              // when this is a loop edge, just use the 'from' method
+              if (values.inheritsColor === "both" && this.from.id !== this.to.id) {
+                  const grd = ctx.createLinearGradient(this.from.x, this.from.y, this.to.x, this.to.y);
+                  let fromColor = this.from.options.color.highlight.border;
+                  let toColor = this.to.options.color.highlight.border;
+                  if (this.from.selected === false && this.to.selected === false) {
+                      fromColor = esnext.overrideOpacity(this.from.options.color.border, values.opacity);
+                      toColor = esnext.overrideOpacity(this.to.options.color.border, values.opacity);
+                  }
+                  else if (this.from.selected === true && this.to.selected === false) {
+                      toColor = this.to.options.color.border;
+                  }
+                  else if (this.from.selected === false && this.to.selected === true) {
+                      fromColor = this.from.options.color.border;
+                  }
+                  grd.addColorStop(0, fromColor);
+                  grd.addColorStop(1, toColor);
+                  // -------------------- this returns -------------------- //
+                  return grd;
+              }
+              if (values.inheritsColor === "to") {
+                  return esnext.overrideOpacity(this.to.options.color.border, values.opacity);
+              }
+              else {
+                  // "from"
+                  return esnext.overrideOpacity(this.from.options.color.border, values.opacity);
+              }
+          }
+          else {
+              return esnext.overrideOpacity(values.color, values.opacity);
+          }
+      }
+      /**
+       * Draw a line from a node to itself, a circle.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values like color, opacity or shadow.
+       * @param x - Center of the circle on the x axis.
+       * @param y - Center of the circle on the y axis.
+       * @param radius - Radius of the circle.
+       */
+      _circle(ctx, values, x, y, radius) {
+          // draw shadow if enabled
+          this.enableShadow(ctx, values);
+          //full circle
+          let angleFrom = 0;
+          let angleTo = Math.PI * 2;
+          if (!this.options.selfReference.renderBehindTheNode) {
+              //render only parts which are not overlaping with parent node
+              //need to find x,y of from point and x,y to point
+              //calculating radians
+              const low = this.options.selfReference.angle;
+              const high = this.options.selfReference.angle + Math.PI;
+              const pointTFrom = this._findBorderPositionCircle(this.from, ctx, {
+                  x,
+                  y,
+                  low,
+                  high,
+                  direction: -1,
+              });
+              const pointTTo = this._findBorderPositionCircle(this.from, ctx, {
+                  x,
+                  y,
+                  low,
+                  high,
+                  direction: 1,
+              });
+              angleFrom = Math.atan2(pointTFrom.y - y, pointTFrom.x - x);
+              angleTo = Math.atan2(pointTTo.y - y, pointTTo.x - x);
+          }
+          // draw a circle
+          ctx.beginPath();
+          ctx.arc(x, y, radius, angleFrom, angleTo, false);
+          ctx.stroke();
+          // disable shadows for other elements.
+          this.disableShadow(ctx, values);
+      }
+      /**
+       * @inheritDoc
+       * @remarks
+       * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
+       */
+      getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
+          if (this.from != this.to) {
+              return this._getDistanceToEdge(x1, y1, x2, y2, x3, y3);
+          }
+          else {
+              const [x, y, radius] = this._getCircleData(undefined);
+              const dx = x - x3;
+              const dy = y - y3;
+              return Math.abs(Math.sqrt(dx * dx + dy * dy) - radius);
+          }
+      }
+      /**
+       * Calculate the distance between a point (x3, y3) and a line segment from (x1, y1) to (x2, y2).
+       *
+       * @param x1 - First end of the line segment on the x axis.
+       * @param y1 - First end of the line segment on the y axis.
+       * @param x2 - Second end of the line segment on the x axis.
+       * @param y2 - Second end of the line segment on the y axis.
+       * @param x3 - Position of the point on the x axis.
+       * @param y3 - Position of the point on the y axis.
+       * @returns The distance between the line segment and the point.
+       */
+      _getDistanceToLine(x1, y1, x2, y2, x3, y3) {
+          const px = x2 - x1;
+          const py = y2 - y1;
+          const something = px * px + py * py;
+          let u = ((x3 - x1) * px + (y3 - y1) * py) / something;
+          if (u > 1) {
+              u = 1;
+          }
+          else if (u < 0) {
+              u = 0;
+          }
+          const x = x1 + u * px;
+          const y = y1 + u * py;
+          const dx = x - x3;
+          const dy = y - y3;
+          //# Note: If the actual distance does not matter,
+          //# if you only want to compare what this function
+          //# returns to other results of this function, you
+          //# can just return the squared distance instead
+          //# (i.e. remove the sqrt) to gain a little performance
+          return Math.sqrt(dx * dx + dy * dy);
+      }
+      /** @inheritDoc */
+      getArrowData(ctx, position, viaNode, _selected, _hover, values) {
+          // set lets
+          let angle;
+          let arrowPoint;
+          let node1;
+          let node2;
+          let reversed;
+          let scaleFactor;
+          let type;
+          const lineWidth = values.width;
+          if (position === "from") {
+              node1 = this.from;
+              node2 = this.to;
+              reversed = values.fromArrowScale < 0;
+              scaleFactor = Math.abs(values.fromArrowScale);
+              type = values.fromArrowType;
+          }
+          else if (position === "to") {
+              node1 = this.to;
+              node2 = this.from;
+              reversed = values.toArrowScale < 0;
+              scaleFactor = Math.abs(values.toArrowScale);
+              type = values.toArrowType;
+          }
+          else {
+              node1 = this.to;
+              node2 = this.from;
+              reversed = values.middleArrowScale < 0;
+              scaleFactor = Math.abs(values.middleArrowScale);
+              type = values.middleArrowType;
+          }
+          const length = 15 * scaleFactor + 3 * lineWidth; // 3* lineWidth is the width of the edge.
+          // if not connected to itself
+          if (node1 != node2) {
+              const approximateEdgeLength = Math.hypot(node1.x - node2.x, node1.y - node2.y);
+              const relativeLength = length / approximateEdgeLength;
+              if (position !== "middle") {
+                  // draw arrow head
+                  if (this.options.smooth.enabled === true) {
+                      const pointT = this._findBorderPosition(node1, ctx, { via: viaNode });
+                      const guidePos = this.getPoint(pointT.t + relativeLength * (position === "from" ? 1 : -1), viaNode);
+                      angle = Math.atan2(pointT.y - guidePos.y, pointT.x - guidePos.x);
+                      arrowPoint = pointT;
+                  }
+                  else {
+                      angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
+                      arrowPoint = this._findBorderPosition(node1, ctx);
+                  }
+              }
+              else {
+                  // Negative half length reverses arrow direction.
+                  const halfLength = (reversed ? -relativeLength : relativeLength) / 2;
+                  const guidePos1 = this.getPoint(0.5 + halfLength, viaNode);
+                  const guidePos2 = this.getPoint(0.5 - halfLength, viaNode);
+                  angle = Math.atan2(guidePos1.y - guidePos2.y, guidePos1.x - guidePos2.x);
+                  arrowPoint = this.getPoint(0.5, viaNode);
+              }
+          }
+          else {
+              // draw circle
+              const [x, y, radius] = this._getCircleData(ctx);
+              if (position === "from") {
+                  const low = this.options.selfReference.angle;
+                  const high = this.options.selfReference.angle + Math.PI;
+                  const pointT = this._findBorderPositionCircle(this.from, ctx, {
+                      x,
+                      y,
+                      low,
+                      high,
+                      direction: -1,
+                  });
+                  angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
+                  arrowPoint = pointT;
+              }
+              else if (position === "to") {
+                  const low = this.options.selfReference.angle;
+                  const high = this.options.selfReference.angle + Math.PI;
+                  const pointT = this._findBorderPositionCircle(this.from, ctx, {
+                      x,
+                      y,
+                      low,
+                      high,
+                      direction: 1,
+                  });
+                  angle = pointT.t * -2 * Math.PI + 1.5 * Math.PI - 1.1 * Math.PI;
+                  arrowPoint = pointT;
+              }
+              else {
+                  const pos = this.options.selfReference.angle / (2 * Math.PI);
+                  arrowPoint = this._pointOnCircle(x, y, radius, pos);
+                  angle = pos * -2 * Math.PI + 1.5 * Math.PI + 0.1 * Math.PI;
+              }
+          }
+          const xi = arrowPoint.x - length * 0.9 * Math.cos(angle);
+          const yi = arrowPoint.y - length * 0.9 * Math.sin(angle);
+          const arrowCore = { x: xi, y: yi };
+          return {
+              point: arrowPoint,
+              core: arrowCore,
+              angle: angle,
+              length: length,
+              type: type,
+          };
+      }
+      /** @inheritDoc */
+      drawArrowHead(ctx, values, _selected, _hover, arrowData) {
+          // set style
+          ctx.strokeStyle = this.getColor(ctx, values);
+          ctx.fillStyle = ctx.strokeStyle;
+          ctx.lineWidth = values.width;
+          const canFill = EndPoints.draw(ctx, arrowData);
+          if (canFill) {
+              // draw shadow if enabled
+              this.enableShadow(ctx, values);
+              ctx.fill();
+              // disable shadows for other elements.
+              this.disableShadow(ctx, values);
+          }
+      }
+      /**
+       * Set the shadow formatting values in the context if enabled, do nothing otherwise.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values for the shadow.
+       */
+      enableShadow(ctx, values) {
+          if (values.shadow === true) {
+              ctx.shadowColor = values.shadowColor;
+              ctx.shadowBlur = values.shadowSize;
+              ctx.shadowOffsetX = values.shadowX;
+              ctx.shadowOffsetY = values.shadowY;
+          }
+      }
+      /**
+       * Reset the shadow formatting values in the context if enabled, do nothing otherwise.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values for the shadow.
+       */
+      disableShadow(ctx, values) {
+          if (values.shadow === true) {
+              ctx.shadowColor = "rgba(0,0,0,0)";
+              ctx.shadowBlur = 0;
+              ctx.shadowOffsetX = 0;
+              ctx.shadowOffsetY = 0;
+          }
+      }
+      /**
+       * Render the background according to the formatting values.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Formatting values for the background.
+       */
+      drawBackground(ctx, values) {
+          if (values.background !== false) {
+              // save original line attrs
+              const origCtxAttr = {
+                  strokeStyle: ctx.strokeStyle,
+                  lineWidth: ctx.lineWidth,
+                  dashes: ctx.dashes,
+              };
+              ctx.strokeStyle = values.backgroundColor;
+              ctx.lineWidth = values.backgroundSize;
+              this.setStrokeDashed(ctx, values.backgroundDashes);
+              ctx.stroke();
+              // restore original line attrs
+              ctx.strokeStyle = origCtxAttr.strokeStyle;
+              ctx.lineWidth = origCtxAttr.lineWidth;
+              ctx.dashes = origCtxAttr.dashes;
+              this.setStrokeDashed(ctx, values.dashes);
+          }
+      }
+      /**
+       * Set the line dash pattern if supported. Logs a warning to the console if it isn't supported.
+       *
+       * @param ctx - The context that will be used for rendering.
+       * @param dashes - The pattern [line, space, line…], true for default dashed line or false for normal line.
+       */
+      setStrokeDashed(ctx, dashes) {
+          if (dashes !== false) {
+              if (ctx.setLineDash !== undefined) {
+                  const pattern = Array.isArray(dashes) ? dashes : [5, 5];
+                  ctx.setLineDash(pattern);
+              }
+              else {
+                  console.warn("setLineDash is not supported in this browser. The dashed stroke cannot be used.");
+              }
+          }
+          else {
+              if (ctx.setLineDash !== undefined) {
+                  ctx.setLineDash([]);
+              }
+              else {
+                  console.warn("setLineDash is not supported in this browser. The dashed stroke cannot be used.");
+              }
+          }
+      }
   }
 
   /**
@@ -8835,173 +8682,156 @@
    * Bezier curves are used to model smooth gradual curves in paths between nodes.
    */
   class BezierEdgeBase extends EdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-      super(options, body, labelModule);
-    }
-    /**
-     * Find the intersection between the border of the node and the edge.
-     *
-     * @remarks
-     * This function uses binary search to look for the point where the bezier curve crosses the border of the node.
-     * @param nearNode - The node (either from or to node of the edge).
-     * @param ctx - The context that will be used for rendering.
-     * @param viaNode - Additional node(s) the edge passes through.
-     * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
-     */
-    _findBorderPositionBezier(
-      nearNode,
-      ctx,
-      viaNode = this._getViaCoordinates()
-    ) {
-      const maxIterations = 10;
-      const threshold = 0.2;
-      let from = false;
-      let high = 1;
-      let low = 0;
-      let node = this.to;
-      let pos;
-      let middle;
-      let endPointOffset = this.options.endPointOffset
-        ? this.options.endPointOffset.to
-        : 0;
-      if (nearNode.id === this.from.id) {
-        node = this.from;
-        from = true;
-        endPointOffset = this.options.endPointOffset
-          ? this.options.endPointOffset.from
-          : 0;
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param body - The body of the network.
+       * @param labelModule - Label module.
+       */
+      constructor(options, body, labelModule) {
+          super(options, body, labelModule);
       }
-      if (this.options.arrowStrikethrough === false) {
-        endPointOffset = 0;
-      }
-      let iteration = 0;
-      do {
-        middle = (low + high) * 0.5;
-        pos = this.getPoint(middle, viaNode);
-        const angle = Math.atan2(node.y - pos.y, node.x - pos.x);
-        const distanceToBorder =
-          node.distanceToBorder(ctx, angle) + endPointOffset;
-        const distanceToPoint = Math.sqrt(
-          Math.pow(pos.x - node.x, 2) + Math.pow(pos.y - node.y, 2)
-        );
-        const difference = distanceToBorder - distanceToPoint;
-        if (Math.abs(difference) < threshold) {
-          break; // found
-        } else if (difference < 0) {
-          // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
-          if (from === false) {
-            low = middle;
-          } else {
-            high = middle;
+      /**
+       * Find the intersection between the border of the node and the edge.
+       *
+       * @remarks
+       * This function uses binary search to look for the point where the bezier curve crosses the border of the node.
+       * @param nearNode - The node (either from or to node of the edge).
+       * @param ctx - The context that will be used for rendering.
+       * @param viaNode - Additional node(s) the edge passes through.
+       * @returns Cartesian coordinates of the intersection between the border of the node and the edge.
+       */
+      _findBorderPositionBezier(nearNode, ctx, viaNode = this._getViaCoordinates()) {
+          const maxIterations = 10;
+          const threshold = 0.2;
+          let from = false;
+          let high = 1;
+          let low = 0;
+          let node = this.to;
+          let pos;
+          let middle;
+          let endPointOffset = this.options.endPointOffset
+              ? this.options.endPointOffset.to
+              : 0;
+          if (nearNode.id === this.from.id) {
+              node = this.from;
+              from = true;
+              endPointOffset = this.options.endPointOffset
+                  ? this.options.endPointOffset.from
+                  : 0;
           }
-        } else {
-          if (from === false) {
-            high = middle;
-          } else {
-            low = middle;
+          if (this.options.arrowStrikethrough === false) {
+              endPointOffset = 0;
           }
-        }
-        ++iteration;
-      } while (low <= high && iteration < maxIterations);
-      return {
-        ...pos,
-        t: middle,
-      };
-    }
-    /**
-     * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
-     *
-     * @remarks
-     * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
-     * @param x1 - First end of the line segment on the x axis.
-     * @param y1 - First end of the line segment on the y axis.
-     * @param x2 - Second end of the line segment on the x axis.
-     * @param y2 - Second end of the line segment on the y axis.
-     * @param x3 - Position of the point on the x axis.
-     * @param y3 - Position of the point on the y axis.
-     * @param via - The control point for the edge.
-     * @returns The distance between the line segment and the point.
-     */
-    _getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, via) {
-      // x3,y3 is the point
-      let minDistance = 1e9;
-      let distance;
-      let i, t, x, y;
-      let lastX = x1;
-      let lastY = y1;
-      for (i = 1; i < 10; i++) {
-        t = 0.1 * i;
-        x =
-          Math.pow(1 - t, 2) * x1 +
-          2 * t * (1 - t) * via.x +
-          Math.pow(t, 2) * x2;
-        y =
-          Math.pow(1 - t, 2) * y1 +
-          2 * t * (1 - t) * via.y +
-          Math.pow(t, 2) * y2;
-        if (i > 0) {
-          distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
-          minDistance = distance < minDistance ? distance : minDistance;
-        }
-        lastX = x;
-        lastY = y;
+          let iteration = 0;
+          do {
+              middle = (low + high) * 0.5;
+              pos = this.getPoint(middle, viaNode);
+              const angle = Math.atan2(node.y - pos.y, node.x - pos.x);
+              const distanceToBorder = node.distanceToBorder(ctx, angle) + endPointOffset;
+              const distanceToPoint = Math.sqrt(Math.pow(pos.x - node.x, 2) + Math.pow(pos.y - node.y, 2));
+              const difference = distanceToBorder - distanceToPoint;
+              if (Math.abs(difference) < threshold) {
+                  break; // found
+              }
+              else if (difference < 0) {
+                  // distance to nodes is larger than distance to border --> t needs to be bigger if we're looking at the to node.
+                  if (from === false) {
+                      low = middle;
+                  }
+                  else {
+                      high = middle;
+                  }
+              }
+              else {
+                  if (from === false) {
+                      high = middle;
+                  }
+                  else {
+                      low = middle;
+                  }
+              }
+              ++iteration;
+          } while (low <= high && iteration < maxIterations);
+          return {
+              ...pos,
+              t: middle,
+          };
       }
-      return minDistance;
-    }
-    /**
-     * Render a bezier curve between two nodes.
-     *
-     * @remarks
-     * The method accepts zero, one or two control points.
-     * Passing zero control points just draws a straight line.
-     * @param ctx - The context that will be used for rendering.
-     * @param values - Style options for edge drawing.
-     * @param viaNode1 - First control point for curve drawing.
-     * @param viaNode2 - Second control point for curve drawing.
-     */
-    _bezierCurve(ctx, values, viaNode1, viaNode2) {
-      ctx.beginPath();
-      ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
-      if (viaNode1 != null && viaNode1.x != null) {
-        if (viaNode2 != null && viaNode2.x != null) {
-          ctx.bezierCurveTo(
-            viaNode1.x,
-            viaNode1.y,
-            viaNode2.x,
-            viaNode2.y,
-            this.toPoint.x,
-            this.toPoint.y
-          );
-        } else {
-          ctx.quadraticCurveTo(
-            viaNode1.x,
-            viaNode1.y,
-            this.toPoint.x,
-            this.toPoint.y
-          );
-        }
-      } else {
-        // fallback to normal straight edge
-        ctx.lineTo(this.toPoint.x, this.toPoint.y);
+      /**
+       * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
+       *
+       * @remarks
+       * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
+       * @param x1 - First end of the line segment on the x axis.
+       * @param y1 - First end of the line segment on the y axis.
+       * @param x2 - Second end of the line segment on the x axis.
+       * @param y2 - Second end of the line segment on the y axis.
+       * @param x3 - Position of the point on the x axis.
+       * @param y3 - Position of the point on the y axis.
+       * @param via - The control point for the edge.
+       * @returns The distance between the line segment and the point.
+       */
+      _getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, via) {
+          // x3,y3 is the point
+          let minDistance = 1e9;
+          let distance;
+          let i, t, x, y;
+          let lastX = x1;
+          let lastY = y1;
+          for (i = 1; i < 10; i++) {
+              t = 0.1 * i;
+              x =
+                  Math.pow(1 - t, 2) * x1 + 2 * t * (1 - t) * via.x + Math.pow(t, 2) * x2;
+              y =
+                  Math.pow(1 - t, 2) * y1 + 2 * t * (1 - t) * via.y + Math.pow(t, 2) * y2;
+              if (i > 0) {
+                  distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
+                  minDistance = distance < minDistance ? distance : minDistance;
+              }
+              lastX = x;
+              lastY = y;
+          }
+          return minDistance;
       }
-      // draw a background
-      this.drawBackground(ctx, values);
-      // draw shadow if enabled
-      this.enableShadow(ctx, values);
-      ctx.stroke();
-      this.disableShadow(ctx, values);
-    }
-    /** @inheritDoc */
-    getViaNode() {
-      return this._getViaCoordinates();
-    }
+      /**
+       * Render a bezier curve between two nodes.
+       *
+       * @remarks
+       * The method accepts zero, one or two control points.
+       * Passing zero control points just draws a straight line.
+       * @param ctx - The context that will be used for rendering.
+       * @param values - Style options for edge drawing.
+       * @param viaNode1 - First control point for curve drawing.
+       * @param viaNode2 - Second control point for curve drawing.
+       */
+      _bezierCurve(ctx, values, viaNode1, viaNode2) {
+          ctx.beginPath();
+          ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
+          if (viaNode1 != null && viaNode1.x != null) {
+              if (viaNode2 != null && viaNode2.x != null) {
+                  ctx.bezierCurveTo(viaNode1.x, viaNode1.y, viaNode2.x, viaNode2.y, this.toPoint.x, this.toPoint.y);
+              }
+              else {
+                  ctx.quadraticCurveTo(viaNode1.x, viaNode1.y, this.toPoint.x, this.toPoint.y);
+              }
+          }
+          else {
+              // fallback to normal straight edge
+              ctx.lineTo(this.toPoint.x, this.toPoint.y);
+          }
+          // draw a background
+          this.drawBackground(ctx, values);
+          // draw shadow if enabled
+          this.enableShadow(ctx, values);
+          ctx.stroke();
+          this.disableShadow(ctx, values);
+      }
+      /** @inheritDoc */
+      getViaNode() {
+          return this._getViaCoordinates();
+      }
   }
 
   /**
@@ -9012,341 +8842,342 @@
    * @augments BezierEdgeBase
    */
   class BezierEdgeDynamic extends BezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-      //this.via = undefined; // Here for completeness but not allowed to defined before super() is invoked.
-      super(options, body, labelModule); // --> this calls the setOptions below
-      this.via = this.via; // constructor → super → super → setOptions → setupSupportNode
-      this._boundFunction = () => {
-        this.positionBezierNode();
-      };
-      this._body.emitter.on("_repositionBezierNodes", this._boundFunction);
-    }
-    /** @inheritDoc */
-    setOptions(options) {
-      super.setOptions(options);
-      // check if the physics has changed.
-      let physicsChange = false;
-      if (this.options.physics !== options.physics) {
-        physicsChange = true;
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param body - The body of the network.
+       * @param labelModule - Label module.
+       */
+      constructor(options, body, labelModule) {
+          //this.via = undefined; // Here for completeness but not allowed to defined before super() is invoked.
+          super(options, body, labelModule); // --> this calls the setOptions below
+          this.via = this.via; // constructor → super → super → setOptions → setupSupportNode
+          this._boundFunction = () => {
+              this.positionBezierNode();
+          };
+          this._body.emitter.on("_repositionBezierNodes", this._boundFunction);
       }
-      // set the options and the to and from nodes
-      this.options = options;
-      this.id = this.options.id;
-      this.from = this._body.nodes[this.options.from];
-      this.to = this._body.nodes[this.options.to];
-      // setup the support node and connect
-      this.setupSupportNode();
-      this.connect();
-      // when we change the physics state of the edge, we reposition the support node.
-      if (physicsChange === true) {
-        this.via.setOptions({ physics: this.options.physics });
-        this.positionBezierNode();
+      /** @inheritDoc */
+      setOptions(options) {
+          super.setOptions(options);
+          // check if the physics has changed.
+          let physicsChange = false;
+          if (this.options.physics !== options.physics) {
+              physicsChange = true;
+          }
+          // set the options and the to and from nodes
+          this.options = options;
+          this.id = this.options.id;
+          this.from = this._body.nodes[this.options.from];
+          this.to = this._body.nodes[this.options.to];
+          // setup the support node and connect
+          this.setupSupportNode();
+          this.connect();
+          // when we change the physics state of the edge, we reposition the support node.
+          if (physicsChange === true) {
+              this.via.setOptions({ physics: this.options.physics });
+              this.positionBezierNode();
+          }
       }
-    }
-    /** @inheritDoc */
-    connect() {
-      this.from = this._body.nodes[this.options.from];
-      this.to = this._body.nodes[this.options.to];
-      if (
-        this.from === undefined ||
-        this.to === undefined ||
-        this.options.physics === false
-      ) {
-        this.via.setOptions({ physics: false });
-      } else {
-        // fix weird behaviour where a self referencing node has physics enabled
-        if (this.from.id === this.to.id) {
-          this.via.setOptions({ physics: false });
-        } else {
-          this.via.setOptions({ physics: true });
-        }
+      /** @inheritDoc */
+      connect() {
+          this.from = this._body.nodes[this.options.from];
+          this.to = this._body.nodes[this.options.to];
+          if (this.from === undefined ||
+              this.to === undefined ||
+              this.options.physics === false) {
+              this.via.setOptions({ physics: false });
+          }
+          else {
+              // fix weird behaviour where a self referencing node has physics enabled
+              if (this.from.id === this.to.id) {
+                  this.via.setOptions({ physics: false });
+              }
+              else {
+                  this.via.setOptions({ physics: true });
+              }
+          }
       }
-    }
-    /** @inheritDoc */
-    cleanup() {
-      this._body.emitter.off("_repositionBezierNodes", this._boundFunction);
-      if (this.via !== undefined) {
-        delete this._body.nodes[this.via.id];
-        this.via = undefined;
-        return true;
+      /** @inheritDoc */
+      cleanup() {
+          this._body.emitter.off("_repositionBezierNodes", this._boundFunction);
+          if (this.via !== undefined) {
+              delete this._body.nodes[this.via.id];
+              this.via = undefined;
+              return true;
+          }
+          return false;
       }
-      return false;
-    }
-    /**
-     * Create and add a support node if not already present.
-     *
-     * @remarks
-     * Bezier curves require an anchor point to calculate the smooth flow.
-     * These points are nodes.
-     * These nodes are invisible but are used for the force calculation.
-     *
-     * The changed data is not called, if needed, it is returned by the main edge constructor.
-     */
-    setupSupportNode() {
-      if (this.via === undefined) {
-        const nodeId = "edgeId:" + this.id;
-        const node = this._body.functions.createNode({
-          id: nodeId,
-          shape: "circle",
-          physics: true,
-          hidden: true,
-        });
-        this._body.nodes[nodeId] = node;
-        this.via = node;
-        this.via.parentEdgeId = this.id;
-        this.positionBezierNode();
+      /**
+       * Create and add a support node if not already present.
+       *
+       * @remarks
+       * Bezier curves require an anchor point to calculate the smooth flow.
+       * These points are nodes.
+       * These nodes are invisible but are used for the force calculation.
+       *
+       * The changed data is not called, if needed, it is returned by the main edge constructor.
+       */
+      setupSupportNode() {
+          if (this.via === undefined) {
+              const nodeId = "edgeId:" + this.id;
+              const node = this._body.functions.createNode({
+                  id: nodeId,
+                  shape: "circle",
+                  physics: true,
+                  hidden: true,
+              });
+              this._body.nodes[nodeId] = node;
+              this.via = node;
+              this.via.parentEdgeId = this.id;
+              this.positionBezierNode();
+          }
       }
-    }
-    /**
-     * Position bezier node.
-     */
-    positionBezierNode() {
-      if (
-        this.via !== undefined &&
-        this.from !== undefined &&
-        this.to !== undefined
-      ) {
-        this.via.x = 0.5 * (this.from.x + this.to.x);
-        this.via.y = 0.5 * (this.from.y + this.to.y);
-      } else if (this.via !== undefined) {
-        this.via.x = 0;
-        this.via.y = 0;
+      /**
+       * Position bezier node.
+       */
+      positionBezierNode() {
+          if (this.via !== undefined &&
+              this.from !== undefined &&
+              this.to !== undefined) {
+              this.via.x = 0.5 * (this.from.x + this.to.x);
+              this.via.y = 0.5 * (this.from.y + this.to.y);
+          }
+          else if (this.via !== undefined) {
+              this.via.x = 0;
+              this.via.y = 0;
+          }
       }
-    }
-    /** @inheritDoc */
-    _line(ctx, values, viaNode) {
-      this._bezierCurve(ctx, values, viaNode);
-    }
-    /** @inheritDoc */
-    _getViaCoordinates() {
-      return this.via;
-    }
-    /** @inheritDoc */
-    getViaNode() {
-      return this.via;
-    }
-    /** @inheritDoc */
-    getPoint(position, viaNode = this.via) {
-      if (this.from === this.to) {
-        const [cx, cy, cr] = this._getCircleData();
-        const a = 2 * Math.PI * (1 - position);
-        return {
-          x: cx + cr * Math.sin(a),
-          y: cy + cr - cr * (1 - Math.cos(a)),
-        };
-      } else {
-        return {
-          x:
-            Math.pow(1 - position, 2) * this.fromPoint.x +
-            2 * position * (1 - position) * viaNode.x +
-            Math.pow(position, 2) * this.toPoint.x,
-          y:
-            Math.pow(1 - position, 2) * this.fromPoint.y +
-            2 * position * (1 - position) * viaNode.y +
-            Math.pow(position, 2) * this.toPoint.y,
-        };
+      /** @inheritDoc */
+      _line(ctx, values, viaNode) {
+          this._bezierCurve(ctx, values, viaNode);
       }
-    }
-    /** @inheritDoc */
-    _findBorderPosition(nearNode, ctx) {
-      return this._findBorderPositionBezier(nearNode, ctx, this.via);
-    }
-    /** @inheritDoc */
-    _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
-      // x3,y3 is the point
-      return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, this.via);
-    }
+      /** @inheritDoc */
+      _getViaCoordinates() {
+          return this.via;
+      }
+      /** @inheritDoc */
+      getViaNode() {
+          return this.via;
+      }
+      /** @inheritDoc */
+      getPoint(position, viaNode = this.via) {
+          if (this.from === this.to) {
+              const [cx, cy, cr] = this._getCircleData();
+              const a = 2 * Math.PI * (1 - position);
+              return {
+                  x: cx + cr * Math.sin(a),
+                  y: cy + cr - cr * (1 - Math.cos(a)),
+              };
+          }
+          else {
+              return {
+                  x: Math.pow(1 - position, 2) * this.fromPoint.x +
+                      2 * position * (1 - position) * viaNode.x +
+                      Math.pow(position, 2) * this.toPoint.x,
+                  y: Math.pow(1 - position, 2) * this.fromPoint.y +
+                      2 * position * (1 - position) * viaNode.y +
+                      Math.pow(position, 2) * this.toPoint.y,
+              };
+          }
+      }
+      /** @inheritDoc */
+      _findBorderPosition(nearNode, ctx) {
+          return this._findBorderPositionBezier(nearNode, ctx, this.via);
+      }
+      /** @inheritDoc */
+      _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
+          // x3,y3 is the point
+          return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, this.via);
+      }
   }
 
   /**
    * A Static Bezier Edge. Bezier curves are used to model smooth gradual curves in paths between nodes.
    */
   class BezierEdgeStatic extends BezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-      super(options, body, labelModule);
-    }
-    /** @inheritDoc */
-    _line(ctx, values, viaNode) {
-      this._bezierCurve(ctx, values, viaNode);
-    }
-    /** @inheritDoc */
-    getViaNode() {
-      return this._getViaCoordinates();
-    }
-    /**
-     * Compute the coordinates of the via node.
-     *
-     * @remarks
-     * We do not use the to and fromPoints here to make the via nodes the same as edges without arrows.
-     * @returns Cartesian coordinates of the via node.
-     */
-    _getViaCoordinates() {
-      // Assumption: x/y coordinates in from/to always defined
-      const factor = this.options.smooth.roundness;
-      const type = this.options.smooth.type;
-      let dx = Math.abs(this.from.x - this.to.x);
-      let dy = Math.abs(this.from.y - this.to.y);
-      if (type === "discrete" || type === "diagonalCross") {
-        let stepX;
-        let stepY;
-        if (dx <= dy) {
-          stepX = stepY = factor * dy;
-        } else {
-          stepX = stepY = factor * dx;
-        }
-        if (this.from.x > this.to.x) {
-          stepX = -stepX;
-        }
-        if (this.from.y >= this.to.y) {
-          stepY = -stepY;
-        }
-        let xVia = this.from.x + stepX;
-        let yVia = this.from.y + stepY;
-        if (type === "discrete") {
-          if (dx <= dy) {
-            xVia = dx < factor * dy ? this.from.x : xVia;
-          } else {
-            yVia = dy < factor * dx ? this.from.y : yVia;
-          }
-        }
-        return { x: xVia, y: yVia };
-      } else if (type === "straightCross") {
-        let stepX = (1 - factor) * dx;
-        let stepY = (1 - factor) * dy;
-        if (dx <= dy) {
-          // up - down
-          stepX = 0;
-          if (this.from.y < this.to.y) {
-            stepY = -stepY;
-          }
-        } else {
-          // left - right
-          if (this.from.x < this.to.x) {
-            stepX = -stepX;
-          }
-          stepY = 0;
-        }
-        return {
-          x: this.to.x + stepX,
-          y: this.to.y + stepY,
-        };
-      } else if (type === "horizontal") {
-        let stepX = (1 - factor) * dx;
-        if (this.from.x < this.to.x) {
-          stepX = -stepX;
-        }
-        return {
-          x: this.to.x + stepX,
-          y: this.from.y,
-        };
-      } else if (type === "vertical") {
-        let stepY = (1 - factor) * dy;
-        if (this.from.y < this.to.y) {
-          stepY = -stepY;
-        }
-        return {
-          x: this.from.x,
-          y: this.to.y + stepY,
-        };
-      } else if (type === "curvedCW") {
-        dx = this.to.x - this.from.x;
-        dy = this.from.y - this.to.y;
-        const radius = Math.sqrt(dx * dx + dy * dy);
-        const pi = Math.PI;
-        const originalAngle = Math.atan2(dy, dx);
-        const myAngle = (originalAngle + (factor * 0.5 + 0.5) * pi) % (2 * pi);
-        return {
-          x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
-          y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle),
-        };
-      } else if (type === "curvedCCW") {
-        dx = this.to.x - this.from.x;
-        dy = this.from.y - this.to.y;
-        const radius = Math.sqrt(dx * dx + dy * dy);
-        const pi = Math.PI;
-        const originalAngle = Math.atan2(dy, dx);
-        const myAngle = (originalAngle + (-factor * 0.5 + 0.5) * pi) % (2 * pi);
-        return {
-          x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
-          y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle),
-        };
-      } else {
-        // continuous
-        let stepX;
-        let stepY;
-        if (dx <= dy) {
-          stepX = stepY = factor * dy;
-        } else {
-          stepX = stepY = factor * dx;
-        }
-        if (this.from.x > this.to.x) {
-          stepX = -stepX;
-        }
-        if (this.from.y >= this.to.y) {
-          stepY = -stepY;
-        }
-        let xVia = this.from.x + stepX;
-        let yVia = this.from.y + stepY;
-        if (dx <= dy) {
-          if (this.from.x <= this.to.x) {
-            xVia = this.to.x < xVia ? this.to.x : xVia;
-          } else {
-            xVia = this.to.x > xVia ? this.to.x : xVia;
-          }
-        } else {
-          if (this.from.y >= this.to.y) {
-            yVia = this.to.y > yVia ? this.to.y : yVia;
-          } else {
-            yVia = this.to.y < yVia ? this.to.y : yVia;
-          }
-        }
-        return { x: xVia, y: yVia };
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param body - The body of the network.
+       * @param labelModule - Label module.
+       */
+      constructor(options, body, labelModule) {
+          super(options, body, labelModule);
       }
-    }
-    /** @inheritDoc */
-    _findBorderPosition(nearNode, ctx, options = {}) {
-      return this._findBorderPositionBezier(nearNode, ctx, options.via);
-    }
-    /** @inheritDoc */
-    _getDistanceToEdge(
-      x1,
-      y1,
-      x2,
-      y2,
-      x3,
-      y3,
-      viaNode = this._getViaCoordinates()
-    ) {
-      // x3,y3 is the point
-      return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, viaNode);
-    }
-    /** @inheritDoc */
-    getPoint(position, viaNode = this._getViaCoordinates()) {
-      const t = position;
-      const x =
-        Math.pow(1 - t, 2) * this.fromPoint.x +
-        2 * t * (1 - t) * viaNode.x +
-        Math.pow(t, 2) * this.toPoint.x;
-      const y =
-        Math.pow(1 - t, 2) * this.fromPoint.y +
-        2 * t * (1 - t) * viaNode.y +
-        Math.pow(t, 2) * this.toPoint.y;
-      return { x: x, y: y };
-    }
+      /** @inheritDoc */
+      _line(ctx, values, viaNode) {
+          this._bezierCurve(ctx, values, viaNode);
+      }
+      /** @inheritDoc */
+      getViaNode() {
+          return this._getViaCoordinates();
+      }
+      /**
+       * Compute the coordinates of the via node.
+       *
+       * @remarks
+       * We do not use the to and fromPoints here to make the via nodes the same as edges without arrows.
+       * @returns Cartesian coordinates of the via node.
+       */
+      _getViaCoordinates() {
+          // Assumption: x/y coordinates in from/to always defined
+          const factor = this.options.smooth.roundness;
+          const type = this.options.smooth.type;
+          let dx = Math.abs(this.from.x - this.to.x);
+          let dy = Math.abs(this.from.y - this.to.y);
+          if (type === "discrete" || type === "diagonalCross") {
+              let stepX;
+              let stepY;
+              if (dx <= dy) {
+                  stepX = stepY = factor * dy;
+              }
+              else {
+                  stepX = stepY = factor * dx;
+              }
+              if (this.from.x > this.to.x) {
+                  stepX = -stepX;
+              }
+              if (this.from.y >= this.to.y) {
+                  stepY = -stepY;
+              }
+              let xVia = this.from.x + stepX;
+              let yVia = this.from.y + stepY;
+              if (type === "discrete") {
+                  if (dx <= dy) {
+                      xVia = dx < factor * dy ? this.from.x : xVia;
+                  }
+                  else {
+                      yVia = dy < factor * dx ? this.from.y : yVia;
+                  }
+              }
+              return { x: xVia, y: yVia };
+          }
+          else if (type === "straightCross") {
+              let stepX = (1 - factor) * dx;
+              let stepY = (1 - factor) * dy;
+              if (dx <= dy) {
+                  // up - down
+                  stepX = 0;
+                  if (this.from.y < this.to.y) {
+                      stepY = -stepY;
+                  }
+              }
+              else {
+                  // left - right
+                  if (this.from.x < this.to.x) {
+                      stepX = -stepX;
+                  }
+                  stepY = 0;
+              }
+              return {
+                  x: this.to.x + stepX,
+                  y: this.to.y + stepY,
+              };
+          }
+          else if (type === "horizontal") {
+              let stepX = (1 - factor) * dx;
+              if (this.from.x < this.to.x) {
+                  stepX = -stepX;
+              }
+              return {
+                  x: this.to.x + stepX,
+                  y: this.from.y,
+              };
+          }
+          else if (type === "vertical") {
+              let stepY = (1 - factor) * dy;
+              if (this.from.y < this.to.y) {
+                  stepY = -stepY;
+              }
+              return {
+                  x: this.from.x,
+                  y: this.to.y + stepY,
+              };
+          }
+          else if (type === "curvedCW") {
+              dx = this.to.x - this.from.x;
+              dy = this.from.y - this.to.y;
+              const radius = Math.sqrt(dx * dx + dy * dy);
+              const pi = Math.PI;
+              const originalAngle = Math.atan2(dy, dx);
+              const myAngle = (originalAngle + (factor * 0.5 + 0.5) * pi) % (2 * pi);
+              return {
+                  x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
+                  y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle),
+              };
+          }
+          else if (type === "curvedCCW") {
+              dx = this.to.x - this.from.x;
+              dy = this.from.y - this.to.y;
+              const radius = Math.sqrt(dx * dx + dy * dy);
+              const pi = Math.PI;
+              const originalAngle = Math.atan2(dy, dx);
+              const myAngle = (originalAngle + (-factor * 0.5 + 0.5) * pi) % (2 * pi);
+              return {
+                  x: this.from.x + (factor * 0.5 + 0.5) * radius * Math.sin(myAngle),
+                  y: this.from.y + (factor * 0.5 + 0.5) * radius * Math.cos(myAngle),
+              };
+          }
+          else {
+              // continuous
+              let stepX;
+              let stepY;
+              if (dx <= dy) {
+                  stepX = stepY = factor * dy;
+              }
+              else {
+                  stepX = stepY = factor * dx;
+              }
+              if (this.from.x > this.to.x) {
+                  stepX = -stepX;
+              }
+              if (this.from.y >= this.to.y) {
+                  stepY = -stepY;
+              }
+              let xVia = this.from.x + stepX;
+              let yVia = this.from.y + stepY;
+              if (dx <= dy) {
+                  if (this.from.x <= this.to.x) {
+                      xVia = this.to.x < xVia ? this.to.x : xVia;
+                  }
+                  else {
+                      xVia = this.to.x > xVia ? this.to.x : xVia;
+                  }
+              }
+              else {
+                  if (this.from.y >= this.to.y) {
+                      yVia = this.to.y > yVia ? this.to.y : yVia;
+                  }
+                  else {
+                      yVia = this.to.y < yVia ? this.to.y : yVia;
+                  }
+              }
+              return { x: xVia, y: yVia };
+          }
+      }
+      /** @inheritDoc */
+      _findBorderPosition(nearNode, ctx, options = {}) {
+          return this._findBorderPositionBezier(nearNode, ctx, options.via);
+      }
+      /** @inheritDoc */
+      _getDistanceToEdge(x1, y1, x2, y2, x3, y3, viaNode = this._getViaCoordinates()) {
+          // x3,y3 is the point
+          return this._getDistanceToBezierEdge(x1, y1, x2, y2, x3, y3, viaNode);
+      }
+      /** @inheritDoc */
+      getPoint(position, viaNode = this._getViaCoordinates()) {
+          const t = position;
+          const x = Math.pow(1 - t, 2) * this.fromPoint.x +
+              2 * t * (1 - t) * viaNode.x +
+              Math.pow(t, 2) * this.toPoint.x;
+          const y = Math.pow(1 - t, 2) * this.fromPoint.y +
+              2 * t * (1 - t) * viaNode.y +
+              Math.pow(t, 2) * this.toPoint.y;
+          return { x: x, y: y };
+      }
   }
 
   /**
@@ -9356,219 +9187,207 @@
    * @augments BezierEdgeBase
    */
   class CubicBezierEdgeBase extends BezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-      super(options, body, labelModule);
-    }
-    /**
-     * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
-     *
-     * @remarks
-     * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
-     * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
-     * @param x1 - First end of the line segment on the x axis.
-     * @param y1 - First end of the line segment on the y axis.
-     * @param x2 - Second end of the line segment on the x axis.
-     * @param y2 - Second end of the line segment on the y axis.
-     * @param x3 - Position of the point on the x axis.
-     * @param y3 - Position of the point on the y axis.
-     * @param via1 - The first point this edge passes through.
-     * @param via2 - The second point this edge passes through.
-     * @returns The distance between the line segment and the point.
-     */
-    _getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2) {
-      // x3,y3 is the point
-      let minDistance = 1e9;
-      let lastX = x1;
-      let lastY = y1;
-      const vec = [0, 0, 0, 0];
-      for (let i = 1; i < 10; i++) {
-        const t = 0.1 * i;
-        vec[0] = Math.pow(1 - t, 3);
-        vec[1] = 3 * t * Math.pow(1 - t, 2);
-        vec[2] = 3 * Math.pow(t, 2) * (1 - t);
-        vec[3] = Math.pow(t, 3);
-        const x = vec[0] * x1 + vec[1] * via1.x + vec[2] * via2.x + vec[3] * x2;
-        const y = vec[0] * y1 + vec[1] * via1.y + vec[2] * via2.y + vec[3] * y2;
-        if (i > 0) {
-          const distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
-          minDistance = distance < minDistance ? distance : minDistance;
-        }
-        lastX = x;
-        lastY = y;
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param body - The body of the network.
+       * @param labelModule - Label module.
+       */
+      constructor(options, body, labelModule) {
+          super(options, body, labelModule);
       }
-      return minDistance;
-    }
+      /**
+       * Calculate the distance between a point (x3,y3) and a line segment from (x1,y1) to (x2,y2).
+       *
+       * @remarks
+       * http://stackoverflow.com/questions/849211/shortest-distancae-between-a-point-and-a-line-segment
+       * https://en.wikipedia.org/wiki/B%C3%A9zier_curve
+       * @param x1 - First end of the line segment on the x axis.
+       * @param y1 - First end of the line segment on the y axis.
+       * @param x2 - Second end of the line segment on the x axis.
+       * @param y2 - Second end of the line segment on the y axis.
+       * @param x3 - Position of the point on the x axis.
+       * @param y3 - Position of the point on the y axis.
+       * @param via1 - The first point this edge passes through.
+       * @param via2 - The second point this edge passes through.
+       * @returns The distance between the line segment and the point.
+       */
+      _getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2) {
+          // x3,y3 is the point
+          let minDistance = 1e9;
+          let lastX = x1;
+          let lastY = y1;
+          const vec = [0, 0, 0, 0];
+          for (let i = 1; i < 10; i++) {
+              const t = 0.1 * i;
+              vec[0] = Math.pow(1 - t, 3);
+              vec[1] = 3 * t * Math.pow(1 - t, 2);
+              vec[2] = 3 * Math.pow(t, 2) * (1 - t);
+              vec[3] = Math.pow(t, 3);
+              const x = vec[0] * x1 + vec[1] * via1.x + vec[2] * via2.x + vec[3] * x2;
+              const y = vec[0] * y1 + vec[1] * via1.y + vec[2] * via2.y + vec[3] * y2;
+              if (i > 0) {
+                  const distance = this._getDistanceToLine(lastX, lastY, x, y, x3, y3);
+                  minDistance = distance < minDistance ? distance : minDistance;
+              }
+              lastX = x;
+              lastY = y;
+          }
+          return minDistance;
+      }
   }
 
   /**
    * A Cubic Bezier Edge. Bezier curves are used to model smooth gradual curves in paths between nodes.
    */
   class CubicBezierEdge extends CubicBezierEdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-      super(options, body, labelModule);
-    }
-    /** @inheritDoc */
-    _line(ctx, values, viaNodes) {
-      // get the coordinates of the support points.
-      const via1 = viaNodes[0];
-      const via2 = viaNodes[1];
-      this._bezierCurve(ctx, values, via1, via2);
-    }
-    /**
-     * Compute the additional points the edge passes through.
-     *
-     * @returns Cartesian coordinates of the points the edge passes through.
-     */
-    _getViaCoordinates() {
-      const dx = this.from.x - this.to.x;
-      const dy = this.from.y - this.to.y;
-      let x1;
-      let y1;
-      let x2;
-      let y2;
-      const roundness = this.options.smooth.roundness;
-      // horizontal if x > y or if direction is forced or if direction is horizontal
-      if (
-        (Math.abs(dx) > Math.abs(dy) ||
-          this.options.smooth.forceDirection === true ||
-          this.options.smooth.forceDirection === "horizontal") &&
-        this.options.smooth.forceDirection !== "vertical"
-      ) {
-        y1 = this.from.y;
-        y2 = this.to.y;
-        x1 = this.from.x - roundness * dx;
-        x2 = this.to.x + roundness * dx;
-      } else {
-        y1 = this.from.y - roundness * dy;
-        y2 = this.to.y + roundness * dy;
-        x1 = this.from.x;
-        x2 = this.to.x;
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param body - The body of the network.
+       * @param labelModule - Label module.
+       */
+      constructor(options, body, labelModule) {
+          super(options, body, labelModule);
       }
-      return [
-        { x: x1, y: y1 },
-        { x: x2, y: y2 },
-      ];
-    }
-    /** @inheritDoc */
-    getViaNode() {
-      return this._getViaCoordinates();
-    }
-    /** @inheritDoc */
-    _findBorderPosition(nearNode, ctx) {
-      return this._findBorderPositionBezier(nearNode, ctx);
-    }
-    /** @inheritDoc */
-    _getDistanceToEdge(
-      x1,
-      y1,
-      x2,
-      y2,
-      x3,
-      y3,
-      [via1, via2] = this._getViaCoordinates()
-    ) {
-      // x3,y3 is the point
-      return this._getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2);
-    }
-    /** @inheritDoc */
-    getPoint(position, [via1, via2] = this._getViaCoordinates()) {
-      const t = position;
-      const vec = [
-        Math.pow(1 - t, 3),
-        3 * t * Math.pow(1 - t, 2),
-        3 * Math.pow(t, 2) * (1 - t),
-        Math.pow(t, 3),
-      ];
-      const x =
-        vec[0] * this.fromPoint.x +
-        vec[1] * via1.x +
-        vec[2] * via2.x +
-        vec[3] * this.toPoint.x;
-      const y =
-        vec[0] * this.fromPoint.y +
-        vec[1] * via1.y +
-        vec[2] * via2.y +
-        vec[3] * this.toPoint.y;
-      return { x: x, y: y };
-    }
+      /** @inheritDoc */
+      _line(ctx, values, viaNodes) {
+          // get the coordinates of the support points.
+          const via1 = viaNodes[0];
+          const via2 = viaNodes[1];
+          this._bezierCurve(ctx, values, via1, via2);
+      }
+      /**
+       * Compute the additional points the edge passes through.
+       *
+       * @returns Cartesian coordinates of the points the edge passes through.
+       */
+      _getViaCoordinates() {
+          const dx = this.from.x - this.to.x;
+          const dy = this.from.y - this.to.y;
+          let x1;
+          let y1;
+          let x2;
+          let y2;
+          const roundness = this.options.smooth.roundness;
+          // horizontal if x > y or if direction is forced or if direction is horizontal
+          if ((Math.abs(dx) > Math.abs(dy) ||
+              this.options.smooth.forceDirection === true ||
+              this.options.smooth.forceDirection === "horizontal") &&
+              this.options.smooth.forceDirection !== "vertical") {
+              y1 = this.from.y;
+              y2 = this.to.y;
+              x1 = this.from.x - roundness * dx;
+              x2 = this.to.x + roundness * dx;
+          }
+          else {
+              y1 = this.from.y - roundness * dy;
+              y2 = this.to.y + roundness * dy;
+              x1 = this.from.x;
+              x2 = this.to.x;
+          }
+          return [
+              { x: x1, y: y1 },
+              { x: x2, y: y2 },
+          ];
+      }
+      /** @inheritDoc */
+      getViaNode() {
+          return this._getViaCoordinates();
+      }
+      /** @inheritDoc */
+      _findBorderPosition(nearNode, ctx) {
+          return this._findBorderPositionBezier(nearNode, ctx);
+      }
+      /** @inheritDoc */
+      _getDistanceToEdge(x1, y1, x2, y2, x3, y3, [via1, via2] = this._getViaCoordinates()) {
+          // x3,y3 is the point
+          return this._getDistanceToBezierEdge2(x1, y1, x2, y2, x3, y3, via1, via2);
+      }
+      /** @inheritDoc */
+      getPoint(position, [via1, via2] = this._getViaCoordinates()) {
+          const t = position;
+          const vec = [
+              Math.pow(1 - t, 3),
+              3 * t * Math.pow(1 - t, 2),
+              3 * Math.pow(t, 2) * (1 - t),
+              Math.pow(t, 3),
+          ];
+          const x = vec[0] * this.fromPoint.x +
+              vec[1] * via1.x +
+              vec[2] * via2.x +
+              vec[3] * this.toPoint.x;
+          const y = vec[0] * this.fromPoint.y +
+              vec[1] * via1.y +
+              vec[2] * via2.y +
+              vec[3] * this.toPoint.y;
+          return { x: x, y: y };
+      }
   }
 
   /**
    * A Straight Edge.
    */
   class StraightEdge extends EdgeBase {
-    /**
-     * Create a new instance.
-     *
-     * @param options - The options object of given edge.
-     * @param body - The body of the network.
-     * @param labelModule - Label module.
-     */
-    constructor(options, body, labelModule) {
-      super(options, body, labelModule);
-    }
-    /** @inheritDoc */
-    _line(ctx, values) {
-      // draw a straight line
-      ctx.beginPath();
-      ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
-      ctx.lineTo(this.toPoint.x, this.toPoint.y);
-      // draw shadow if enabled
-      this.enableShadow(ctx, values);
-      ctx.stroke();
-      this.disableShadow(ctx, values);
-    }
-    /** @inheritDoc */
-    getViaNode() {
-      return undefined;
-    }
-    /** @inheritDoc */
-    getPoint(position) {
-      return {
-        x: (1 - position) * this.fromPoint.x + position * this.toPoint.x,
-        y: (1 - position) * this.fromPoint.y + position * this.toPoint.y,
-      };
-    }
-    /** @inheritDoc */
-    _findBorderPosition(nearNode, ctx) {
-      let node1 = this.to;
-      let node2 = this.from;
-      if (nearNode.id === this.from.id) {
-        node1 = this.from;
-        node2 = this.to;
+      /**
+       * Create a new instance.
+       *
+       * @param options - The options object of given edge.
+       * @param body - The body of the network.
+       * @param labelModule - Label module.
+       */
+      constructor(options, body, labelModule) {
+          super(options, body, labelModule);
       }
-      const angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
-      const dx = node1.x - node2.x;
-      const dy = node1.y - node2.y;
-      const edgeSegmentLength = Math.sqrt(dx * dx + dy * dy);
-      const toBorderDist = nearNode.distanceToBorder(ctx, angle);
-      const toBorderPoint =
-        (edgeSegmentLength - toBorderDist) / edgeSegmentLength;
-      return {
-        x: (1 - toBorderPoint) * node2.x + toBorderPoint * node1.x,
-        y: (1 - toBorderPoint) * node2.y + toBorderPoint * node1.y,
-        t: 0,
-      };
-    }
-    /** @inheritDoc */
-    _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
-      // x3,y3 is the point
-      return this._getDistanceToLine(x1, y1, x2, y2, x3, y3);
-    }
+      /** @inheritDoc */
+      _line(ctx, values) {
+          // draw a straight line
+          ctx.beginPath();
+          ctx.moveTo(this.fromPoint.x, this.fromPoint.y);
+          ctx.lineTo(this.toPoint.x, this.toPoint.y);
+          // draw shadow if enabled
+          this.enableShadow(ctx, values);
+          ctx.stroke();
+          this.disableShadow(ctx, values);
+      }
+      /** @inheritDoc */
+      getViaNode() {
+          return undefined;
+      }
+      /** @inheritDoc */
+      getPoint(position) {
+          return {
+              x: (1 - position) * this.fromPoint.x + position * this.toPoint.x,
+              y: (1 - position) * this.fromPoint.y + position * this.toPoint.y,
+          };
+      }
+      /** @inheritDoc */
+      _findBorderPosition(nearNode, ctx) {
+          let node1 = this.to;
+          let node2 = this.from;
+          if (nearNode.id === this.from.id) {
+              node1 = this.from;
+              node2 = this.to;
+          }
+          const angle = Math.atan2(node1.y - node2.y, node1.x - node2.x);
+          const dx = node1.x - node2.x;
+          const dy = node1.y - node2.y;
+          const edgeSegmentLength = Math.sqrt(dx * dx + dy * dy);
+          const toBorderDist = nearNode.distanceToBorder(ctx, angle);
+          const toBorderPoint = (edgeSegmentLength - toBorderDist) / edgeSegmentLength;
+          return {
+              x: (1 - toBorderPoint) * node2.x + toBorderPoint * node1.x,
+              y: (1 - toBorderPoint) * node2.y + toBorderPoint * node1.y,
+              t: 0,
+          };
+      }
+      /** @inheritDoc */
+      _getDistanceToEdge(x1, y1, x2, y2, x3, y3) {
+          // x3,y3 is the point
+          return this._getDistanceToLine(x1, y1, x2, y2, x3, y3);
+      }
   }
 
   /**
@@ -9721,12 +9540,7 @@
       ];
 
       // only deep extend the items in the field array. These do not have shorthand.
-      esnext.selectiveDeepExtend(
-        fields,
-        parentOptions,
-        newOptions,
-        allowDeletion
-      );
+      esnext.selectiveDeepExtend(fields, parentOptions, newOptions, allowDeletion);
 
       // Only use endPointOffset values (from and to) if it's valid values
       if (
@@ -9768,12 +9582,7 @@
 
       esnext.mergeOptions(parentOptions, newOptions, "smooth", globalOptions);
       esnext.mergeOptions(parentOptions, newOptions, "shadow", globalOptions);
-      esnext.mergeOptions(
-        parentOptions,
-        newOptions,
-        "background",
-        globalOptions
-      );
+      esnext.mergeOptions(parentOptions, newOptions, "background", globalOptions);
 
       if (newOptions.dashes !== undefined && newOptions.dashes !== null) {
         parentOptions.dashes = newOptions.dashes;
@@ -9905,9 +9714,7 @@
         parentOptions.font = esnext.bridgeObject(globalOptions.font); // set the object back to the global options
       }
 
-      if (
-        Object.prototype.hasOwnProperty.call(newOptions, "selfReferenceSize")
-      ) {
+      if (Object.prototype.hasOwnProperty.call(newOptions, "selfReferenceSize")) {
         console.warn(
           "The selfReferenceSize property has been deprecated. Please use selfReference property instead. The selfReference can be set like thise selfReference:{size:30, angle:Math.PI / 4}"
         );
@@ -10055,8 +9862,7 @@
             smooth.enabled === true &&
             smooth.type !== "dynamic" &&
             smooth.type !== "cubicBezier") ||
-          (this.edgeType instanceof StraightEdge &&
-            smooth.type.enabled === false)
+          (this.edgeType instanceof StraightEdge && smooth.type.enabled === false)
         ) {
           changeInType = false;
         }
@@ -10387,13 +10193,7 @@
           }
 
           // draw the label
-          this.labelModule.draw(
-            ctx,
-            point.x,
-            point.y,
-            this.selected,
-            this.hover
-          );
+          this.labelModule.draw(ctx, point.x, point.y, this.selected, this.hover);
 
           /*
           // Useful debug code: draw a border around the label
@@ -10424,13 +10224,7 @@
             this.options.selfReference.angle
           );
 
-          this.labelModule.draw(
-            ctx,
-            point.x,
-            point.y,
-            this.selected,
-            this.hover
-          );
+          this.labelModule.draw(ctx, point.x, point.y, this.selected, this.hover);
         }
       }
     }
@@ -10745,43 +10539,40 @@
      */
     bindEventListeners() {
       // this allows external modules to force all dynamic curves to turn static.
-      this.body.emitter.on(
-        "_forceDisableDynamicCurves",
-        (type, emit = true) => {
-          if (type === "dynamic") {
-            type = "continuous";
-          }
-          let dataChanged = false;
-          for (const edgeId in this.body.edges) {
-            if (Object.prototype.hasOwnProperty.call(this.body.edges, edgeId)) {
-              const edge = this.body.edges[edgeId];
-              const edgeData = this.body.data.edges.get(edgeId);
+      this.body.emitter.on("_forceDisableDynamicCurves", (type, emit = true) => {
+        if (type === "dynamic") {
+          type = "continuous";
+        }
+        let dataChanged = false;
+        for (const edgeId in this.body.edges) {
+          if (Object.prototype.hasOwnProperty.call(this.body.edges, edgeId)) {
+            const edge = this.body.edges[edgeId];
+            const edgeData = this.body.data.edges.get(edgeId);
 
-              // only forcibly remove the smooth curve if the data has been set of the edge has the smooth curves defined.
-              // this is because a change in the global would not affect these curves.
-              if (edgeData != null) {
-                const smoothOptions = edgeData.smooth;
-                if (smoothOptions !== undefined) {
-                  if (
-                    smoothOptions.enabled === true &&
-                    smoothOptions.type === "dynamic"
-                  ) {
-                    if (type === undefined) {
-                      edge.setOptions({ smooth: false });
-                    } else {
-                      edge.setOptions({ smooth: { type: type } });
-                    }
-                    dataChanged = true;
+            // only forcibly remove the smooth curve if the data has been set of the edge has the smooth curves defined.
+            // this is because a change in the global would not affect these curves.
+            if (edgeData != null) {
+              const smoothOptions = edgeData.smooth;
+              if (smoothOptions !== undefined) {
+                if (
+                  smoothOptions.enabled === true &&
+                  smoothOptions.type === "dynamic"
+                ) {
+                  if (type === undefined) {
+                    edge.setOptions({ smooth: false });
+                  } else {
+                    edge.setOptions({ smooth: { type: type } });
                   }
+                  dataChanged = true;
                 }
               }
             }
           }
-          if (emit === true && dataChanged === true) {
-            this.body.emitter.emit("_dataChanged");
-          }
         }
-      );
+        if (emit === true && dataChanged === true) {
+          this.body.emitter.emit("_dataChanged");
+        }
+      });
 
       // this is called when options of EXISTING nodes or edges have changed.
       //
@@ -10817,13 +10608,7 @@
     setOptions(options) {
       if (options !== undefined) {
         // use the parser from the Edge class to fill in all shorthand notations
-        Edge.parseOptions(
-          this.options,
-          options,
-          true,
-          this.defaultOptions,
-          true
-        );
+        Edge.parseOptions(this.options, options, true, this.defaultOptions, true);
 
         // update smooth settings in all edges
         let dataChanged = false;
@@ -11391,9 +11176,7 @@
         node.width
       );
       parentBranch.maxWidth =
-        parentBranch.maxWidth < biggestSize
-          ? biggestSize
-          : parentBranch.maxWidth;
+        parentBranch.maxWidth < biggestSize ? biggestSize : parentBranch.maxWidth;
     }
 
     /**
@@ -11838,18 +11621,8 @@
               node2 = edge.edgeType.via;
               node3 = edge.from;
 
-              this._calculateSpringForce(
-                node1,
-                node2,
-                0.5 * edgeLength,
-                edgeSpringConstant
-              );
-              this._calculateSpringForce(
-                node2,
-                node3,
-                0.5 * edgeLength,
-                edgeSpringConstant
-              );
+              this._calculateSpringForce(node1, node2, 0.5 * edgeLength, edgeSpringConstant);
+              this._calculateSpringForce(node2, node3, 0.5 * edgeLength, edgeSpringConstant);
             } else {
               // the * 1.5 is here so the edge looks as large as a smooth edge. It does not initially because the smooth edges use
               // the support nodes which exert a repulsive force on the to and from nodes, making the edge appear larger.
@@ -11861,12 +11634,7 @@
                 edge.options.springConstant === undefined
                   ? this.options.springConstant
                   : edge.options.springConstant;
-              this._calculateSpringForce(
-                edge.from,
-                edge.to,
-                edgeLength,
-                edgeSpringConstant
-              );
+              this._calculateSpringForce(edge.from, edge.to, edgeLength, edgeSpringConstant);
             }
           }
         }
@@ -11884,7 +11652,7 @@
     _calculateSpringForce(node1, node2, edgeLength, edgeSpringConstant) {
       const dx = node1.x - node2.x;
       const dy = node1.y - node2.y;
-      const distance = Math.max(Math.sqrt(dx * dx + dy * dy), 0.01);
+      const distance = Math.max(Math.sqrt(dx * dx + dy * dy),0.01);
 
       // the 1/distance is so the fx and fy can be calculated without sine or cosine.
       const springForce =
@@ -12336,11 +12104,7 @@
           this.startSimulation();
         } else {
           this.physicsEnabled = true;
-          esnext.selectiveNotDeepExtend(
-            ["stabilization"],
-            this.options,
-            options
-          );
+          esnext.selectiveNotDeepExtend(["stabilization"], this.options, options);
           esnext.mergeOptions(this.options, options, "stabilization");
 
           if (options.enabled === undefined) {
@@ -12381,11 +12145,7 @@
           this.physicsBody,
           options
         );
-        this.edgesSolver = new SpringSolver(
-          this.body,
-          this.physicsBody,
-          options
-        );
+        this.edgesSolver = new SpringSolver(this.body, this.physicsBody, options);
         this.gravitySolver = new ForceAtlas2BasedCentralGravitySolver(
           this.body,
           this.physicsBody,
@@ -12393,16 +12153,8 @@
         );
       } else if (this.options.solver === "repulsion") {
         options = this.options.repulsion;
-        this.nodesSolver = new RepulsionSolver(
-          this.body,
-          this.physicsBody,
-          options
-        );
-        this.edgesSolver = new SpringSolver(
-          this.body,
-          this.physicsBody,
-          options
-        );
+        this.nodesSolver = new RepulsionSolver(this.body, this.physicsBody, options);
+        this.edgesSolver = new SpringSolver(this.body, this.physicsBody, options);
         this.gravitySolver = new CentralGravitySolver(
           this.body,
           this.physicsBody,
@@ -12433,11 +12185,7 @@
           this.physicsBody,
           options
         );
-        this.edgesSolver = new SpringSolver(
-          this.body,
-          this.physicsBody,
-          options
-        );
+        this.edgesSolver = new SpringSolver(this.body, this.physicsBody, options);
         this.gravitySolver = new CentralGravitySolver(
           this.body,
           this.physicsBody,
@@ -12591,10 +12339,7 @@
           // if the timestep was larger than 2 times the option one we check the adaptivity again to ensure
           // that large instabilities do not form.
           this.adaptiveCounter = -1; // check again next iteration
-          this.timestep = Math.max(
-            this.options.timestep,
-            this.timestep / factor
-          );
+          this.timestep = Math.max(this.options.timestep, this.timestep / factor);
         }
       }
     }
@@ -13029,9 +12774,7 @@
         const force = this.physicsBody.forces[index];
         const factor = 20;
         const colorFactor = 0.03;
-        const forceSize = Math.sqrt(
-          Math.pow(force.x, 2) + Math.pow(force.x, 2)
-        );
+        const forceSize = Math.sqrt(Math.pow(force.x, 2) + Math.pow(force.x, 2));
 
         const size = Math.min(Math.max(5, forceSize), 15);
         const arrowSize = 3 * size;
@@ -13231,9 +12974,7 @@
         );
       }
       if (!childCluster.isCluster) {
-        throw new Error(
-          "node with id: " + childClusterId + " is not a cluster"
-        );
+        throw new Error("node with id: " + childClusterId + " is not a cluster");
       }
 
       // Disconnect child cluster from current cluster
@@ -13684,9 +13425,8 @@
         for (let y = 0; y < childNode.edges.length; y++) {
           const childEdge = childNode.edges[y];
           if (
-            childNodeIDs.indexOf(
-              this._getConnectedId(childEdge, childNode.id)
-            ) > -1
+            childNodeIDs.indexOf(this._getConnectedId(childEdge, childNode.id)) >
+            -1
           ) {
             childEdgesObj[childEdge.id] = childEdge;
           }
@@ -13870,10 +13610,7 @@
         return;
       }
 
-      let clusterNodeProperties = esnext.deepExtend(
-        {},
-        options.clusterNodeProperties
-      );
+      let clusterNodeProperties = esnext.deepExtend({}, options.clusterNodeProperties);
 
       // construct the clusterNodeProperties
       if (options.processProperties !== undefined) {
@@ -13881,9 +13618,7 @@
         const childNodesOptions = [];
         for (const nodeId in childNodesObj) {
           if (Object.prototype.hasOwnProperty.call(childNodesObj, nodeId)) {
-            const clonedOptions = NetworkUtil.cloneOptions(
-              childNodesObj[nodeId]
-            );
+            const clonedOptions = NetworkUtil.cloneOptions(childNodesObj[nodeId]);
             childNodesOptions.push(clonedOptions);
           }
         }
@@ -14060,9 +13795,7 @@
         clusterNode.containedNodes === undefined ||
         clusterNode.containedEdges === undefined
       ) {
-        throw new Error(
-          "The node:" + clusterNodeId + " is not a valid cluster."
-        );
+        throw new Error("The node:" + clusterNodeId + " is not a valid cluster.");
       }
 
       // Check if current cluster is clustered itself
@@ -14103,10 +13836,7 @@
             positions[nodeId] = { x: containedNode.x, y: containedNode.y };
           }
         }
-        const newPositions = options.releaseFunction(
-          clusterPosition,
-          positions
-        );
+        const newPositions = options.releaseFunction(clusterPosition, positions);
 
         for (const nodeId in containedNodes) {
           if (Object.prototype.hasOwnProperty.call(containedNodes, nodeId)) {
@@ -14304,9 +14034,7 @@
         throw new Error("No newOptions supplied to updateEdge.");
       }
       if (this.body.edges[startEdgeId] === undefined) {
-        throw new Error(
-          "The startEdgeId supplied to updateEdge does not exist."
-        );
+        throw new Error("The startEdgeId supplied to updateEdge does not exist.");
       }
 
       const allEdgeIds = this.getClusteredEdges(startEdgeId);
@@ -14763,8 +14491,7 @@
         const edge = this.body.edges[edgeId];
 
         const shouldBeClustered =
-          this._isClusteredNode(edge.fromId) ||
-          this._isClusteredNode(edge.toId);
+          this._isClusteredNode(edge.fromId) || this._isClusteredNode(edge.toId);
         if (shouldBeClustered === this._isClusteredEdge(edge.id)) {
           return; // all is well
         }
@@ -14804,8 +14531,7 @@
         // Determine the id's of clusters that need opening
         eachClusterNode(function (clusterNode) {
           const numNodes = Object.keys(clusterNode.containedNodes).length;
-          const allowSingle =
-            clusterNode.options.allowSingleNodeCluster === true;
+          const allowSingle = clusterNode.options.allowSingleNodeCluster === true;
           if ((allowSingle && numNodes < 1) || (!allowSingle && numNodes < 2)) {
             clustersToOpen.push(clusterNode.id);
           }
@@ -14994,11 +14720,7 @@
      */
     setOptions(options) {
       if (options !== undefined) {
-        const fields = [
-          "hideEdgesOnDrag",
-          "hideEdgesOnZoom",
-          "hideNodesOnDrag",
-        ];
+        const fields = ["hideEdgesOnDrag", "hideEdgesOnZoom", "hideNodesOnDrag"];
         esnext.selectiveDeepExtend(fields, this.options, options);
       }
     }
@@ -15150,10 +14872,7 @@
 
         // set scaling and translation
         ctx.save();
-        ctx.translate(
-          this.body.view.translation.x,
-          this.body.view.translation.y
-        );
+        ctx.translate(this.body.view.translation.x, this.body.view.translation.y);
         ctx.scale(this.body.view.scale, this.body.view.scale);
 
         ctx.beginPath();
@@ -16025,38 +15744,25 @@
    * @returns Options with everything filled in and validated.
    */
   function normalizeFitOptions(rawOptions, allNodeIds) {
-    const options = Object.assign(
-      {
-        nodes: allNodeIds,
-        minZoomLevel: Number.MIN_VALUE,
-        maxZoomLevel: 1,
-      },
-      rawOptions ?? {}
-    );
-    if (!Array.isArray(options.nodes)) {
-      throw new TypeError("Nodes has to be an array of ids.");
-    }
-    if (options.nodes.length === 0) {
-      options.nodes = allNodeIds;
-    }
-    if (
-      !(typeof options.minZoomLevel === "number" && options.minZoomLevel > 0)
-    ) {
-      throw new TypeError(
-        "Min zoom level has to be a number higher than zero."
-      );
-    }
-    if (
-      !(
-        typeof options.maxZoomLevel === "number" &&
-        options.minZoomLevel <= options.maxZoomLevel
-      )
-    ) {
-      throw new TypeError(
-        "Max zoom level has to be a number higher than min zoom level."
-      );
-    }
-    return options;
+      const options = Object.assign({
+          nodes: allNodeIds,
+          minZoomLevel: Number.MIN_VALUE,
+          maxZoomLevel: 1,
+      }, rawOptions ?? {});
+      if (!Array.isArray(options.nodes)) {
+          throw new TypeError("Nodes has to be an array of ids.");
+      }
+      if (options.nodes.length === 0) {
+          options.nodes = allNodeIds;
+      }
+      if (!(typeof options.minZoomLevel === "number" && options.minZoomLevel > 0)) {
+          throw new TypeError("Min zoom level has to be a number higher than zero.");
+      }
+      if (!(typeof options.maxZoomLevel === "number" &&
+          options.minZoomLevel <= options.maxZoomLevel)) {
+          throw new TypeError("Max zoom level has to be a number higher than min zoom level.");
+      }
+      return options;
   }
 
   /**
@@ -16416,10 +16122,7 @@
      * Resets state of a locked on Node
      */
     releaseNode() {
-      if (
-        this.lockedOnNodeId !== undefined &&
-        this.viewFunction !== undefined
-      ) {
+      if (this.lockedOnNodeId !== undefined && this.viewFunction !== undefined) {
         this.body.emitter.off("initRedraw", this.viewFunction);
         this.lockedOnNodeId = undefined;
         this.lockedOnNodeOffset = undefined;
@@ -16615,10 +16318,7 @@
         if (navigationDivActions[i] === "_fit") {
           onTouch(hammer, this._fit.bind(this));
         } else {
-          onTouch(
-            hammer,
-            this.bindToRedraw.bind(this, navigationDivActions[i])
-          );
+          onTouch(hammer, this.bindToRedraw.bind(this, navigationDivActions[i]));
         }
 
         this.navigationHammers.push(hammer);
@@ -16722,8 +16422,7 @@
      */
     _zoomIn() {
       const scaleOld = this.body.view.scale;
-      const scale =
-        this.body.view.scale * (1 + this.options.keyboard.speed.zoom);
+      const scale = this.body.view.scale * (1 + this.options.keyboard.speed.zoom);
       const translation = this.body.view.translation;
       const scaleFrac = scale / scaleOld;
       const tx =
@@ -16748,8 +16447,7 @@
      */
     _zoomOut() {
       const scaleOld = this.body.view.scale;
-      const scale =
-        this.body.view.scale / (1 + this.options.keyboard.speed.zoom);
+      const scale = this.body.view.scale / (1 + this.options.keyboard.speed.zoom);
       const translation = this.body.view.translation;
       const scaleFrac = scale / scaleOld;
       const tx =
@@ -17056,9 +16754,7 @@
         if (options.tooltip) {
           Object.assign(this.options.tooltip, options.tooltip);
           if (options.tooltip.color) {
-            this.options.tooltip.color = esnext.parseColor(
-              options.tooltip.color
-            );
+            this.options.tooltip.color = esnext.parseColor(options.tooltip.color);
           }
         }
       }
@@ -17565,10 +17261,7 @@
             1 + (event.deltaY < 0 ? 1 : -1) * (this.options.zoomSpeed * 0.1);
 
           // calculate the pointer location
-          const pointer = this.getPointer({
-            x: event.clientX,
-            y: event.clientY,
-          });
+          const pointer = this.getPointer({ x: event.clientX, y: event.clientY });
 
           // apply the new scale
           this.zoom(scale, pointer);
@@ -17735,8 +17428,7 @@
      * @private
      */
     _checkHidePopup(pointer) {
-      const pointerObj =
-        this.selectionHandler._pointerToPositionObject(pointer);
+      const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
 
       let stillOnObj = false;
       if (this.popup.popupTargetType === "node") {
@@ -17791,303 +17483,130 @@
   ***************************************************************************** */
   /* global Reflect, Promise, SuppressedError, Symbol */
 
+
   function __classPrivateFieldGet(receiver, state, kind, f) {
-    if (kind === "a" && !f)
-      throw new TypeError("Private accessor was defined without a getter");
-    if (
-      typeof state === "function"
-        ? receiver !== state || !f
-        : !state.has(receiver)
-    )
-      throw new TypeError(
-        "Cannot read private member from an object whose class did not declare it"
-      );
-    return kind === "m"
-      ? f
-      : kind === "a"
-      ? f.call(receiver)
-      : f
-      ? f.value
-      : state.get(receiver);
+      if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a getter");
+      if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot read private member from an object whose class did not declare it");
+      return kind === "m" ? f : kind === "a" ? f.call(receiver) : f ? f.value : state.get(receiver);
   }
 
   function __classPrivateFieldSet(receiver, state, value, kind, f) {
-    if (kind === "m") throw new TypeError("Private method is not writable");
-    if (kind === "a" && !f)
-      throw new TypeError("Private accessor was defined without a setter");
-    if (
-      typeof state === "function"
-        ? receiver !== state || !f
-        : !state.has(receiver)
-    )
-      throw new TypeError(
-        "Cannot write private member to an object whose class did not declare it"
-      );
-    return (
-      kind === "a"
-        ? f.call(receiver, value)
-        : f
-        ? (f.value = value)
-        : state.set(receiver, value),
-      value
-    );
+      if (kind === "m") throw new TypeError("Private method is not writable");
+      if (kind === "a" && !f) throw new TypeError("Private accessor was defined without a setter");
+      if (typeof state === "function" ? receiver !== state || !f : !state.has(receiver)) throw new TypeError("Cannot write private member to an object whose class did not declare it");
+      return (kind === "a" ? f.call(receiver, value) : f ? f.value = value : state.set(receiver, value)), value;
   }
 
-  typeof SuppressedError === "function"
-    ? SuppressedError
-    : function (error, suppressed, message) {
-        var e = new Error(message);
-        return (
-          (e.name = "SuppressedError"),
-          (e.error = error),
-          (e.suppressed = suppressed),
-          e
-        );
-      };
+  typeof SuppressedError === "function" ? SuppressedError : function (error, suppressed, message) {
+      var e = new Error(message);
+      return e.name = "SuppressedError", e.error = error, e.suppressed = suppressed, e;
+  };
 
-  var _SingleTypeSelectionAccumulator_previousSelection,
-    _SingleTypeSelectionAccumulator_selection,
-    _SelectionAccumulator_nodes,
-    _SelectionAccumulator_edges,
-    _SelectionAccumulator_commitHandler;
+  var _SingleTypeSelectionAccumulator_previousSelection, _SingleTypeSelectionAccumulator_selection, _SelectionAccumulator_nodes, _SelectionAccumulator_edges, _SelectionAccumulator_commitHandler;
   /**
    * @param prev
    * @param next
    */
   function diffSets(prev, next) {
-    const diff = new Set();
-    for (const item of next) {
-      if (!prev.has(item)) {
-        diff.add(item);
+      const diff = new Set();
+      for (const item of next) {
+          if (!prev.has(item)) {
+              diff.add(item);
+          }
       }
-    }
-    return diff;
+      return diff;
   }
   class SingleTypeSelectionAccumulator {
-    constructor() {
-      _SingleTypeSelectionAccumulator_previousSelection.set(this, new Set());
-      _SingleTypeSelectionAccumulator_selection.set(this, new Set());
-    }
-    get size() {
-      return __classPrivateFieldGet(
-        this,
-        _SingleTypeSelectionAccumulator_selection,
-        "f"
-      ).size;
-    }
-    add(...items) {
-      for (const item of items) {
-        __classPrivateFieldGet(
-          this,
-          _SingleTypeSelectionAccumulator_selection,
-          "f"
-        ).add(item);
+      constructor() {
+          _SingleTypeSelectionAccumulator_previousSelection.set(this, new Set());
+          _SingleTypeSelectionAccumulator_selection.set(this, new Set());
       }
-    }
-    delete(...items) {
-      for (const item of items) {
-        __classPrivateFieldGet(
-          this,
-          _SingleTypeSelectionAccumulator_selection,
-          "f"
-        ).delete(item);
+      get size() {
+          return __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f").size;
       }
-    }
-    clear() {
-      __classPrivateFieldGet(
-        this,
-        _SingleTypeSelectionAccumulator_selection,
-        "f"
-      ).clear();
-    }
-    getSelection() {
-      return [
-        ...__classPrivateFieldGet(
-          this,
-          _SingleTypeSelectionAccumulator_selection,
-          "f"
-        ),
-      ];
-    }
-    getChanges() {
-      return {
-        added: [
-          ...diffSets(
-            __classPrivateFieldGet(
-              this,
-              _SingleTypeSelectionAccumulator_previousSelection,
-              "f"
-            ),
-            __classPrivateFieldGet(
-              this,
-              _SingleTypeSelectionAccumulator_selection,
-              "f"
-            )
-          ),
-        ],
-        deleted: [
-          ...diffSets(
-            __classPrivateFieldGet(
-              this,
-              _SingleTypeSelectionAccumulator_selection,
-              "f"
-            ),
-            __classPrivateFieldGet(
-              this,
-              _SingleTypeSelectionAccumulator_previousSelection,
-              "f"
-            )
-          ),
-        ],
-        previous: [
-          ...new Set(
-            __classPrivateFieldGet(
-              this,
-              _SingleTypeSelectionAccumulator_previousSelection,
-              "f"
-            )
-          ),
-        ],
-        current: [
-          ...new Set(
-            __classPrivateFieldGet(
-              this,
-              _SingleTypeSelectionAccumulator_selection,
-              "f"
-            )
-          ),
-        ],
-      };
-    }
-    commit() {
-      const changes = this.getChanges();
-      __classPrivateFieldSet(
-        this,
-        _SingleTypeSelectionAccumulator_previousSelection,
-        __classPrivateFieldGet(
-          this,
-          _SingleTypeSelectionAccumulator_selection,
-          "f"
-        ),
-        "f"
-      );
-      __classPrivateFieldSet(
-        this,
-        _SingleTypeSelectionAccumulator_selection,
-        new Set(
-          __classPrivateFieldGet(
-            this,
-            _SingleTypeSelectionAccumulator_previousSelection,
-            "f"
-          )
-        ),
-        "f"
-      );
-      for (const item of changes.added) {
-        item.select();
+      add(...items) {
+          for (const item of items) {
+              __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f").add(item);
+          }
       }
-      for (const item of changes.deleted) {
-        item.unselect();
+      delete(...items) {
+          for (const item of items) {
+              __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f").delete(item);
+          }
       }
-      return changes;
-    }
+      clear() {
+          __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f").clear();
+      }
+      getSelection() {
+          return [...__classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f")];
+      }
+      getChanges() {
+          return {
+              added: [...diffSets(__classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_previousSelection, "f"), __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f"))],
+              deleted: [...diffSets(__classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f"), __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_previousSelection, "f"))],
+              previous: [...new Set(__classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_previousSelection, "f"))],
+              current: [...new Set(__classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f"))],
+          };
+      }
+      commit() {
+          const changes = this.getChanges();
+          __classPrivateFieldSet(this, _SingleTypeSelectionAccumulator_previousSelection, __classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_selection, "f"), "f");
+          __classPrivateFieldSet(this, _SingleTypeSelectionAccumulator_selection, new Set(__classPrivateFieldGet(this, _SingleTypeSelectionAccumulator_previousSelection, "f")), "f");
+          for (const item of changes.added) {
+              item.select();
+          }
+          for (const item of changes.deleted) {
+              item.unselect();
+          }
+          return changes;
+      }
   }
-  (_SingleTypeSelectionAccumulator_previousSelection = new WeakMap()),
-    (_SingleTypeSelectionAccumulator_selection = new WeakMap());
+  _SingleTypeSelectionAccumulator_previousSelection = new WeakMap(), _SingleTypeSelectionAccumulator_selection = new WeakMap();
   class SelectionAccumulator {
-    constructor(commitHandler = () => {}) {
-      _SelectionAccumulator_nodes.set(
-        this,
-        new SingleTypeSelectionAccumulator()
-      );
-      _SelectionAccumulator_edges.set(
-        this,
-        new SingleTypeSelectionAccumulator()
-      );
-      _SelectionAccumulator_commitHandler.set(this, void 0);
-      __classPrivateFieldSet(
-        this,
-        _SelectionAccumulator_commitHandler,
-        commitHandler,
-        "f"
-      );
-    }
-    get sizeNodes() {
-      return __classPrivateFieldGet(
-        this,
-        _SelectionAccumulator_nodes,
-        "f"
-      ).size;
-    }
-    get sizeEdges() {
-      return __classPrivateFieldGet(
-        this,
-        _SelectionAccumulator_edges,
-        "f"
-      ).size;
-    }
-    getNodes() {
-      return __classPrivateFieldGet(
-        this,
-        _SelectionAccumulator_nodes,
-        "f"
-      ).getSelection();
-    }
-    getEdges() {
-      return __classPrivateFieldGet(
-        this,
-        _SelectionAccumulator_edges,
-        "f"
-      ).getSelection();
-    }
-    addNodes(...nodes) {
-      __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").add(
-        ...nodes
-      );
-    }
-    addEdges(...edges) {
-      __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").add(
-        ...edges
-      );
-    }
-    deleteNodes(node) {
-      __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").delete(
-        node
-      );
-    }
-    deleteEdges(edge) {
-      __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").delete(
-        edge
-      );
-    }
-    clear() {
-      __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").clear();
-      __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").clear();
-    }
-    commit(...rest) {
-      const summary = {
-        nodes: __classPrivateFieldGet(
-          this,
-          _SelectionAccumulator_nodes,
-          "f"
-        ).commit(),
-        edges: __classPrivateFieldGet(
-          this,
-          _SelectionAccumulator_edges,
-          "f"
-        ).commit(),
-      };
-      __classPrivateFieldGet(
-        this,
-        _SelectionAccumulator_commitHandler,
-        "f"
-      ).call(this, summary, ...rest);
-      return summary;
-    }
+      constructor(commitHandler = () => { }) {
+          _SelectionAccumulator_nodes.set(this, new SingleTypeSelectionAccumulator());
+          _SelectionAccumulator_edges.set(this, new SingleTypeSelectionAccumulator());
+          _SelectionAccumulator_commitHandler.set(this, void 0);
+          __classPrivateFieldSet(this, _SelectionAccumulator_commitHandler, commitHandler, "f");
+      }
+      get sizeNodes() {
+          return __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").size;
+      }
+      get sizeEdges() {
+          return __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").size;
+      }
+      getNodes() {
+          return __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").getSelection();
+      }
+      getEdges() {
+          return __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").getSelection();
+      }
+      addNodes(...nodes) {
+          __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").add(...nodes);
+      }
+      addEdges(...edges) {
+          __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").add(...edges);
+      }
+      deleteNodes(node) {
+          __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").delete(node);
+      }
+      deleteEdges(edge) {
+          __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").delete(edge);
+      }
+      clear() {
+          __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").clear();
+          __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").clear();
+      }
+      commit(...rest) {
+          const summary = {
+              nodes: __classPrivateFieldGet(this, _SelectionAccumulator_nodes, "f").commit(),
+              edges: __classPrivateFieldGet(this, _SelectionAccumulator_edges, "f").commit(),
+          };
+          __classPrivateFieldGet(this, _SelectionAccumulator_commitHandler, "f").call(this, summary, ...rest);
+          return summary;
+      }
   }
-  (_SelectionAccumulator_nodes = new WeakMap()),
-    (_SelectionAccumulator_edges = new WeakMap()),
-    (_SelectionAccumulator_commitHandler = new WeakMap());
+  _SelectionAccumulator_nodes = new WeakMap(), _SelectionAccumulator_edges = new WeakMap(), _SelectionAccumulator_commitHandler = new WeakMap();
 
   /**
    * The handler for selections
@@ -18605,10 +18124,7 @@
           hoverChanged = this.emitHoverEvent(event, pointer, object);
         }
 
-        if (
-          object instanceof Node &&
-          this.options.hoverConnectedEdges === true
-        ) {
+        if (object instanceof Node && this.options.hoverConnectedEdges === true) {
           this._hoverConnectedEdges(object);
         }
       }
@@ -18785,10 +18301,7 @@
       if (!selection || selection.length === undefined)
         throw "Selection must be an array with ids";
 
-      this.setSelection(
-        { nodes: selection },
-        { highlightEdges: highlightEdges }
-      );
+      this.setSelection({ nodes: selection }, { highlightEdges: highlightEdges });
     }
 
     /**
@@ -19147,25 +18660,25 @@
    * @returns Populated node levels.
    */
   function fillLevelsByDirectionCyclic(nodes, levels) {
-    const edges = new Set();
-    nodes.forEach((node) => {
-      node.edges.forEach((edge) => {
-        if (edge.connected) {
-          edges.add(edge);
-        }
+      const edges = new Set();
+      nodes.forEach((node) => {
+          node.edges.forEach((edge) => {
+              if (edge.connected) {
+                  edges.add(edge);
+              }
+          });
       });
-    });
-    edges.forEach((edge) => {
-      const fromId = edge.from.id;
-      const toId = edge.to.id;
-      if (levels[fromId] == null) {
-        levels[fromId] = 0;
-      }
-      if (levels[toId] == null || levels[fromId] >= levels[toId]) {
-        levels[toId] = levels[fromId] + 1;
-      }
-    });
-    return levels;
+      edges.forEach((edge) => {
+          const fromId = edge.from.id;
+          const toId = edge.to.id;
+          if (levels[fromId] == null) {
+              levels[fromId] = 0;
+          }
+          if (levels[toId] == null || levels[fromId] >= levels[toId]) {
+              levels[toId] = levels[fromId] + 1;
+          }
+      });
+      return levels;
   }
   /**
    * Assign levels to nodes according to their positions in the hierarchy. Leaves will be lined up at the bottom and all other nodes as close to their children as possible.
@@ -19174,20 +18687,17 @@
    * @returns Populated node levels.
    */
   function fillLevelsByDirectionLeaves(nodes) {
-    return fillLevelsByDirection(
+      return fillLevelsByDirection(
       // Pick only leaves (nodes without children).
-      (node) =>
-        node.edges
+      (node) => node.edges
           // Take only visible nodes into account.
           .filter((edge) => nodes.has(edge.toId))
           // Check that all edges lead to this node (leaf).
-          .every((edge) => edge.to === node),
+          .every((edge) => edge.to === node), 
       // Use the lowest level.
-      (newLevel, oldLevel) => oldLevel > newLevel,
+      (newLevel, oldLevel) => oldLevel > newLevel, 
       // Go against the direction of the edges.
-      "from",
-      nodes
-    );
+      "from", nodes);
   }
   /**
    * Assign levels to nodes according to their positions in the hierarchy. Roots will be lined up at the top and all nodes as close to their parents as possible.
@@ -19196,20 +18706,17 @@
    * @returns Populated node levels.
    */
   function fillLevelsByDirectionRoots(nodes) {
-    return fillLevelsByDirection(
+      return fillLevelsByDirection(
       // Pick only roots (nodes without parents).
-      (node) =>
-        node.edges
+      (node) => node.edges
           // Take only visible nodes into account.
           .filter((edge) => nodes.has(edge.toId))
           // Check that all edges lead from this node (root).
-          .every((edge) => edge.from === node),
+          .every((edge) => edge.from === node), 
       // Use the highest level.
-      (newLevel, oldLevel) => oldLevel < newLevel,
+      (newLevel, oldLevel) => oldLevel < newLevel, 
       // Go in the direction of the edges.
-      "to",
-      nodes
-    );
+      "to", nodes);
   }
   /**
    * Assign levels to nodes according to their positions in the hierarchy.
@@ -19220,76 +18727,66 @@
    * @param nodes - Visible nodes of the graph.
    * @returns Populated node levels.
    */
-  function fillLevelsByDirection(
-    isEntryNode,
-    shouldLevelBeReplaced,
-    direction,
-    nodes
-  ) {
-    const levels = Object.create(null);
-    // If acyclic, the graph can be walked through with (most likely way) fewer
-    // steps than the number bellow. The exact value isn't too important as long
-    // as it's quick to compute (doesn't impact acyclic graphs too much), is
-    // higher than the number of steps actually needed (doesn't cut off before
-    // acyclic graph is walked through) and prevents infinite loops (cuts off for
-    // cyclic graphs).
-    const limit = [...nodes.values()].reduce(
-      (acc, node) => acc + 1 + node.edges.length,
-      0
-    );
-    const edgeIdProp = direction + "Id";
-    const newLevelDiff = direction === "to" ? 1 : -1;
-    for (const [entryNodeId, entryNode] of nodes) {
-      if (
-        // Skip if the node is not visible.
-        !nodes.has(entryNodeId) ||
-        // Skip if the node is not an entry node.
-        !isEntryNode(entryNode)
-      ) {
-        continue;
-      }
-      // Line up all the entry nodes on level 0.
-      levels[entryNodeId] = 0;
-      const stack = [entryNode];
-      let done = 0;
-      let node;
-      while ((node = stack.pop())) {
-        if (!nodes.has(entryNodeId)) {
+  function fillLevelsByDirection(isEntryNode, shouldLevelBeReplaced, direction, nodes) {
+      const levels = Object.create(null);
+      // If acyclic, the graph can be walked through with (most likely way) fewer
+      // steps than the number bellow. The exact value isn't too important as long
+      // as it's quick to compute (doesn't impact acyclic graphs too much), is
+      // higher than the number of steps actually needed (doesn't cut off before
+      // acyclic graph is walked through) and prevents infinite loops (cuts off for
+      // cyclic graphs).
+      const limit = [...nodes.values()].reduce((acc, node) => acc + 1 + node.edges.length, 0);
+      const edgeIdProp = (direction + "Id");
+      const newLevelDiff = direction === "to" ? 1 : -1;
+      for (const [entryNodeId, entryNode] of nodes) {
+          if (
           // Skip if the node is not visible.
-          continue;
-        }
-        const newLevel = levels[node.id] + newLevelDiff;
-        node.edges
-          .filter(
-            (edge) =>
+          !nodes.has(entryNodeId) ||
+              // Skip if the node is not an entry node.
+              !isEntryNode(entryNode)) {
+              continue;
+          }
+          // Line up all the entry nodes on level 0.
+          levels[entryNodeId] = 0;
+          const stack = [entryNode];
+          let done = 0;
+          let node;
+          while ((node = stack.pop())) {
+              if (!nodes.has(entryNodeId)) {
+                  // Skip if the node is not visible.
+                  continue;
+              }
+              const newLevel = levels[node.id] + newLevelDiff;
+              node.edges
+                  .filter((edge) => 
               // Ignore disconnected edges.
               edge.connected &&
-              // Ignore circular edges.
-              edge.to !== edge.from &&
-              // Ignore edges leading to the node that's currently being processed.
-              edge[direction] !== node &&
-              // Ignore edges connecting to an invisible node.
-              nodes.has(edge.toId) &&
-              // Ignore edges connecting from an invisible node.
-              nodes.has(edge.fromId)
-          )
-          .forEach((edge) => {
-            const targetNodeId = edge[edgeIdProp];
-            const oldLevel = levels[targetNodeId];
-            if (oldLevel == null || shouldLevelBeReplaced(newLevel, oldLevel)) {
-              levels[targetNodeId] = newLevel;
-              stack.push(edge[direction]);
-            }
-          });
-        if (done > limit) {
-          // This would run forever on a cyclic graph.
-          return fillLevelsByDirectionCyclic(nodes, levels);
-        } else {
-          ++done;
-        }
+                  // Ignore circular edges.
+                  edge.to !== edge.from &&
+                  // Ignore edges leading to the node that's currently being processed.
+                  edge[direction] !== node &&
+                  // Ignore edges connecting to an invisible node.
+                  nodes.has(edge.toId) &&
+                  // Ignore edges connecting from an invisible node.
+                  nodes.has(edge.fromId))
+                  .forEach((edge) => {
+                  const targetNodeId = edge[edgeIdProp];
+                  const oldLevel = levels[targetNodeId];
+                  if (oldLevel == null || shouldLevelBeReplaced(newLevel, oldLevel)) {
+                      levels[targetNodeId] = newLevel;
+                      stack.push(edge[direction]);
+                  }
+              });
+              if (done > limit) {
+                  // This would run forever on a cyclic graph.
+                  return fillLevelsByDirectionCyclic(nodes, levels);
+              }
+              else {
+                  ++done;
+              }
+          }
       }
-    }
-    return levels;
+      return levels;
   }
 
   /**
@@ -19742,9 +19239,7 @@
         if (allOptions.physics === undefined || allOptions.physics === true) {
           allOptions.physics = {
             enabled:
-              backupPhysics.enabled === undefined
-                ? true
-                : backupPhysics.enabled,
+              backupPhysics.enabled === undefined ? true : backupPhysics.enabled,
             solver: "hierarchicalRepulsion",
           };
           backupPhysics.enabled =
@@ -19810,8 +19305,7 @@
             allOptions.edges.smooth = {
               enabled: smooth.enabled === undefined ? true : smooth.enabled,
               type: type,
-              roundness:
-                smooth.roundness === undefined ? 0.5 : smooth.roundness,
+              roundness: smooth.roundness === undefined ? 0.5 : smooth.roundness,
               forceDirection:
                 smooth.forceDirection === undefined
                   ? false
@@ -20330,10 +19824,7 @@
 
             // we limit the movement to avoid instability.
             const limit = 40;
-            const ratio = Math.max(
-              -limit,
-              Math.min(limit, Math.round(fx / dfx))
-            );
+            const ratio = Math.max(-limit, Math.min(limit, Math.round(fx / dfx)));
             guess = guess - ratio;
             // reduce duplicates
             if (guessMap[guess] !== undefined) {
@@ -20565,8 +20056,7 @@
                 Math.abs(diff) <
                   maxSpace - this.options.hierarchical.nodeSpacing) ||
               (diff > 0 &&
-                Math.abs(diff) <
-                  minSpace - this.options.hierarchical.nodeSpacing)
+                Math.abs(diff) < minSpace - this.options.hierarchical.nodeSpacing)
             ) {
               this.direction.setPosition(parentNode, newPosition);
             }
@@ -20666,11 +20156,7 @@
 
       // center the parent nodes.
       const center = this._getCenterPosition(childNodes);
-      this.direction.setPosition(
-        this.body.nodes[parentId],
-        center,
-        parentLevel
-      );
+      this.direction.setPosition(this.body.nodes[parentId], center, parentLevel);
     }
 
     /**
@@ -20693,8 +20179,7 @@
           this.body.nodes[this.lastNodeOnLevel[level]]
         );
         if (pos - previousPos < this.options.hierarchical.nodeSpacing) {
-          const diff =
-            previousPos + this.options.hierarchical.nodeSpacing - pos;
+          const diff = previousPos + this.options.hierarchical.nodeSpacing - pos;
           const sharedParent = this._findCommonParent(
             this.lastNodeOnLevel[level],
             node.id
@@ -21352,8 +20837,7 @@
         this._createBackButton(locale);
         this._createSeperator();
         this._createDescription(
-          locale["addDescription"] ||
-            this.options.locales["en"]["addDescription"]
+          locale["addDescription"] || this.options.locales["en"]["addDescription"]
         );
 
         // bind the close button
@@ -21495,10 +20979,7 @@
         const edge = this.body.edges[this.edgeBeingEditedId];
 
         // create control nodes
-        const controlNodeFrom = this._getNewTargetNode(
-          edge.from.x,
-          edge.from.y
-        );
+        const controlNodeFrom = this._getNewTargetNode(edge.from.x, edge.from.y);
         const controlNodeTo = this._getNewTargetNode(edge.to.x, edge.to.y);
 
         this.temporaryIds.nodes.push(controlNodeFrom.id);
@@ -21688,10 +21169,7 @@
      * @private
      */
     _getNewTargetNode(x, y) {
-      const controlNodeStyle = esnext.deepExtend(
-        {},
-        this.options.controlNodeStyle
-      );
+      const controlNodeStyle = esnext.deepExtend({}, this.options.controlNodeStyle);
 
       controlNodeStyle.id = "targetNode" + uuid.v4();
       controlNodeStyle.hidden = false;
@@ -21950,9 +21428,7 @@
       this.manipulationDOM["descriptionLabel"] = document.createElement("div");
       this.manipulationDOM["descriptionLabel"].className = "vis-none";
       this.manipulationDOM["descriptionLabel"].innerText = label;
-      this.manipulationDiv.appendChild(
-        this.manipulationDOM["descriptionLabel"]
-      );
+      this.manipulationDiv.appendChild(this.manipulationDOM["descriptionLabel"]);
     }
 
     // -------------------------- End of DOM functions for buttons ------------------------------//
@@ -22045,12 +21521,7 @@
 
       // Bind keyboard events.
       const keyupListener = ({ keyCode, key }) => {
-        if (
-          key === "Enter" ||
-          key === " " ||
-          keyCode === 13 ||
-          keyCode === 32
-        ) {
+        if (key === "Enter" || key === " " || keyCode === 13 || keyCode === 32) {
           boundFunction();
         }
       };
@@ -22103,10 +21574,7 @@
     _controlNodeTouch(event) {
       this.selectionHandler.unselectAll();
       this.lastTouch = this.body.functions.getPointer(event.center);
-      this.lastTouch.translation = Object.assign(
-        {},
-        this.body.view.translation
-      ); // copy the object
+      this.lastTouch.translation = Object.assign({}, this.body.view.translation); // copy the object
     }
 
     /**
@@ -22116,8 +21584,7 @@
      */
     _controlNodeDragStart() {
       const pointer = this.lastTouch;
-      const pointerObj =
-        this.selectionHandler._pointerToPositionObject(pointer);
+      const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
       const from = this.body.nodes[this.temporaryIds.nodes[0]];
       const to = this.body.nodes[this.temporaryIds.nodes[1]];
       const edge = this.body.edges[this.edgeBeingEditedId];
@@ -22169,8 +21636,7 @@
      */
     _controlNodeDragEnd(event) {
       const pointer = this.body.functions.getPointer(event.center);
-      const pointerObj =
-        this.selectionHandler._pointerToPositionObject(pointer);
+      const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
       const edge = this.body.edges[this.edgeBeingEditedId];
       // if the node that was dragged is not a control node, return
       if (this.selectedControlNode === undefined) {
@@ -22279,8 +21745,7 @@
     _dragControlNode(event) {
       const pointer = this.body.functions.getPointer(event.center);
 
-      const pointerObj =
-        this.selectionHandler._pointerToPositionObject(pointer);
+      const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
       // remember the edge id
       let connectFromId = undefined;
       if (this.temporaryIds.edges[0] !== undefined) {
@@ -22299,10 +21764,7 @@
         }
       }
 
-      event.controlEdge = {
-        from: connectFromId,
-        to: node ? node.id : undefined,
-      };
+      event.controlEdge = { from: connectFromId, to: node ? node.id : undefined };
       this.selectionHandler.generateClickEvent(
         "controlNodeDragging",
         event,
@@ -22327,8 +21789,7 @@
      */
     _finishConnect(event) {
       const pointer = this.body.functions.getPointer(event.center);
-      const pointerObj =
-        this.selectionHandler._pointerToPositionObject(pointer);
+      const pointerObj = this.selectionHandler._pointerToPositionObject(pointer);
 
       // remember the edge id
       let connectFromId = undefined;
@@ -22368,10 +21829,7 @@
         }
       }
 
-      event.controlEdge = {
-        from: connectFromId,
-        to: node ? node.id : undefined,
-      };
+      event.controlEdge = { from: connectFromId, to: node ? node.id : undefined };
       this.selectionHandler.generateClickEvent(
         "controlNodeDragEnd",
         event,
@@ -22541,529 +21999,529 @@
   const any = "any";
   // List of endpoints
   const endPoints = [
-    "arrow",
-    "bar",
-    "box",
-    "circle",
-    "crow",
-    "curve",
-    "diamond",
-    "image",
-    "inv_curve",
-    "inv_triangle",
-    "triangle",
-    "vee",
+      "arrow",
+      "bar",
+      "box",
+      "circle",
+      "crow",
+      "curve",
+      "diamond",
+      "image",
+      "inv_curve",
+      "inv_triangle",
+      "triangle",
+      "vee",
   ];
   /* eslint-disable @typescript-eslint/naming-convention -- The __*__ format is used to prevent collisions with actual option names. */
   const nodeOptions = {
-    borderWidth: { number },
-    borderWidthSelected: { number, undefined: "undefined" },
-    brokenImage: { string, undefined: "undefined" },
-    chosen: {
-      label: { boolean: bool, function: "function" },
-      node: { boolean: bool, function: "function" },
-      __type__: { object, boolean: bool },
-    },
-    color: {
-      border: { string },
-      background: { string },
-      highlight: {
-        border: { string },
-        background: { string },
-        __type__: { object, string },
-      },
-      hover: {
-        border: { string },
-        background: { string },
-        __type__: { object, string },
-      },
-      __type__: { object, string },
-    },
-    opacity: { number, undefined: "undefined" },
-    fixed: {
-      x: { boolean: bool },
-      y: { boolean: bool },
-      __type__: { object, boolean: bool },
-    },
-    font: {
-      align: { string },
-      color: { string },
-      size: { number },
-      face: { string },
-      background: { string },
-      strokeWidth: { number },
-      strokeColor: { string },
-      vadjust: { number },
-      multi: { boolean: bool, string },
-      bold: {
-        color: { string },
-        size: { number },
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string },
-      },
-      boldital: {
-        color: { string },
-        size: { number },
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string },
-      },
-      ital: {
-        color: { string },
-        size: { number },
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string },
-      },
-      mono: {
-        color: { string },
-        size: { number },
-        face: { string },
-        mod: { string },
-        vadjust: { number },
-        __type__: { object, string },
-      },
-      __type__: { object, string },
-    },
-    group: { string, number, undefined: "undefined" },
-    heightConstraint: {
-      minimum: { number },
-      valign: { string },
-      __type__: { object, boolean: bool, number },
-    },
-    hidden: { boolean: bool },
-    icon: {
-      face: { string },
-      code: { string },
-      size: { number },
-      color: { string },
-      weight: { string, number },
-      __type__: { object },
-    },
-    id: { string, number },
-    image: {
-      selected: { string, undefined: "undefined" },
-      unselected: { string, undefined: "undefined" },
-      __type__: { object, string },
-    },
-    imagePadding: {
-      top: { number },
-      right: { number },
-      bottom: { number },
-      left: { number },
-      __type__: { object, number },
-    },
-    label: { string, undefined: "undefined" },
-    labelHighlightBold: { boolean: bool },
-    level: { number, undefined: "undefined" },
-    margin: {
-      top: { number },
-      right: { number },
-      bottom: { number },
-      left: { number },
-      __type__: { object, number },
-    },
-    mass: { number },
-    physics: { boolean: bool },
-    scaling: {
-      min: { number },
-      max: { number },
-      label: {
-        enabled: { boolean: bool },
-        min: { number },
-        max: { number },
-        maxVisible: { number },
-        drawThreshold: { number },
-        __type__: { object, boolean: bool },
-      },
-      customScalingFunction: { function: "function" },
-      __type__: { object },
-    },
-    shadow: {
-      enabled: { boolean: bool },
-      color: { string },
-      size: { number },
-      x: { number },
-      y: { number },
-      __type__: { object, boolean: bool },
-    },
-    shape: {
-      string: [
-        "custom",
-        "ellipse",
-        "circle",
-        "database",
-        "box",
-        "text",
-        "image",
-        "circularImage",
-        "diamond",
-        "dot",
-        "star",
-        "triangle",
-        "triangleDown",
-        "square",
-        "icon",
-        "hexagon",
-      ],
-    },
-    ctxRenderer: { function: "function" },
-    shapeProperties: {
-      borderDashes: { boolean: bool, array },
-      borderRadius: { number },
-      interpolation: { boolean: bool },
-      useImageSize: { boolean: bool },
-      useBorderWithImage: { boolean: bool },
-      coordinateOrigin: { string: ["center", "top-left"] },
-      __type__: { object },
-    },
-    size: { number },
-    title: { string, dom, undefined: "undefined" },
-    value: { number, undefined: "undefined" },
-    widthConstraint: {
-      minimum: { number },
-      maximum: { number },
-      __type__: { object, boolean: bool, number },
-    },
-    x: { number },
-    y: { number },
-    __type__: { object },
-  };
-  const allOptions = {
-    configure: {
-      enabled: { boolean: bool },
-      filter: { boolean: bool, string, array, function: "function" },
-      container: { dom },
-      showButton: { boolean: bool },
-      __type__: { object, boolean: bool, string, array, function: "function" },
-    },
-    edges: {
-      arrows: {
-        to: {
-          enabled: { boolean: bool },
-          scaleFactor: { number },
-          type: { string: endPoints },
-          imageHeight: { number },
-          imageWidth: { number },
-          src: { string },
-          __type__: { object, boolean: bool },
-        },
-        middle: {
-          enabled: { boolean: bool },
-          scaleFactor: { number },
-          type: { string: endPoints },
-          imageWidth: { number },
-          imageHeight: { number },
-          src: { string },
-          __type__: { object, boolean: bool },
-        },
-        from: {
-          enabled: { boolean: bool },
-          scaleFactor: { number },
-          type: { string: endPoints },
-          imageWidth: { number },
-          imageHeight: { number },
-          src: { string },
-          __type__: { object, boolean: bool },
-        },
-        __type__: { string: ["from", "to", "middle"], object },
-      },
-      endPointOffset: {
-        from: {
-          number: number,
-        },
-        to: {
-          number: number,
-        },
-        __type__: {
-          object: object,
-          number: number,
-        },
-      },
-      arrowStrikethrough: { boolean: bool },
-      background: {
-        enabled: { boolean: bool },
-        color: { string },
-        size: { number },
-        dashes: { boolean: bool, array },
-        __type__: { object, boolean: bool },
-      },
+      borderWidth: { number },
+      borderWidthSelected: { number, undefined: "undefined" },
+      brokenImage: { string, undefined: "undefined" },
       chosen: {
-        label: { boolean: bool, function: "function" },
-        edge: { boolean: bool, function: "function" },
-        __type__: { object, boolean: bool },
+          label: { boolean: bool, function: "function" },
+          node: { boolean: bool, function: "function" },
+          __type__: { object, boolean: bool },
       },
       color: {
-        color: { string },
-        highlight: { string },
-        hover: { string },
-        inherit: { string: ["from", "to", "both"], boolean: bool },
-        opacity: { number },
-        __type__: { object, string },
+          border: { string },
+          background: { string },
+          highlight: {
+              border: { string },
+              background: { string },
+              __type__: { object, string },
+          },
+          hover: {
+              border: { string },
+              background: { string },
+              __type__: { object, string },
+          },
+          __type__: { object, string },
       },
-      dashes: { boolean: bool, array },
+      opacity: { number, undefined: "undefined" },
+      fixed: {
+          x: { boolean: bool },
+          y: { boolean: bool },
+          __type__: { object, boolean: bool },
+      },
       font: {
-        color: { string },
-        size: { number },
-        face: { string },
-        background: { string },
-        strokeWidth: { number },
-        strokeColor: { string },
-        align: { string: ["horizontal", "top", "middle", "bottom"] },
-        vadjust: { number },
-        multi: { boolean: bool, string },
-        bold: {
+          align: { string },
           color: { string },
           size: { number },
           face: { string },
-          mod: { string },
+          background: { string },
+          strokeWidth: { number },
+          strokeColor: { string },
           vadjust: { number },
+          multi: { boolean: bool, string },
+          bold: {
+              color: { string },
+              size: { number },
+              face: { string },
+              mod: { string },
+              vadjust: { number },
+              __type__: { object, string },
+          },
+          boldital: {
+              color: { string },
+              size: { number },
+              face: { string },
+              mod: { string },
+              vadjust: { number },
+              __type__: { object, string },
+          },
+          ital: {
+              color: { string },
+              size: { number },
+              face: { string },
+              mod: { string },
+              vadjust: { number },
+              __type__: { object, string },
+          },
+          mono: {
+              color: { string },
+              size: { number },
+              face: { string },
+              mod: { string },
+              vadjust: { number },
+              __type__: { object, string },
+          },
           __type__: { object, string },
-        },
-        boldital: {
-          color: { string },
-          size: { number },
-          face: { string },
-          mod: { string },
-          vadjust: { number },
-          __type__: { object, string },
-        },
-        ital: {
-          color: { string },
-          size: { number },
-          face: { string },
-          mod: { string },
-          vadjust: { number },
-          __type__: { object, string },
-        },
-        mono: {
-          color: { string },
-          size: { number },
-          face: { string },
-          mod: { string },
-          vadjust: { number },
-          __type__: { object, string },
-        },
-        __type__: { object, string },
+      },
+      group: { string, number, undefined: "undefined" },
+      heightConstraint: {
+          minimum: { number },
+          valign: { string },
+          __type__: { object, boolean: bool, number },
       },
       hidden: { boolean: bool },
-      hoverWidth: { function: "function", number },
+      icon: {
+          face: { string },
+          code: { string },
+          size: { number },
+          color: { string },
+          weight: { string, number },
+          __type__: { object },
+      },
+      id: { string, number },
+      image: {
+          selected: { string, undefined: "undefined" },
+          unselected: { string, undefined: "undefined" },
+          __type__: { object, string },
+      },
+      imagePadding: {
+          top: { number },
+          right: { number },
+          bottom: { number },
+          left: { number },
+          __type__: { object, number },
+      },
       label: { string, undefined: "undefined" },
       labelHighlightBold: { boolean: bool },
-      length: { number, undefined: "undefined" },
+      level: { number, undefined: "undefined" },
+      margin: {
+          top: { number },
+          right: { number },
+          bottom: { number },
+          left: { number },
+          __type__: { object, number },
+      },
+      mass: { number },
       physics: { boolean: bool },
       scaling: {
-        min: { number },
-        max: { number },
-        label: {
-          enabled: { boolean: bool },
           min: { number },
           max: { number },
-          maxVisible: { number },
-          drawThreshold: { number },
-          __type__: { object, boolean: bool },
-        },
-        customScalingFunction: { function: "function" },
-        __type__: { object },
-      },
-      selectionWidth: { function: "function", number },
-      selfReferenceSize: { number },
-      selfReference: {
-        size: { number },
-        angle: { number },
-        renderBehindTheNode: { boolean: bool },
-        __type__: { object },
+          label: {
+              enabled: { boolean: bool },
+              min: { number },
+              max: { number },
+              maxVisible: { number },
+              drawThreshold: { number },
+              __type__: { object, boolean: bool },
+          },
+          customScalingFunction: { function: "function" },
+          __type__: { object },
       },
       shadow: {
-        enabled: { boolean: bool },
-        color: { string },
-        size: { number },
-        x: { number },
-        y: { number },
-        __type__: { object, boolean: bool },
-      },
-      smooth: {
-        enabled: { boolean: bool },
-        type: {
-          string: [
-            "dynamic",
-            "continuous",
-            "discrete",
-            "diagonalCross",
-            "straightCross",
-            "horizontal",
-            "vertical",
-            "curvedCW",
-            "curvedCCW",
-            "cubicBezier",
-          ],
-        },
-        roundness: { number },
-        forceDirection: {
-          string: ["horizontal", "vertical", "none"],
-          boolean: bool,
-        },
-        __type__: { object, boolean: bool },
-      },
-      title: { string, undefined: "undefined" },
-      width: { number },
-      widthConstraint: {
-        maximum: { number },
-        __type__: { object, boolean: bool, number },
-      },
-      value: { number, undefined: "undefined" },
-      __type__: { object },
-    },
-    groups: {
-      useDefaultGroups: { boolean: bool },
-      __any__: nodeOptions,
-      __type__: { object },
-    },
-    interaction: {
-      dragNodes: { boolean: bool },
-      dragView: { boolean: bool },
-      hideEdgesOnDrag: { boolean: bool },
-      hideEdgesOnZoom: { boolean: bool },
-      hideNodesOnDrag: { boolean: bool },
-      hover: { boolean: bool },
-      keyboard: {
-        enabled: { boolean: bool },
-        speed: {
+          enabled: { boolean: bool },
+          color: { string },
+          size: { number },
           x: { number },
           y: { number },
-          zoom: { number },
+          __type__: { object, boolean: bool },
+      },
+      shape: {
+          string: [
+              "custom",
+              "ellipse",
+              "circle",
+              "database",
+              "box",
+              "text",
+              "image",
+              "circularImage",
+              "diamond",
+              "dot",
+              "star",
+              "triangle",
+              "triangleDown",
+              "square",
+              "icon",
+              "hexagon",
+          ],
+      },
+      ctxRenderer: { function: "function" },
+      shapeProperties: {
+          borderDashes: { boolean: bool, array },
+          borderRadius: { number },
+          interpolation: { boolean: bool },
+          useImageSize: { boolean: bool },
+          useBorderWithImage: { boolean: bool },
+          coordinateOrigin: { string: ["center", "top-left"] },
           __type__: { object },
-        },
-        bindToWindow: { boolean: bool },
-        autoFocus: { boolean: bool },
-        __type__: { object, boolean: bool },
       },
-      multiselect: { boolean: bool },
-      navigationButtons: { boolean: bool },
-      selectable: { boolean: bool },
-      selectConnectedEdges: { boolean: bool },
-      hoverConnectedEdges: { boolean: bool },
-      tooltipDelay: { number },
-      zoomView: { boolean: bool },
-      zoomSpeed: { number },
+      size: { number },
+      title: { string, dom, undefined: "undefined" },
+      value: { number, undefined: "undefined" },
+      widthConstraint: {
+          minimum: { number },
+          maximum: { number },
+          __type__: { object, boolean: bool, number },
+      },
+      x: { number },
+      y: { number },
       __type__: { object },
-    },
-    layout: {
-      randomSeed: { undefined: "undefined", number, string },
-      improvedLayout: { boolean: bool },
-      clusterThreshold: { number },
-      hierarchical: {
-        enabled: { boolean: bool },
-        levelSeparation: { number },
-        nodeSpacing: { number },
-        treeSpacing: { number },
-        blockShifting: { boolean: bool },
-        edgeMinimization: { boolean: bool },
-        parentCentralization: { boolean: bool },
-        direction: { string: ["UD", "DU", "LR", "RL"] },
-        sortMethod: { string: ["hubsize", "directed"] },
-        shakeTowards: { string: ["leaves", "roots"] },
-        __type__: { object, boolean: bool },
+  };
+  const allOptions = {
+      configure: {
+          enabled: { boolean: bool },
+          filter: { boolean: bool, string, array, function: "function" },
+          container: { dom },
+          showButton: { boolean: bool },
+          __type__: { object, boolean: bool, string, array, function: "function" },
       },
+      edges: {
+          arrows: {
+              to: {
+                  enabled: { boolean: bool },
+                  scaleFactor: { number },
+                  type: { string: endPoints },
+                  imageHeight: { number },
+                  imageWidth: { number },
+                  src: { string },
+                  __type__: { object, boolean: bool },
+              },
+              middle: {
+                  enabled: { boolean: bool },
+                  scaleFactor: { number },
+                  type: { string: endPoints },
+                  imageWidth: { number },
+                  imageHeight: { number },
+                  src: { string },
+                  __type__: { object, boolean: bool },
+              },
+              from: {
+                  enabled: { boolean: bool },
+                  scaleFactor: { number },
+                  type: { string: endPoints },
+                  imageWidth: { number },
+                  imageHeight: { number },
+                  src: { string },
+                  __type__: { object, boolean: bool },
+              },
+              __type__: { string: ["from", "to", "middle"], object },
+          },
+          endPointOffset: {
+              from: {
+                  number: number,
+              },
+              to: {
+                  number: number,
+              },
+              __type__: {
+                  object: object,
+                  number: number,
+              },
+          },
+          arrowStrikethrough: { boolean: bool },
+          background: {
+              enabled: { boolean: bool },
+              color: { string },
+              size: { number },
+              dashes: { boolean: bool, array },
+              __type__: { object, boolean: bool },
+          },
+          chosen: {
+              label: { boolean: bool, function: "function" },
+              edge: { boolean: bool, function: "function" },
+              __type__: { object, boolean: bool },
+          },
+          color: {
+              color: { string },
+              highlight: { string },
+              hover: { string },
+              inherit: { string: ["from", "to", "both"], boolean: bool },
+              opacity: { number },
+              __type__: { object, string },
+          },
+          dashes: { boolean: bool, array },
+          font: {
+              color: { string },
+              size: { number },
+              face: { string },
+              background: { string },
+              strokeWidth: { number },
+              strokeColor: { string },
+              align: { string: ["horizontal", "top", "middle", "bottom"] },
+              vadjust: { number },
+              multi: { boolean: bool, string },
+              bold: {
+                  color: { string },
+                  size: { number },
+                  face: { string },
+                  mod: { string },
+                  vadjust: { number },
+                  __type__: { object, string },
+              },
+              boldital: {
+                  color: { string },
+                  size: { number },
+                  face: { string },
+                  mod: { string },
+                  vadjust: { number },
+                  __type__: { object, string },
+              },
+              ital: {
+                  color: { string },
+                  size: { number },
+                  face: { string },
+                  mod: { string },
+                  vadjust: { number },
+                  __type__: { object, string },
+              },
+              mono: {
+                  color: { string },
+                  size: { number },
+                  face: { string },
+                  mod: { string },
+                  vadjust: { number },
+                  __type__: { object, string },
+              },
+              __type__: { object, string },
+          },
+          hidden: { boolean: bool },
+          hoverWidth: { function: "function", number },
+          label: { string, undefined: "undefined" },
+          labelHighlightBold: { boolean: bool },
+          length: { number, undefined: "undefined" },
+          physics: { boolean: bool },
+          scaling: {
+              min: { number },
+              max: { number },
+              label: {
+                  enabled: { boolean: bool },
+                  min: { number },
+                  max: { number },
+                  maxVisible: { number },
+                  drawThreshold: { number },
+                  __type__: { object, boolean: bool },
+              },
+              customScalingFunction: { function: "function" },
+              __type__: { object },
+          },
+          selectionWidth: { function: "function", number },
+          selfReferenceSize: { number },
+          selfReference: {
+              size: { number },
+              angle: { number },
+              renderBehindTheNode: { boolean: bool },
+              __type__: { object },
+          },
+          shadow: {
+              enabled: { boolean: bool },
+              color: { string },
+              size: { number },
+              x: { number },
+              y: { number },
+              __type__: { object, boolean: bool },
+          },
+          smooth: {
+              enabled: { boolean: bool },
+              type: {
+                  string: [
+                      "dynamic",
+                      "continuous",
+                      "discrete",
+                      "diagonalCross",
+                      "straightCross",
+                      "horizontal",
+                      "vertical",
+                      "curvedCW",
+                      "curvedCCW",
+                      "cubicBezier",
+                  ],
+              },
+              roundness: { number },
+              forceDirection: {
+                  string: ["horizontal", "vertical", "none"],
+                  boolean: bool,
+              },
+              __type__: { object, boolean: bool },
+          },
+          title: { string, undefined: "undefined" },
+          width: { number },
+          widthConstraint: {
+              maximum: { number },
+              __type__: { object, boolean: bool, number },
+          },
+          value: { number, undefined: "undefined" },
+          __type__: { object },
+      },
+      groups: {
+          useDefaultGroups: { boolean: bool },
+          __any__: nodeOptions,
+          __type__: { object },
+      },
+      interaction: {
+          dragNodes: { boolean: bool },
+          dragView: { boolean: bool },
+          hideEdgesOnDrag: { boolean: bool },
+          hideEdgesOnZoom: { boolean: bool },
+          hideNodesOnDrag: { boolean: bool },
+          hover: { boolean: bool },
+          keyboard: {
+              enabled: { boolean: bool },
+              speed: {
+                  x: { number },
+                  y: { number },
+                  zoom: { number },
+                  __type__: { object },
+              },
+              bindToWindow: { boolean: bool },
+              autoFocus: { boolean: bool },
+              __type__: { object, boolean: bool },
+          },
+          multiselect: { boolean: bool },
+          navigationButtons: { boolean: bool },
+          selectable: { boolean: bool },
+          selectConnectedEdges: { boolean: bool },
+          hoverConnectedEdges: { boolean: bool },
+          tooltipDelay: { number },
+          zoomView: { boolean: bool },
+          zoomSpeed: { number },
+          __type__: { object },
+      },
+      layout: {
+          randomSeed: { undefined: "undefined", number, string },
+          improvedLayout: { boolean: bool },
+          clusterThreshold: { number },
+          hierarchical: {
+              enabled: { boolean: bool },
+              levelSeparation: { number },
+              nodeSpacing: { number },
+              treeSpacing: { number },
+              blockShifting: { boolean: bool },
+              edgeMinimization: { boolean: bool },
+              parentCentralization: { boolean: bool },
+              direction: { string: ["UD", "DU", "LR", "RL"] },
+              sortMethod: { string: ["hubsize", "directed"] },
+              shakeTowards: { string: ["leaves", "roots"] },
+              __type__: { object, boolean: bool },
+          },
+          __type__: { object },
+      },
+      manipulation: {
+          enabled: { boolean: bool },
+          initiallyActive: { boolean: bool },
+          addNode: { boolean: bool, function: "function" },
+          addEdge: { boolean: bool, function: "function" },
+          editNode: { function: "function" },
+          editEdge: {
+              editWithoutDrag: { function: "function" },
+              __type__: { object, boolean: bool, function: "function" },
+          },
+          deleteNode: { boolean: bool, function: "function" },
+          deleteEdge: { boolean: bool, function: "function" },
+          controlNodeStyle: nodeOptions,
+          __type__: { object, boolean: bool },
+      },
+      nodes: nodeOptions,
+      physics: {
+          enabled: { boolean: bool },
+          barnesHut: {
+              theta: { number },
+              gravitationalConstant: { number },
+              centralGravity: { number },
+              springLength: { number },
+              springConstant: { number },
+              damping: { number },
+              avoidOverlap: { number },
+              __type__: { object },
+          },
+          forceAtlas2Based: {
+              theta: { number },
+              gravitationalConstant: { number },
+              centralGravity: { number },
+              springLength: { number },
+              springConstant: { number },
+              damping: { number },
+              avoidOverlap: { number },
+              __type__: { object },
+          },
+          repulsion: {
+              centralGravity: { number },
+              springLength: { number },
+              springConstant: { number },
+              nodeDistance: { number },
+              damping: { number },
+              __type__: { object },
+          },
+          hierarchicalRepulsion: {
+              centralGravity: { number },
+              springLength: { number },
+              springConstant: { number },
+              nodeDistance: { number },
+              damping: { number },
+              avoidOverlap: { number },
+              __type__: { object },
+          },
+          maxVelocity: { number },
+          minVelocity: { number },
+          solver: {
+              string: [
+                  "barnesHut",
+                  "repulsion",
+                  "hierarchicalRepulsion",
+                  "forceAtlas2Based",
+              ],
+          },
+          stabilization: {
+              enabled: { boolean: bool },
+              iterations: { number },
+              updateInterval: { number },
+              onlyDynamicEdges: { boolean: bool },
+              fit: { boolean: bool },
+              __type__: { object, boolean: bool },
+          },
+          timestep: { number },
+          adaptiveTimestep: { boolean: bool },
+          wind: {
+              x: { number },
+              y: { number },
+              __type__: { object },
+          },
+          __type__: { object, boolean: bool },
+      },
+      //globals :
+      autoResize: { boolean: bool },
+      clickToUse: { boolean: bool },
+      locale: { string },
+      locales: {
+          __any__: { any },
+          __type__: { object },
+      },
+      height: { string },
+      width: { string },
       __type__: { object },
-    },
-    manipulation: {
-      enabled: { boolean: bool },
-      initiallyActive: { boolean: bool },
-      addNode: { boolean: bool, function: "function" },
-      addEdge: { boolean: bool, function: "function" },
-      editNode: { function: "function" },
-      editEdge: {
-        editWithoutDrag: { function: "function" },
-        __type__: { object, boolean: bool, function: "function" },
-      },
-      deleteNode: { boolean: bool, function: "function" },
-      deleteEdge: { boolean: bool, function: "function" },
-      controlNodeStyle: nodeOptions,
-      __type__: { object, boolean: bool },
-    },
-    nodes: nodeOptions,
-    physics: {
-      enabled: { boolean: bool },
-      barnesHut: {
-        theta: { number },
-        gravitationalConstant: { number },
-        centralGravity: { number },
-        springLength: { number },
-        springConstant: { number },
-        damping: { number },
-        avoidOverlap: { number },
-        __type__: { object },
-      },
-      forceAtlas2Based: {
-        theta: { number },
-        gravitationalConstant: { number },
-        centralGravity: { number },
-        springLength: { number },
-        springConstant: { number },
-        damping: { number },
-        avoidOverlap: { number },
-        __type__: { object },
-      },
-      repulsion: {
-        centralGravity: { number },
-        springLength: { number },
-        springConstant: { number },
-        nodeDistance: { number },
-        damping: { number },
-        __type__: { object },
-      },
-      hierarchicalRepulsion: {
-        centralGravity: { number },
-        springLength: { number },
-        springConstant: { number },
-        nodeDistance: { number },
-        damping: { number },
-        avoidOverlap: { number },
-        __type__: { object },
-      },
-      maxVelocity: { number },
-      minVelocity: { number },
-      solver: {
-        string: [
-          "barnesHut",
-          "repulsion",
-          "hierarchicalRepulsion",
-          "forceAtlas2Based",
-        ],
-      },
-      stabilization: {
-        enabled: { boolean: bool },
-        iterations: { number },
-        updateInterval: { number },
-        onlyDynamicEdges: { boolean: bool },
-        fit: { boolean: bool },
-        __type__: { object, boolean: bool },
-      },
-      timestep: { number },
-      adaptiveTimestep: { boolean: bool },
-      wind: {
-        x: { number },
-        y: { number },
-        __type__: { object },
-      },
-      __type__: { object, boolean: bool },
-    },
-    //globals :
-    autoResize: { boolean: bool },
-    clickToUse: { boolean: bool },
-    locale: { string },
-    locales: {
-      __any__: { any },
-      __type__: { object },
-    },
-    height: { string },
-    width: { string },
-    __type__: { object },
   };
   /* eslint-enable @typescript-eslint/naming-convention */
   /**
@@ -23091,275 +22549,273 @@
    *   next value is the initial color.
    */
   const configureOptions = {
-    nodes: {
-      borderWidth: [1, 0, 10, 1],
-      borderWidthSelected: [2, 0, 10, 1],
-      color: {
-        border: ["color", "#2B7CE9"],
-        background: ["color", "#97C2FC"],
-        highlight: {
-          border: ["color", "#2B7CE9"],
-          background: ["color", "#D2E5FF"],
-        },
-        hover: {
-          border: ["color", "#2B7CE9"],
-          background: ["color", "#D2E5FF"],
-        },
+      nodes: {
+          borderWidth: [1, 0, 10, 1],
+          borderWidthSelected: [2, 0, 10, 1],
+          color: {
+              border: ["color", "#2B7CE9"],
+              background: ["color", "#97C2FC"],
+              highlight: {
+                  border: ["color", "#2B7CE9"],
+                  background: ["color", "#D2E5FF"],
+              },
+              hover: {
+                  border: ["color", "#2B7CE9"],
+                  background: ["color", "#D2E5FF"],
+              },
+          },
+          opacity: [0, 0, 1, 0.1],
+          fixed: {
+              x: false,
+              y: false,
+          },
+          font: {
+              color: ["color", "#343434"],
+              size: [14, 0, 100, 1],
+              face: ["arial", "verdana", "tahoma"],
+              background: ["color", "none"],
+              strokeWidth: [0, 0, 50, 1],
+              strokeColor: ["color", "#ffffff"],
+          },
+          //group: 'string',
+          hidden: false,
+          labelHighlightBold: true,
+          //icon: {
+          //  face: 'string',  //'FontAwesome',
+          //  code: 'string',  //'\uf007',
+          //  size: [50, 0, 200, 1],  //50,
+          //  color: ['color','#2B7CE9']   //'#aa00ff'
+          //},
+          //image: 'string', // --> URL
+          physics: true,
+          scaling: {
+              min: [10, 0, 200, 1],
+              max: [30, 0, 200, 1],
+              label: {
+                  enabled: false,
+                  min: [14, 0, 200, 1],
+                  max: [30, 0, 200, 1],
+                  maxVisible: [30, 0, 200, 1],
+                  drawThreshold: [5, 0, 20, 1],
+              },
+          },
+          shadow: {
+              enabled: false,
+              color: "rgba(0,0,0,0.5)",
+              size: [10, 0, 20, 1],
+              x: [5, -30, 30, 1],
+              y: [5, -30, 30, 1],
+          },
+          shape: [
+              "ellipse",
+              "box",
+              "circle",
+              "database",
+              "diamond",
+              "dot",
+              "square",
+              "star",
+              "text",
+              "triangle",
+              "triangleDown",
+              "hexagon",
+          ],
+          shapeProperties: {
+              borderDashes: false,
+              borderRadius: [6, 0, 20, 1],
+              interpolation: true,
+              useImageSize: false,
+          },
+          size: [25, 0, 200, 1],
       },
-      opacity: [0, 0, 1, 0.1],
-      fixed: {
-        x: false,
-        y: false,
+      edges: {
+          arrows: {
+              to: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
+              middle: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
+              from: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
+          },
+          endPointOffset: {
+              from: [0, -10, 10, 1],
+              to: [0, -10, 10, 1],
+          },
+          arrowStrikethrough: true,
+          color: {
+              color: ["color", "#848484"],
+              highlight: ["color", "#848484"],
+              hover: ["color", "#848484"],
+              inherit: ["from", "to", "both", true, false],
+              opacity: [1, 0, 1, 0.05],
+          },
+          dashes: false,
+          font: {
+              color: ["color", "#343434"],
+              size: [14, 0, 100, 1],
+              face: ["arial", "verdana", "tahoma"],
+              background: ["color", "none"],
+              strokeWidth: [2, 0, 50, 1],
+              strokeColor: ["color", "#ffffff"],
+              align: ["horizontal", "top", "middle", "bottom"],
+          },
+          hidden: false,
+          hoverWidth: [1.5, 0, 5, 0.1],
+          labelHighlightBold: true,
+          physics: true,
+          scaling: {
+              min: [1, 0, 100, 1],
+              max: [15, 0, 100, 1],
+              label: {
+                  enabled: true,
+                  min: [14, 0, 200, 1],
+                  max: [30, 0, 200, 1],
+                  maxVisible: [30, 0, 200, 1],
+                  drawThreshold: [5, 0, 20, 1],
+              },
+          },
+          selectionWidth: [1.5, 0, 5, 0.1],
+          selfReferenceSize: [20, 0, 200, 1],
+          selfReference: {
+              size: [20, 0, 200, 1],
+              angle: [Math.PI / 2, -6 * Math.PI, 6 * Math.PI, Math.PI / 8],
+              renderBehindTheNode: true,
+          },
+          shadow: {
+              enabled: false,
+              color: "rgba(0,0,0,0.5)",
+              size: [10, 0, 20, 1],
+              x: [5, -30, 30, 1],
+              y: [5, -30, 30, 1],
+          },
+          smooth: {
+              enabled: true,
+              type: [
+                  "dynamic",
+                  "continuous",
+                  "discrete",
+                  "diagonalCross",
+                  "straightCross",
+                  "horizontal",
+                  "vertical",
+                  "curvedCW",
+                  "curvedCCW",
+                  "cubicBezier",
+              ],
+              forceDirection: ["horizontal", "vertical", "none"],
+              roundness: [0.5, 0, 1, 0.05],
+          },
+          width: [1, 0, 30, 1],
       },
-      font: {
-        color: ["color", "#343434"],
-        size: [14, 0, 100, 1],
-        face: ["arial", "verdana", "tahoma"],
-        background: ["color", "none"],
-        strokeWidth: [0, 0, 50, 1],
-        strokeColor: ["color", "#ffffff"],
+      layout: {
+          //randomSeed: [0, 0, 500, 1],
+          //improvedLayout: true,
+          hierarchical: {
+              enabled: false,
+              levelSeparation: [150, 20, 500, 5],
+              nodeSpacing: [100, 20, 500, 5],
+              treeSpacing: [200, 20, 500, 5],
+              blockShifting: true,
+              edgeMinimization: true,
+              parentCentralization: true,
+              direction: ["UD", "DU", "LR", "RL"],
+              sortMethod: ["hubsize", "directed"],
+              shakeTowards: ["leaves", "roots"], // leaves, roots
+          },
       },
-      //group: 'string',
-      hidden: false,
-      labelHighlightBold: true,
-      //icon: {
-      //  face: 'string',  //'FontAwesome',
-      //  code: 'string',  //'\uf007',
-      //  size: [50, 0, 200, 1],  //50,
-      //  color: ['color','#2B7CE9']   //'#aa00ff'
-      //},
-      //image: 'string', // --> URL
-      physics: true,
-      scaling: {
-        min: [10, 0, 200, 1],
-        max: [30, 0, 200, 1],
-        label: {
+      interaction: {
+          dragNodes: true,
+          dragView: true,
+          hideEdgesOnDrag: false,
+          hideEdgesOnZoom: false,
+          hideNodesOnDrag: false,
+          hover: false,
+          keyboard: {
+              enabled: false,
+              speed: {
+                  x: [10, 0, 40, 1],
+                  y: [10, 0, 40, 1],
+                  zoom: [0.02, 0, 0.1, 0.005],
+              },
+              bindToWindow: true,
+              autoFocus: true,
+          },
+          multiselect: false,
+          navigationButtons: false,
+          selectable: true,
+          selectConnectedEdges: true,
+          hoverConnectedEdges: true,
+          tooltipDelay: [300, 0, 1000, 25],
+          zoomView: true,
+          zoomSpeed: [1, 0.1, 2, 0.1],
+      },
+      manipulation: {
           enabled: false,
-          min: [14, 0, 200, 1],
-          max: [30, 0, 200, 1],
-          maxVisible: [30, 0, 200, 1],
-          drawThreshold: [5, 0, 20, 1],
-        },
+          initiallyActive: false,
       },
-      shadow: {
-        enabled: false,
-        color: "rgba(0,0,0,0.5)",
-        size: [10, 0, 20, 1],
-        x: [5, -30, 30, 1],
-        y: [5, -30, 30, 1],
-      },
-      shape: [
-        "ellipse",
-        "box",
-        "circle",
-        "database",
-        "diamond",
-        "dot",
-        "square",
-        "star",
-        "text",
-        "triangle",
-        "triangleDown",
-        "hexagon",
-      ],
-      shapeProperties: {
-        borderDashes: false,
-        borderRadius: [6, 0, 20, 1],
-        interpolation: true,
-        useImageSize: false,
-      },
-      size: [25, 0, 200, 1],
-    },
-    edges: {
-      arrows: {
-        to: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
-        middle: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
-        from: { enabled: false, scaleFactor: [1, 0, 3, 0.05], type: "arrow" },
-      },
-      endPointOffset: {
-        from: [0, -10, 10, 1],
-        to: [0, -10, 10, 1],
-      },
-      arrowStrikethrough: true,
-      color: {
-        color: ["color", "#848484"],
-        highlight: ["color", "#848484"],
-        hover: ["color", "#848484"],
-        inherit: ["from", "to", "both", true, false],
-        opacity: [1, 0, 1, 0.05],
-      },
-      dashes: false,
-      font: {
-        color: ["color", "#343434"],
-        size: [14, 0, 100, 1],
-        face: ["arial", "verdana", "tahoma"],
-        background: ["color", "none"],
-        strokeWidth: [2, 0, 50, 1],
-        strokeColor: ["color", "#ffffff"],
-        align: ["horizontal", "top", "middle", "bottom"],
-      },
-      hidden: false,
-      hoverWidth: [1.5, 0, 5, 0.1],
-      labelHighlightBold: true,
-      physics: true,
-      scaling: {
-        min: [1, 0, 100, 1],
-        max: [15, 0, 100, 1],
-        label: {
+      physics: {
           enabled: true,
-          min: [14, 0, 200, 1],
-          max: [30, 0, 200, 1],
-          maxVisible: [30, 0, 200, 1],
-          drawThreshold: [5, 0, 20, 1],
-        },
+          barnesHut: {
+              theta: [0.5, 0.1, 1, 0.05],
+              gravitationalConstant: [-2000, -30000, 0, 50],
+              centralGravity: [0.3, 0, 10, 0.05],
+              springLength: [95, 0, 500, 5],
+              springConstant: [0.04, 0, 1.2, 0.005],
+              damping: [0.09, 0, 1, 0.01],
+              avoidOverlap: [0, 0, 1, 0.01],
+          },
+          forceAtlas2Based: {
+              theta: [0.5, 0.1, 1, 0.05],
+              gravitationalConstant: [-50, -500, 0, 1],
+              centralGravity: [0.01, 0, 1, 0.005],
+              springLength: [95, 0, 500, 5],
+              springConstant: [0.08, 0, 1.2, 0.005],
+              damping: [0.4, 0, 1, 0.01],
+              avoidOverlap: [0, 0, 1, 0.01],
+          },
+          repulsion: {
+              centralGravity: [0.2, 0, 10, 0.05],
+              springLength: [200, 0, 500, 5],
+              springConstant: [0.05, 0, 1.2, 0.005],
+              nodeDistance: [100, 0, 500, 5],
+              damping: [0.09, 0, 1, 0.01],
+          },
+          hierarchicalRepulsion: {
+              centralGravity: [0.2, 0, 10, 0.05],
+              springLength: [100, 0, 500, 5],
+              springConstant: [0.01, 0, 1.2, 0.005],
+              nodeDistance: [120, 0, 500, 5],
+              damping: [0.09, 0, 1, 0.01],
+              avoidOverlap: [0, 0, 1, 0.01],
+          },
+          maxVelocity: [50, 0, 150, 1],
+          minVelocity: [0.1, 0.01, 0.5, 0.01],
+          solver: [
+              "barnesHut",
+              "forceAtlas2Based",
+              "repulsion",
+              "hierarchicalRepulsion",
+          ],
+          timestep: [0.5, 0.01, 1, 0.01],
+          wind: {
+              x: [0, -10, 10, 0.1],
+              y: [0, -10, 10, 0.1],
+          },
+          //adaptiveTimestep: true
       },
-      selectionWidth: [1.5, 0, 5, 0.1],
-      selfReferenceSize: [20, 0, 200, 1],
-      selfReference: {
-        size: [20, 0, 200, 1],
-        angle: [Math.PI / 2, -6 * Math.PI, 6 * Math.PI, Math.PI / 8],
-        renderBehindTheNode: true,
-      },
-      shadow: {
-        enabled: false,
-        color: "rgba(0,0,0,0.5)",
-        size: [10, 0, 20, 1],
-        x: [5, -30, 30, 1],
-        y: [5, -30, 30, 1],
-      },
-      smooth: {
-        enabled: true,
-        type: [
-          "dynamic",
-          "continuous",
-          "discrete",
-          "diagonalCross",
-          "straightCross",
-          "horizontal",
-          "vertical",
-          "curvedCW",
-          "curvedCCW",
-          "cubicBezier",
-        ],
-        forceDirection: ["horizontal", "vertical", "none"],
-        roundness: [0.5, 0, 1, 0.05],
-      },
-      width: [1, 0, 30, 1],
-    },
-    layout: {
-      //randomSeed: [0, 0, 500, 1],
-      //improvedLayout: true,
-      hierarchical: {
-        enabled: false,
-        levelSeparation: [150, 20, 500, 5],
-        nodeSpacing: [100, 20, 500, 5],
-        treeSpacing: [200, 20, 500, 5],
-        blockShifting: true,
-        edgeMinimization: true,
-        parentCentralization: true,
-        direction: ["UD", "DU", "LR", "RL"],
-        sortMethod: ["hubsize", "directed"],
-        shakeTowards: ["leaves", "roots"], // leaves, roots
-      },
-    },
-    interaction: {
-      dragNodes: true,
-      dragView: true,
-      hideEdgesOnDrag: false,
-      hideEdgesOnZoom: false,
-      hideNodesOnDrag: false,
-      hover: false,
-      keyboard: {
-        enabled: false,
-        speed: {
-          x: [10, 0, 40, 1],
-          y: [10, 0, 40, 1],
-          zoom: [0.02, 0, 0.1, 0.005],
-        },
-        bindToWindow: true,
-        autoFocus: true,
-      },
-      multiselect: false,
-      navigationButtons: false,
-      selectable: true,
-      selectConnectedEdges: true,
-      hoverConnectedEdges: true,
-      tooltipDelay: [300, 0, 1000, 25],
-      zoomView: true,
-      zoomSpeed: [1, 0.1, 2, 0.1],
-    },
-    manipulation: {
-      enabled: false,
-      initiallyActive: false,
-    },
-    physics: {
-      enabled: true,
-      barnesHut: {
-        theta: [0.5, 0.1, 1, 0.05],
-        gravitationalConstant: [-2000, -30000, 0, 50],
-        centralGravity: [0.3, 0, 10, 0.05],
-        springLength: [95, 0, 500, 5],
-        springConstant: [0.04, 0, 1.2, 0.005],
-        damping: [0.09, 0, 1, 0.01],
-        avoidOverlap: [0, 0, 1, 0.01],
-      },
-      forceAtlas2Based: {
-        theta: [0.5, 0.1, 1, 0.05],
-        gravitationalConstant: [-50, -500, 0, 1],
-        centralGravity: [0.01, 0, 1, 0.005],
-        springLength: [95, 0, 500, 5],
-        springConstant: [0.08, 0, 1.2, 0.005],
-        damping: [0.4, 0, 1, 0.01],
-        avoidOverlap: [0, 0, 1, 0.01],
-      },
-      repulsion: {
-        centralGravity: [0.2, 0, 10, 0.05],
-        springLength: [200, 0, 500, 5],
-        springConstant: [0.05, 0, 1.2, 0.005],
-        nodeDistance: [100, 0, 500, 5],
-        damping: [0.09, 0, 1, 0.01],
-      },
-      hierarchicalRepulsion: {
-        centralGravity: [0.2, 0, 10, 0.05],
-        springLength: [100, 0, 500, 5],
-        springConstant: [0.01, 0, 1.2, 0.005],
-        nodeDistance: [120, 0, 500, 5],
-        damping: [0.09, 0, 1, 0.01],
-        avoidOverlap: [0, 0, 1, 0.01],
-      },
-      maxVelocity: [50, 0, 150, 1],
-      minVelocity: [0.1, 0.01, 0.5, 0.01],
-      solver: [
-        "barnesHut",
-        "forceAtlas2Based",
-        "repulsion",
-        "hierarchicalRepulsion",
-      ],
-      timestep: [0.5, 0.01, 1, 0.01],
-      wind: {
-        x: [0, -10, 10, 0.1],
-        y: [0, -10, 10, 0.1],
-      },
-      //adaptiveTimestep: true
-    },
   };
   const configuratorHideOption = (parentPath, optionName, options) => {
-    if (
-      parentPath.includes("physics") &&
-      configureOptions.physics.solver.includes(optionName) &&
-      options.physics.solver !== optionName &&
-      optionName !== "wind"
-    ) {
-      return true;
-    }
-    return false;
+      if (parentPath.includes("physics") &&
+          configureOptions.physics.solver.includes(optionName) &&
+          options.physics.solver !== optionName &&
+          optionName !== "wind") {
+          return true;
+      }
+      return false;
   };
 
-  var options = /*#__PURE__*/ Object.freeze({
+  var options = /*#__PURE__*/Object.freeze({
     __proto__: null,
     allOptions: allOptions,
     configuratorHideOption: configuratorHideOption,
-    configureOptions: configureOptions,
+    configureOptions: configureOptions
   });
 
   /**
@@ -23604,8 +23060,7 @@
           const y_i = nodes[i].y;
           const kmat = km[i];
           const lmat = lm[i];
-          const denominator =
-            1.0 / ((x_m - x_i) ** 2 + (y_m - y_i) ** 2) ** 1.5;
+          const denominator = 1.0 / ((x_m - x_i) ** 2 + (y_m - y_i) ** 2) ** 1.5;
           d2E_dx2 += kmat * (1 - lmat * (y_m - y_i) ** 2 * denominator);
           d2E_dxdy += kmat * (lmat * (x_m - x_i) * (y_m - y_i) * denominator);
           d2E_dy2 += kmat * (1 - lmat * (x_m - x_i) ** 2 * denominator);
@@ -23984,20 +23439,11 @@
         esnext.deepExtend(networkOptions.edges, this.edgesHandler.options);
         esnext.deepExtend(networkOptions.layout, this.layoutEngine.options);
         // load the selectionHandler and render default options in to the interaction group
-        esnext.deepExtend(
-          networkOptions.interaction,
-          this.selectionHandler.options
-        );
+        esnext.deepExtend(networkOptions.interaction, this.selectionHandler.options);
         esnext.deepExtend(networkOptions.interaction, this.renderer.options);
 
-        esnext.deepExtend(
-          networkOptions.interaction,
-          this.interactionHandler.options
-        );
-        esnext.deepExtend(
-          networkOptions.manipulation,
-          this.manipulation.options
-        );
+        esnext.deepExtend(networkOptions.interaction, this.interactionHandler.options);
+        esnext.deepExtend(networkOptions.manipulation, this.manipulation.options);
         esnext.deepExtend(networkOptions.physics, this.physics.options);
 
         // load globals into the global object
@@ -24300,19 +23746,13 @@
     return this.clustering.getNodesInCluster.apply(this.clustering, arguments);
   };
   Network.prototype.clusterByConnection = function () {
-    return this.clustering.clusterByConnection.apply(
-      this.clustering,
-      arguments
-    );
+    return this.clustering.clusterByConnection.apply(this.clustering, arguments);
   };
   Network.prototype.clusterByHubsize = function () {
     return this.clustering.clusterByHubsize.apply(this.clustering, arguments);
   };
   Network.prototype.updateClusteredNode = function () {
-    return this.clustering.updateClusteredNode.apply(
-      this.clustering,
-      arguments
-    );
+    return this.clustering.updateClusteredNode.apply(this.clustering, arguments);
   };
   Network.prototype.getClusteredEdges = function () {
     return this.clustering.getClusteredEdges.apply(this.clustering, arguments);
@@ -24345,10 +23785,7 @@
     return this.manipulation.enableEditMode.apply(this.manipulation, arguments);
   };
   Network.prototype.disableEditMode = function () {
-    return this.manipulation.disableEditMode.apply(
-      this.manipulation,
-      arguments
-    );
+    return this.manipulation.disableEditMode.apply(this.manipulation, arguments);
   };
   Network.prototype.addNodeMode = function () {
     return this.manipulation.addNodeMode.apply(this.manipulation, arguments);
@@ -24514,5 +23951,6 @@
   exports.networkOptions = options;
   exports.parseDOTNetwork = parseDOTNetwork;
   exports.parseGephiNetwork = parseGephi;
-});
+
+}));
 //# sourceMappingURL=vis-network.js.map

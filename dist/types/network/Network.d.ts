@@ -16,16 +16,16 @@
 //                 Slaven Tomac <https://github.com/slavede>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 
-import { DataInterface, DataSet, DataView } from "vis-data";
-export type DataInterfaceEdges = DataInterface<Edge, "id">;
-export type DataInterfaceNodes = DataInterface<Node, "id">;
-export type DataSetEdges = DataSet<Edge, "id">;
-export type DataSetNodes = DataSet<Node, "id">;
-export type DataViewEdges = DataView<Edge, "id">;
-export type DataViewNodes = DataView<Node, "id">;
+import { DataInterface, DataSet, DataView } from 'vis-data';
+export type DataInterfaceEdges = DataInterface<Edge, 'id'>
+export type DataInterfaceNodes = DataInterface<Node, 'id'>
+export type DataSetEdges = DataSet<Edge, 'id'>
+export type DataSetNodes = DataSet<Node, 'id'>
+export type DataViewEdges = DataView<Edge, 'id'>
+export type DataViewNodes = DataView<Node, 'id'>
 
 export type IdType = string | number;
-export type DirectionType = "from" | "to";
+export type DirectionType = 'from' | 'to';
 
 /**
  * If true (default) or an Object, the range is animated smoothly to the new window.
@@ -35,38 +35,38 @@ export type DirectionType = "from" | "to";
 export type TimelineAnimationType = boolean | AnimationOptions;
 
 export type NetworkEvents =
-  | "click"
-  | "doubleClick"
-  | "oncontext"
-  | "hold"
-  | "release"
-  | "select"
-  | "selectNode"
-  | "selectEdge"
-  | "deselectNode"
-  | "deselectEdge"
-  | "dragStart"
-  | "dragging"
-  | "dragEnd"
-  | "controlNodeDragging"
-  | "controlNodeDragEnd"
-  | "hoverNode"
-  | "blurNode"
-  | "hoverEdge"
-  | "blurEdge"
-  | "zoom"
-  | "showPopup"
-  | "hidePopup"
-  | "startStabilizing"
-  | "stabilizationProgress"
-  | "stabilizationIterationsDone"
-  | "stabilized"
-  | "resize"
-  | "initRedraw"
-  | "beforeDrawing"
-  | "afterDrawing"
-  | "animationFinished"
-  | "configChange";
+  'click' |
+  'doubleClick' |
+  'oncontext' |
+  'hold' |
+  'release' |
+  'select' |
+  'selectNode' |
+  'selectEdge' |
+  'deselectNode' |
+  'deselectEdge' |
+  'dragStart' |
+  'dragging' |
+  'dragEnd' |
+  'controlNodeDragging' |
+  'controlNodeDragEnd' |
+  'hoverNode' |
+  'blurNode' |
+  'hoverEdge' |
+  'blurEdge' |
+  'zoom' |
+  'showPopup' |
+  'hidePopup' |
+  'startStabilizing' |
+  'stabilizationProgress' |
+  'stabilizationIterationsDone' |
+  'stabilized' |
+  'resize' |
+  'initRedraw' |
+  'beforeDrawing' |
+  'afterDrawing' |
+  'animationFinished' |
+  'configChange';
 
 /**
  * Network is a visualization to display networks and networks consisting of nodes and edges.
@@ -347,7 +347,7 @@ export class Network {
 
   /**
    * Returns the x y positions in canvas space of a requested node or array of nodes.
-   *
+   * 
    * @remarks
    * - If `nodeIds` is supplied as a single id that does not correspond
    * to a node in the network, this function will return an empty object.
@@ -361,13 +361,13 @@ export class Network {
 
   /**
    * Retrieves the x y position of a specific id.
-   *
+   * 
    * @param id - a node id
    * @returns the x y position in canvas space of the requested node.
-   *
-   * @throws {@link TypeError}
+   * 
+   * @throws {@link TypeError} 
    *  Thrown if an undefined or null id is provided as a parameter.
-   * @throws {@link ReferenceError}
+   * @throws {@link ReferenceError} 
    *  Thrown if the id provided as a parameter does not correspond to a node in the network.
    */
   getPosition(nodeId: IdType): Position;
@@ -411,10 +411,7 @@ export class Network {
    *
    * @param nodeOrEdgeId a node or edge id
    */
-  getConnectedNodes(
-    nodeOrEdgeId: IdType,
-    direction?: DirectionType
-  ): IdType[] | Array<{ fromId: IdType; toId: IdType }>;
+  getConnectedNodes(nodeOrEdgeId: IdType, direction?: DirectionType): IdType[] | Array<{ fromId: IdType, toId: IdType }>;
 
   /**
    * Returns an array of edgeIds of the edges connected to this node.
@@ -450,7 +447,7 @@ export class Network {
    * Returns an object with selected nodes and edges ids.
    *
    */
-  getSelection(): { nodes: IdType[]; edges: IdType[] };
+  getSelection(): { nodes: IdType[], edges: IdType[] };
 
   /**
    * Returns an array of selected node ids like so:
@@ -501,10 +498,7 @@ export class Network {
    * You can also pass only nodes or edges in selection object.
    *
    */
-  setSelection(
-    selection: { nodes?: IdType[]; edges?: IdType[] },
-    options?: SelectionOptions
-  ): void;
+  setSelection(selection: { nodes?: IdType[], edges?: IdType[] }, options?: SelectionOptions): void;
 
   /**
    * Unselect all objects.
@@ -627,19 +621,19 @@ export interface AnimationOptions {
 }
 
 export type EasingFunction =
-  | "linear"
-  | "easeInQuad"
-  | "easeOutQuad"
-  | "easeInOutQuad"
-  | "easeInCubic"
-  | "easeOutCubic"
-  | "easeInOutCubic"
-  | "easeInQuart"
-  | "easeOutQuart"
-  | "easeInOutQuart"
-  | "easeInQuint"
-  | "easeOutQuint"
-  | "easeInOutQuint";
+  'linear' |
+  'easeInQuad' |
+  'easeOutQuad' |
+  'easeInOutQuad' |
+  'easeInCubic' |
+  'easeOutCubic' |
+  'easeInOutCubic' |
+  'easeInQuart' |
+  'easeOutQuart' |
+  'easeInOutQuart' |
+  'easeInQuint' |
+  'easeOutQuint' |
+  'easeInOutQuint';
 
 /**
  * Optional options for the fit method.
@@ -708,11 +702,7 @@ export interface ClusterOptions {
    * You can use this to update the properties of the cluster based on which items it contains.
    * The function should return the properties to create the cluster node.
    */
-  processProperties?(
-    clusterOptions: any,
-    childNodesOptions: any[],
-    childEdgesOptions: any[]
-  ): any;
+  processProperties?(clusterOptions: any, childNodesOptions: any[], childEdgesOptions: any[]): any;
 
   /**
    * Optional.
@@ -753,8 +743,7 @@ export interface OpenClusterOptions {
    */
   releaseFunction(
     clusterPosition: Position,
-    containedNodesPositions: { [nodeId: string]: Position }
-  ): { [nodeId: string]: Position };
+    containedNodesPositions: { [nodeId: string]: Position }): { [nodeId: string]: Position };
 }
 
 export interface Position {
@@ -785,7 +774,7 @@ export interface Locales {
   es?: LocaleMessages;
   it?: LocaleMessages;
   nl?: LocaleMessages;
-  "pt-br"?: LocaleMessages;
+  'pt-br'?: LocaleMessages;
   ru?: LocaleMessages;
 }
 
@@ -852,19 +841,15 @@ export interface Color {
 
   background?: string;
 
-  highlight?:
-    | string
-    | {
-        border?: string;
-        background?: string;
-      };
+  highlight?: string | {
+    border?: string;
+    background?: string;
+  };
 
-  hover?:
-    | string
-    | {
-        border?: string;
-        background?: string;
-      };
+  hover?: string | {
+    border?: string;
+    background?: string;
+  };
 }
 
 export interface ChosenLabelValues {
@@ -921,12 +906,10 @@ export interface NodeOptions {
 
   opacity?: number;
 
-  fixed?:
-    | boolean
-    | {
-        x?: boolean;
-        y?: boolean;
-      };
+  fixed?: boolean | {
+    x?: boolean,
+    y?: boolean,
+  };
 
   font?: string | Font;
 
@@ -935,11 +918,11 @@ export interface NodeOptions {
   hidden?: boolean;
 
   icon?: {
-    face?: string;
-    code?: string;
-    size?: number; // 50,
-    color?: string;
-    weight?: number | string;
+    face?: string,
+    code?: string,
+    size?: number,  // 50,
+    color?: string,
+    weight?: number | string,
   };
 
   image?: string | Image;
@@ -970,12 +953,12 @@ export interface NodeOptions {
   shape?: string;
 
   shapeProperties?: {
-    borderDashes?: boolean | number[]; // only for borders
-    borderRadius?: number; // only for box shape
-    interpolation?: boolean; // only for image and circularImage shapes
-    useImageSize?: boolean; // only for image and circularImage shapes
-    useBorderWithImage?: boolean; // only for image shape
-    coordinateOrigin?: string; // only for image and circularImage shapes
+    borderDashes?: boolean | number[], // only for borders
+    borderRadius?: number,     // only for box shape
+    interpolation?: boolean,  // only for image and circularImage shapes
+    useImageSize?: boolean,  // only for image and circularImage shapes
+    useBorderWithImage?: boolean,  // only for image shape
+    coordinateOrigin?: string  // only for image and circularImage shapes
   };
 
   size?: number;
@@ -989,7 +972,7 @@ export interface NodeOptions {
    * The node's label's lines will be broken on spaces to stay below the maximum and the node's width
    * will be set to the minimum if less than the value.
    */
-  widthConstraint?: number | boolean | { minimum?: number; maximum?: number };
+  widthConstraint?: number | boolean | { minimum?: number, maximum?: number };
 
   x?: number;
 
@@ -997,32 +980,26 @@ export interface NodeOptions {
 }
 
 export interface EdgeOptions {
-  arrows?:
-    | string
-    | {
-        to?: boolean | ArrowHead;
-        middle?: boolean | ArrowHead;
-        from?: boolean | ArrowHead;
-      };
+  arrows?: string | {
+    to?: boolean | ArrowHead
+    middle?: boolean | ArrowHead
+    from?: boolean | ArrowHead
+  };
 
   arrowStrikethrough?: boolean;
 
-  chosen?:
-    | boolean
-    | {
-        edge?: boolean; // please note, chosen.edge could be also a function. This case is not represented here
-        label?: boolean; // please note, chosen.label could be also a function. This case is not represented here
-      };
+  chosen?: boolean | {
+    edge?: boolean, // please note, chosen.edge could be also a function. This case is not represented here
+    label?: boolean, // please note, chosen.label could be also a function. This case is not represented here
+  };
 
-  color?:
-    | string
-    | {
-        color?: string;
-        highlight?: string;
-        hover?: string;
-        inherit?: boolean | string;
-        opacity?: number;
-      };
+  color?: string | {
+    color?: string,
+    highlight?: string,
+    hover?: string,
+    inherit?: boolean | string,
+    opacity?: number,
+  };
 
   dashes?: boolean | number[];
 
@@ -1047,21 +1024,19 @@ export interface EdgeOptions {
   selfReferenceSize?: number;
 
   selfReference?: {
-    size?: number;
-    angle?: number;
-    renderBehindTheNode?: boolean;
+    size?: number,
+    angle?: number,
+    renderBehindTheNode?: boolean
   };
 
   shadow?: boolean | OptionsShadow;
 
-  smooth?:
-    | boolean
-    | {
-        enabled: boolean;
-        type: string;
-        forceDirection?: string | boolean;
-        roundness: number;
-      };
+  smooth?: boolean | {
+    enabled: boolean,
+    type: string,
+    forceDirection?: string | boolean,
+    roundness: number,
+  };
 
   title?: string | HTMLElement;
 
@@ -1069,37 +1044,34 @@ export interface EdgeOptions {
 
   width?: number;
 
-  widthConstraint?:
-    | number
-    | boolean
-    | {
-        maximum?: number;
-      };
+  widthConstraint?: number | boolean | {
+    maximum?: number;
+  };
 }
 
 export interface ArrowHead {
-  enabled?: boolean;
-  imageHeight?: number;
-  imageWidth?: number;
-  scaleFactor?: number;
-  src?: string;
+  enabled?: boolean,
+  imageHeight?: number,
+  imageWidth?: number,
+  scaleFactor?: number,
+  src?: string,
   type?: string;
 }
 
 export interface Font {
-  color?: string;
-  size?: number; // px
-  face?: string;
-  background?: string;
-  strokeWidth?: number; // px
-  strokeColor?: string;
-  align?: string;
-  vadjust?: number;
-  multi?: boolean | string;
-  bold?: string | FontStyles;
-  ital?: string | FontStyles;
-  boldital?: string | FontStyles;
-  mono?: string | FontStyles;
+  color?: string,
+  size?: number, // px
+  face?: string,
+  background?: string,
+  strokeWidth?: number, // px
+  strokeColor?: string,
+  align?: string,
+  vadjust?: number,
+  multi?: boolean | string,
+  bold?: string | FontStyles,
+  ital?: string | FontStyles,
+  boldital?: string | FontStyles,
+  mono?: string | FontStyles,
 }
 
 export interface FontStyles {
@@ -1113,21 +1085,14 @@ export interface FontStyles {
 export interface OptionsScaling {
   min?: number;
   max?: number;
-  label?:
-    | boolean
-    | {
-        enabled?: boolean;
-        min?: number;
-        max?: number;
-        maxVisible?: number;
-        drawThreshold?: number;
-      };
-  customScalingFunction?(
+  label?: boolean | {
+    enabled?: boolean,
     min?: number,
     max?: number,
-    total?: number,
-    value?: number
-  ): number;
+    maxVisible?: number,
+    drawThreshold?: number
+  };
+  customScalingFunction?(min?: number, max?: number, total?: number, value?: number): number;
 }
 
 export interface OptionsShadow {

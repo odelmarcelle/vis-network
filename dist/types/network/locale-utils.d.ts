@@ -6,8 +6,5 @@
  * @returns Language code in the format language-COUNTRY or language, eventually
  * fallbacks to en.
  */
-export declare function normalizeLanguageCode(
-  locales: Record<string, undefined | object>,
-  rawCode: string
-): string;
+export declare function normalizeLanguageCode(locales: Record<string, undefined | object>, rawCode: string): string;
 //# sourceMappingURL=locale-utils.d.ts.map
